@@ -1,0 +1,2 @@
+rootProject.name='MediaLines'
+include ':app'
