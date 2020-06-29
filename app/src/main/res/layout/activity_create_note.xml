@@ -95,6 +95,7 @@
                 app:layout_constraintTop_toTopOf="@id/textDateTime"/>
 
             <EditText
+                android:id="@+id/inputNoteText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/_12sdp"

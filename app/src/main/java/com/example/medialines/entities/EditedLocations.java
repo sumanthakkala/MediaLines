@@ -27,11 +27,11 @@ public class EditedLocations implements Serializable {
         this.editedLocationId = editedLocationId;
     }
 
-    public String getCreatedAt() {
+    public String getDateTime() {
         return dateTime;
     }
 
-    public void setCreatedAt(String dateTime) {
+    public void setDateTime(String dateTime) {
         this.dateTime = dateTime;
     }
 
