@@ -1,4 +1,4 @@
-package com.example.medialines;
+package com.example.medialines.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,8 +6,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 
+import com.example.medialines.R;
+import com.example.medialines.activities.CreateNoteActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.appcompat.widget.SearchView;

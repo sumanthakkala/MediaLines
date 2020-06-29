@@ -1,10 +1,12 @@
-package com.example.medialines;
+package com.example.medialines.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.example.medialines.R;
 
 public class CreateNoteActivity extends AppCompatActivity {
 
