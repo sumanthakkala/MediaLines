@@ -93,6 +93,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 Intent intent = new Intent();
+                intent.putExtra("addedNote", note);
                 setResult(RESULT_OK, intent);
                 finish();
             }

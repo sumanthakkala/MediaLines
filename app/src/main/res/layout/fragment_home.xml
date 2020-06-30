@@ -61,5 +61,18 @@
             android:tint="@color/colorIcons" />
     </LinearLayout>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/_15sdp"
+        app:backgroundTint="@color/colorFabBackground"
+        app:srcCompat="@drawable/ic_baseline_add"
+        tools:ignore="VectorDrawableCompat"
+        app:layout_constraintBottom_toTopOf="@id/layoutQuickActions"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/layoutQuickActions"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
