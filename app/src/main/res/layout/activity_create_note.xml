@@ -119,4 +119,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <include layout="@layout/more_options_layout" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

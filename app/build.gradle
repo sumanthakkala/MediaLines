@@ -21,6 +21,10 @@ android {
         }
     }
 
+    lintOptions {
+        disable "ResourceType"
+    }
+
 }
 
 dependencies {

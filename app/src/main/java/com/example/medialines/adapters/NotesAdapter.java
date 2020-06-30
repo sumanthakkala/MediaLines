@@ -1,8 +1,11 @@
 package com.example.medialines.adapters;
 
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -51,6 +54,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     static class NoteViewHolder extends RecyclerView.ViewHolder{
 
         TextView titleTV, noteDescriptionTV, dateTimeTV;
+        LinearLayout noteLayout;
 
         public NoteViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -58,6 +62,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             titleTV = itemView.findViewById(R.id.titleTextView);
             noteDescriptionTV = itemView.findViewById(R.id.noteDescriptionTextView);
             dateTimeTV = itemView.findViewById(R.id.dateTimeTextView);
+            noteLayout = itemView.findViewById(R.id.noteLayout);
         }
 
         void setNote(Note note){
@@ -69,6 +74,14 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                 noteDescriptionTV.setText(note.getNoteText());
             }
             dateTimeTV.setText(note.getDateTime());
+
+            GradientDrawable gradientDrawable = (GradientDrawable) noteLayout.getBackground();
+            if(note.getColor() != null){
+                gradientDrawable.setColor(Color.parseColor(note.getColor()));
+            }
+            else {
+                gradientDrawable.setColor(Color.parseColor("#333333"));
+            }
         }
     }
 }
