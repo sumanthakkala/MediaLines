@@ -91,10 +91,12 @@ public class HomeFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        assert data != null;
-        Note note = (Note) data.getSerializableExtra("addedNote");
-        notesList.add(0, note);
-        notesAdapter.notifyItemInserted(0);
-        notesRecyclerView.smoothScrollToPosition(0);
+        if(data != null){
+            Note note = (Note) data.getSerializableExtra("addedNote");
+            notesList.add(0, note);
+            notesAdapter.notifyItemInserted(0);
+            notesRecyclerView.smoothScrollToPosition(0);
+        }
+
     }
 }
