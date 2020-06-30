@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -23,6 +24,7 @@ import com.example.medialines.activities.CreateNoteActivity;
 import com.example.medialines.adapters.NotesAdapter;
 import com.example.medialines.database.MediaLinesDatabase;
 import com.example.medialines.entities.Note;
+import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ public class HomeFragment extends Fragment {
 
 
     private RecyclerView notesRecyclerView;
+    private BottomAppBar quickActions;
     private List<Note> notesList;
     private NotesAdapter notesAdapter;
 
@@ -49,10 +52,26 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        quickActions = root.findViewById(R.id.layoutQuickActions);
+
         notesRecyclerView = root.findViewById(R.id.notesRecyclerView);
         notesRecyclerView.setLayoutManager(
                 new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         );
+
+        notesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                if (!recyclerView.canScrollVertically(1) && newState==RecyclerView.SCROLL_STATE_IDLE) {
+                    quickActions.animate().alpha(0.0f).setDuration(500);;
+                }
+                else {
+                    quickActions.animate().alpha(0.95f).setDuration(100);;
+                }
+            }
+        });
 
         notesList = new ArrayList<>();
         notesAdapter = new NotesAdapter(notesList);
@@ -80,7 +99,7 @@ public class HomeFragment extends Fragment {
                     notesList.add(0, notes.get(0));
                     notesAdapter.notifyItemInserted(0);
                 }
-                notesRecyclerView.smoothScrollToPosition(0);
+                //notesRecyclerView.smoothScrollToPosition(0);
             }
         }
 
@@ -99,4 +118,5 @@ public class HomeFragment extends Fragment {
         }
 
     }
+
 }

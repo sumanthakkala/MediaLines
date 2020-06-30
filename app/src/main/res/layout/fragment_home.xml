@@ -1,35 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment">
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/notesRecyclerView"
-        android:layout_width="match_parent"
-        android:clipToPadding="false"
-        android:paddingStart="0dp"
-        android:paddingLeft="0dp"
-        android:paddingEnd="@dimen/_12sdp"
-        android:paddingRight="@dimen/_12sdp"
-        android:paddingBottom="@dimen/_12sdp"
-        app:layout_constraintBottom_toTopOf="@+id/layoutQuickActions"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="3dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="@dimen/_2sdp"
-        android:layout_marginEnd="@dimen/_2sdp"/>
+    tools:context=".ui.home.HomeFragment"
+    android:animateLayoutChanges="true">
 
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/notesRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingStart="0dp"
+            android:paddingLeft="0dp"
+            android:paddingEnd="@dimen/_12sdp"
+            android:paddingRight="@dimen/_12sdp"
+            android:paddingBottom="@dimen/_12sdp"
+            tools:layout_editor_absoluteX="3dp"
+            android:layout_marginStart="@dimen/_2sdp"
+            android:layout_marginEnd="@dimen/_2sdp"/>
+    </LinearLayout>
+
+
+
+    <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/layoutQuickActions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorQuickActionsBackground"
+        android:backgroundTint="@color/colorQuickActionsBackground"
+        android:alpha="0.95"
+        android:layout_gravity="bottom"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="@dimen/_10sdp"
+        app:fabAlignmentMode="end"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
@@ -59,20 +68,17 @@
             android:contentDescription="@string/app_name"
             android:src="@drawable/ic_sort_by_alpha"
             android:tint="@color/colorIcons" />
-    </LinearLayout>
+    </com.google.android.material.bottomappbar.BottomAppBar>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/_15sdp"
         app:backgroundTint="@color/colorFabBackground"
         app:srcCompat="@drawable/ic_baseline_add"
         tools:ignore="VectorDrawableCompat"
-        app:layout_constraintBottom_toTopOf="@id/layoutQuickActions"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/layoutQuickActions"/>
+        app:layout_anchor="@id/layoutQuickActions"/>
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
