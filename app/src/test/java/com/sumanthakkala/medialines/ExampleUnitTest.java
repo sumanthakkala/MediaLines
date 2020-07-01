@@ -1,4 +1,4 @@
-package com.example.medialines;
+package com.sumanthakkala.medialines;
 
 import org.junit.Test;
 

@@ -1,11 +1,12 @@
-package com.example.medialines.entities;
+package com.sumanthakkala.medialines.entities;
 
 import androidx.room.Embedded;
 import androidx.room.Relation;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class NoteWithData {
+public class NoteWithData implements Serializable {
 
     @Embedded public Note note;
 

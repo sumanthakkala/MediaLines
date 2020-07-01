@@ -1,29 +1,24 @@
-package com.example.medialines.ui.home;
+package com.sumanthakkala.medialines.ui.home;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.example.medialines.R;
-import com.example.medialines.activities.CreateNoteActivity;
-import com.example.medialines.adapters.NotesAdapter;
-import com.example.medialines.database.MediaLinesDatabase;
-import com.example.medialines.entities.Note;
+import com.sumanthakkala.medialines.R;
+import com.sumanthakkala.medialines.activities.CreateNoteActivity;
+import com.sumanthakkala.medialines.adapters.NotesAdapter;
+import com.sumanthakkala.medialines.database.MediaLinesDatabase;
+import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -36,7 +31,7 @@ public class HomeFragment extends Fragment {
 
     private RecyclerView notesRecyclerView;
     private BottomAppBar quickActions;
-    private List<Note> notesList;
+    private List<NoteWithData> notesList;
     private NotesAdapter notesAdapter;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -82,14 +77,14 @@ public class HomeFragment extends Fragment {
 
     private void getNotes(){
         @SuppressLint("StaticFieldLeak")
-        class GetNotesTask extends AsyncTask<Void, Void, List<Note>>{
+        class GetNotesTask extends AsyncTask<Void, Void, List<NoteWithData>>{
             @Override
-            protected List<Note> doInBackground(Void... voids) {
-                return MediaLinesDatabase.getMediaLinesDatabase(getActivity().getApplicationContext()).noteDao().getAllNotes();
+            protected List<NoteWithData> doInBackground(Void... voids) {
+                return MediaLinesDatabase.getMediaLinesDatabase(getActivity().getApplicationContext()).noteDao().getNotesWithData();
             }
 
             @Override
-            protected void onPostExecute(List<Note> notes) {
+            protected void onPostExecute(List<NoteWithData> notes) {
                 super.onPostExecute(notes);
                 if(notesList.size() == 0){
                     notesList.addAll(notes);
@@ -111,8 +106,8 @@ public class HomeFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(data != null){
-            Note note = (Note) data.getSerializableExtra("addedNote");
-            notesList.add(0, note);
+            NoteWithData noteWithData = (NoteWithData) data.getSerializableExtra("addedNote");
+            notesList.add(0, noteWithData);
             notesAdapter.notifyItemInserted(0);
             notesRecyclerView.smoothScrollToPosition(0);
         }

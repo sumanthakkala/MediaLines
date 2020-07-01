@@ -1,4 +1,4 @@
-package com.example.medialines.entities;
+package com.sumanthakkala.medialines.entities;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class Attachments implements Serializable {
 
     @PrimaryKey(autoGenerate = true)
-    private int attachmentId;
+    private long attachmentId;
 
     @ColumnInfo(name = "date_time")
     private String dateTime;
@@ -19,14 +19,14 @@ public class Attachments implements Serializable {
     @ColumnInfo(name = "attachment_type")
     private String attachmentType;
 
-    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
-    private byte[] attachmentBlob;
+    @ColumnInfo(name = "attachment_unique_file_name")
+    private String attachmentUniqueFileName;
 
-    public int getAttachmentId() {
+    public long getAttachmentId() {
         return attachmentId;
     }
 
-    public void setAttachmentId(int attachmentId) {
+    public void setAttachmentId(long attachmentId) {
         this.attachmentId = attachmentId;
     }
 
@@ -46,6 +46,14 @@ public class Attachments implements Serializable {
         this.associatedNoteId = associatedNoteId;
     }
 
+    public String getAttachmentUniqueFileName() {
+        return attachmentUniqueFileName;
+    }
+
+    public void setAttachmentUniqueFileName(String attachmentUniqueFileName) {
+        this.attachmentUniqueFileName = attachmentUniqueFileName;
+    }
+
     public String getAttachmentType() {
         return attachmentType;
     }
@@ -54,11 +62,4 @@ public class Attachments implements Serializable {
         this.attachmentType = attachmentType;
     }
 
-    public byte[] getAttachmentBlob() {
-        return attachmentBlob;
-    }
-
-    public void setAttachmentBlob(byte[] attachmentBlob) {
-        this.attachmentBlob = attachmentBlob;
-    }
 }

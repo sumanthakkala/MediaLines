@@ -1,4 +1,4 @@
-package com.example.medialines;
+package com.sumanthakkala.medialines;
 
 import android.content.Context;
 
@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.example.medialines", appContext.getPackageName());
+        assertEquals("com.sumanthakkala.medialines", appContext.getPackageName());
     }
 }

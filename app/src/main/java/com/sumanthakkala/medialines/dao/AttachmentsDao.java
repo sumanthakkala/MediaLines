@@ -1,10 +1,10 @@
-package com.example.medialines.dao;
+package com.sumanthakkala.medialines.dao;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import com.example.medialines.entities.Attachments;
+import com.sumanthakkala.medialines.entities.Attachments;
 import java.util.List;
 
 @Dao
@@ -13,7 +13,7 @@ public interface AttachmentsDao {
     List<Attachments> getAllAttachments();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertAttachment(Attachments attachment);
+    long insertAttachment(Attachments attachment);
 
     @Delete
     void deleteEditedLocation(Attachments attachment);

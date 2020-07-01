@@ -1,4 +1,4 @@
-package com.example.medialines.database;
+package com.sumanthakkala.medialines.database;
 
 import android.content.Context;
 
@@ -6,12 +6,12 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.example.medialines.dao.AttachmentsDao;
-import com.example.medialines.dao.EditedLocationsDao;
-import com.example.medialines.dao.NoteDao;
-import com.example.medialines.entities.Attachments;
-import com.example.medialines.entities.EditedLocations;
-import com.example.medialines.entities.Note;
+import com.sumanthakkala.medialines.dao.AttachmentsDao;
+import com.sumanthakkala.medialines.dao.EditedLocationsDao;
+import com.sumanthakkala.medialines.dao.NoteDao;
+import com.sumanthakkala.medialines.entities.Attachments;
+import com.sumanthakkala.medialines.entities.EditedLocations;
+import com.sumanthakkala.medialines.entities.Note;
 
 @Database(entities = {Note.class, EditedLocations.class, Attachments.class}, version = 1, exportSchema = false)
 public abstract class MediaLinesDatabase extends RoomDatabase {

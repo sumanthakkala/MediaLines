@@ -1,10 +1,10 @@
-package com.example.medialines.dao;
+package com.sumanthakkala.medialines.dao;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import com.example.medialines.entities.EditedLocations;
+import com.sumanthakkala.medialines.entities.EditedLocations;
 import java.util.List;
 
 @Dao

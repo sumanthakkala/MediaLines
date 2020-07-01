@@ -1,4 +1,4 @@
-package com.example.medialines.dao;
+package com.sumanthakkala.medialines.dao;
 
 import androidx.room.Dao;
 import androidx.room.Delete;
@@ -7,8 +7,8 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 
-import com.example.medialines.entities.Note;
-import com.example.medialines.entities.NoteWithData;
+import com.sumanthakkala.medialines.entities.Note;
+import com.sumanthakkala.medialines.entities.NoteWithData;
 
 import java.util.List;
 
@@ -19,12 +19,12 @@ public interface NoteDao {
     List<Note> getAllNotes();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertNote(Note note);
+    long insertNote(Note note);
 
     @Delete
     void deleteNote(Note note);
 
     @Transaction
-    @Query("SELECT * FROM notes")
+    @Query("SELECT * FROM notes ORDER BY noteId DESC")
     public List<NoteWithData> getNotesWithData();
 }

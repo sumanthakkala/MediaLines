@@ -1,4 +1,4 @@
-package com.example.medialines.entities;
+package com.sumanthakkala.medialines.entities;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
