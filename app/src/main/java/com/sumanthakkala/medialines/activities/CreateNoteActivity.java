@@ -1,6 +1,7 @@
 package com.sumanthakkala.medialines.activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
@@ -12,6 +13,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.net.Uri;
@@ -19,7 +21,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Patterns;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -60,6 +65,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private View noteColorIndicator;
     private ViewPager2 imagesViewPager;
     private FusedLocationProviderClient locationClient;
+    private TextView webUrlTV;
+    private LinearLayout webUrlLayout;
+    private AlertDialog addUrlDialog;
     private String currentLocationLatLong;
     private String noteDateTime;
     private String selectedNoteColor;
@@ -96,22 +104,26 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         noteTitle = findViewById(R.id.inputNoteTitle);
         noteText = findViewById(R.id.inputNoteText);
         textDateTime = findViewById(R.id.textDateTime);
+        noteColorIndicator = findViewById(R.id.viewInfoIndicatior);
+        imagesViewPager = findViewById(R.id.imagesViewPager);
+        webUrlTV = findViewById(R.id.webUrlText);
+        webUrlLayout = findViewById(R.id.webUrlLayout);
+
         noteDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
                 .format(new Date());
         textDateTime.setText(
                 noteDateTime
         );
         locationClient = LocationServices.getFusedLocationProviderClient(this);
-        getCurrentLocation();
 
         //Default note color
         selectedNoteColor = "#333333";
-        noteColorIndicator = findViewById(R.id.viewInfoIndicatior);
         selectedImages = new ArrayList<>();
         totalImages = new ArrayList<>();
-        imagesViewPager = findViewById(R.id.imagesViewPager);
+
         noteImagesAdapter = new NoteImagesAdapter(totalImages);
         imagesViewPager.setAdapter(noteImagesAdapter);
+        getCurrentLocation();
         initMoreOptions();
         setNoteIndicatorColor();
 
@@ -138,6 +150,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         note.setDateTime(textDateTime.getText().toString());
         note.setCreatedLocation(currentLocationLatLong);
         note.setColor(selectedNoteColor);
+
+        if(webUrlLayout.getVisibility() == View.VISIBLE){
+            note.setWebLink(webUrlTV.getText().toString());
+        }
 
         final NoteWithData noteWithData = new NoteWithData();
 
@@ -335,6 +351,14 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 }
             }
         });
+
+        moreOptionsLayout.findViewById(R.id.addUrlLayout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                showAddUrlDialig();
+            }
+        });
     }
 
     private void setNoteIndicatorColor(){
@@ -414,5 +438,49 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private boolean isExternalStorageReadable() {
         return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) ||
                 Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState());
+    }
+
+    private void showAddUrlDialig(){
+        if(addUrlDialog == null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(CreateNoteActivity.this);
+            View view = LayoutInflater.from(this).inflate(
+                    R.layout.add_url_layout,
+                    (ViewGroup) findViewById(R.id.addUrlContainerLayout)
+            );
+            builder.setView(view);
+            addUrlDialog = builder.create();
+
+            if(addUrlDialog.getWindow() != null){
+                addUrlDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }
+
+            final EditText inputURL = view.findViewById(R.id.inputURL);
+            inputURL.requestFocus();
+
+            view.findViewById(R.id.addURLTV).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(inputURL.getText().toString().trim().isEmpty()){
+                        Toast.makeText(CreateNoteActivity.this, "Enter URL", Toast.LENGTH_SHORT).show();
+                    }
+                    else if(!Patterns.WEB_URL.matcher(inputURL.getText().toString()).matches()){
+                        Toast.makeText(CreateNoteActivity.this, "Enter Valid URL", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        webUrlTV.setText(inputURL.getText().toString());
+                        webUrlLayout.setVisibility(View.VISIBLE);
+                        addUrlDialog.dismiss();
+                    }
+                }
+            });
+
+            view.findViewById(R.id.cancelAddUrlTV).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    addUrlDialog.dismiss();
+                }
+            });
+        }
+        addUrlDialog.show();
     }
 }
