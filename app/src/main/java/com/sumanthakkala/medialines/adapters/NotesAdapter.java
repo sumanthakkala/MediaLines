@@ -16,8 +16,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sumanthakkala.medialines.R;
+import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.makeramen.roundedimageview.RoundedImageView;
+import com.sumanthakkala.medialines.listeners.NotesListener;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,10 +30,12 @@ import java.util.List;
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
 
     private List<NoteWithData> noteWithData;
+    private NotesListener notesListener;
     private static Context context;
 
-    public NotesAdapter(List<NoteWithData> notes) {
+    public NotesAdapter(List<NoteWithData> notes, NotesListener listener) {
         this.noteWithData = notes;
+        this.notesListener = listener;
     }
 
     @NonNull
@@ -48,8 +52,14 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NoteViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull NoteViewHolder holder, final int position) {
         holder.setNote(noteWithData.get(position));
+        holder.noteLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                notesListener.onNoteCLicked(noteWithData.get(position), position);
+            }
+        });
     }
 
     @Override
@@ -97,7 +107,13 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             }
 
             if(noteWithData.attachments.size() > 0){
-                String fileName = noteWithData.attachments.get(0).getAttachmentUniqueFileName();
+                String fileName = "";
+                for(Attachments attach : noteWithData.attachments){
+                    if(attach.getAttachmentType().equals("image")){
+                        fileName = attach.getAttachmentUniqueFileName();
+                        break;
+                    }
+                }
 
                 if(fileName != null){
                     try {

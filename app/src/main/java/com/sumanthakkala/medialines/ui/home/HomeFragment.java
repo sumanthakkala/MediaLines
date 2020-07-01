@@ -21,18 +21,22 @@ import com.sumanthakkala.medialines.database.MediaLinesDatabase;
 import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.sumanthakkala.medialines.listeners.NotesListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements NotesListener {
     public static final int REQUEST_CODE_ADD_NOTE = 1;
+    public static final int REQUEST_CODE_UPDATE_NOTE = 2;
 
 
     private RecyclerView notesRecyclerView;
     private BottomAppBar quickActions;
     private List<NoteWithData> notesList;
     private NotesAdapter notesAdapter;
+
+    private int noteClickedPosition = -1;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -69,10 +73,19 @@ public class HomeFragment extends Fragment {
 //        });
 
         notesList = new ArrayList<>();
-        notesAdapter = new NotesAdapter(notesList);
+        notesAdapter = new NotesAdapter(notesList, this);
         notesRecyclerView.setAdapter(notesAdapter);
         getNotes();
         return root;
+    }
+
+    @Override
+    public void onNoteCLicked(NoteWithData noteWithData, int position) {
+        noteClickedPosition = position;
+        Intent intent = new Intent(getActivity().getApplicationContext(), CreateNoteActivity.class);
+        intent.putExtra("isViewOrUpdate", true);
+        intent.putExtra("noteData", noteWithData);
+        startActivityForResult(intent, REQUEST_CODE_UPDATE_NOTE);
     }
 
     private void getNotes(){

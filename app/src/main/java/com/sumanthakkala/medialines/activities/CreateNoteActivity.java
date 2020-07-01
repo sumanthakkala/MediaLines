@@ -1,6 +1,7 @@
 package com.sumanthakkala.medialines.activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -18,6 +19,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -54,6 +56,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class CreateNoteActivity extends AppCompatActivity implements  OnRequestPermissionsResultCallback {
 
@@ -72,9 +75,13 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private String noteDateTime;
     private String selectedNoteColor;
 
+    private Boolean isExistingNote = false;
+
     private List<NoteImageViewModel> totalImages;
     private List<NoteImageViewModel> selectedImages;
     private NoteImagesAdapter noteImagesAdapter;
+
+    private NoteWithData existingNoteWithData;
 
     private static final int REQUEST_CODE_STORAGE_PERMISSION = 1;
     private static final int REQUEST_CODE_SELECT_IMAGE = 2;
@@ -97,7 +104,12 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         imageDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                saveNote();
+                if(isExistingNote){
+                    updateNote();
+                }
+                else {
+                    saveNote();
+                }
             }
         });
 
@@ -120,12 +132,46 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         selectedNoteColor = "#333333";
         selectedImages = new ArrayList<>();
         totalImages = new ArrayList<>();
-
         noteImagesAdapter = new NoteImagesAdapter(totalImages);
         imagesViewPager.setAdapter(noteImagesAdapter);
+
+        setNoteIndicatorColor();
+
+        if(getIntent().getBooleanExtra("isViewOrUpdate", false)){
+            isExistingNote = true;
+            existingNoteWithData = (NoteWithData) getIntent().getSerializableExtra("noteData");
+            setExistingNoteData();
+        }
         getCurrentLocation();
         initMoreOptions();
-        setNoteIndicatorColor();
+    }
+
+    private void setExistingNoteData(){
+
+        noteTitle.setText(existingNoteWithData.note.getTitle());
+        textDateTime.setText(existingNoteWithData.note.getDateTime());
+        noteText.setText(existingNoteWithData.note.getNoteText());
+        if(existingNoteWithData.note.getWebLink() != null && !existingNoteWithData.note.getWebLink().trim().isEmpty()){
+            webUrlTV.setText(existingNoteWithData.note.getWebLink());
+            webUrlLayout.setVisibility(View.VISIBLE);
+        }
+//        List<Attachments> imageAttachments = new ArrayList<>();
+        List<Attachments> audioAttachments = new ArrayList<>();
+        int imageIndex = 0;
+        for(Attachments attach: existingNoteWithData.attachments){
+            if(attach.getAttachmentType().equals("image")){
+//                imageAttachments.add(attach);
+                NoteImageViewModel image = new NoteImageViewModel();
+                image.imageUniqueFileName = attach.getAttachmentUniqueFileName();
+                image.index = imageIndex;
+                imageIndex += 1;
+                totalImages.add(image);
+                noteImagesAdapter.notifyDataSetChanged();
+            }
+            else {
+                audioAttachments.add(attach);
+            }
+        }
 
     }
 
@@ -136,6 +182,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             attachmentFile.delete();
         }
         super.onBackPressed();
+    }
+
+    private void updateNote(){
+
     }
 
     private void saveNote() {
@@ -332,6 +382,23 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 setNoteIndicatorColor();
             }
         });
+
+        if(existingNoteWithData != null && existingNoteWithData.note.getColor() != null && !existingNoteWithData.note.getColor().trim().toString().isEmpty()){
+            switch (existingNoteWithData.note.getColor()){
+                case "#fffdbe38":
+                    moreOptionsLayout.findViewById(R.id.viewColor2).performClick();
+                    break;
+                case "#fff4842":
+                    moreOptionsLayout.findViewById(R.id.viewColor3).performClick();
+                    break;
+                case "#ff3a52fc":
+                    moreOptionsLayout.findViewById(R.id.viewColor4).performClick();
+                    break;
+                case "#ff000000":
+                    moreOptionsLayout.findViewById(R.id.viewColor5).performClick();
+                    break;
+            }
+        }
 
         moreOptionsLayout.findViewById(R.id.addImageLayout).setOnClickListener(new View.OnClickListener() {
             @Override
