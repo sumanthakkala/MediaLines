@@ -54,19 +54,19 @@ public class HomeFragment extends Fragment {
                 new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         );
 
-        notesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-
-                if (!recyclerView.canScrollVertically(1) && newState==RecyclerView.SCROLL_STATE_IDLE) {
-                    quickActions.animate().alpha(0.0f).setDuration(500);;
-                }
-                else {
-                    quickActions.animate().alpha(0.95f).setDuration(100);;
-                }
-            }
-        });
+//        notesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+//                super.onScrollStateChanged(recyclerView, newState);
+//
+//                if (!recyclerView.canScrollVertically(1) && newState==RecyclerView.SCROLL_STATE_IDLE) {
+//                    quickActions.animate().alpha(0.0f).setDuration(500);;
+//                }
+//                else {
+//                    quickActions.animate().alpha(0.95f).setDuration(100);;
+//                }
+//            }
+//        });
 
         notesList = new ArrayList<>();
         notesAdapter = new NotesAdapter(notesList);

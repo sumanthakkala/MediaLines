@@ -7,10 +7,6 @@
     tools:context=".ui.home.HomeFragment"
     android:animateLayoutChanges="true">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/notesRecyclerView"
             android:layout_width="match_parent"
@@ -20,11 +16,10 @@
             android:paddingLeft="0dp"
             android:paddingEnd="@dimen/_12sdp"
             android:paddingRight="@dimen/_12sdp"
-            android:paddingBottom="@dimen/_12sdp"
+            android:paddingBottom="@dimen/_45sdp"
             tools:layout_editor_absoluteX="3dp"
             android:layout_marginStart="@dimen/_2sdp"
             android:layout_marginEnd="@dimen/_2sdp"/>
-    </LinearLayout>
 
 
 

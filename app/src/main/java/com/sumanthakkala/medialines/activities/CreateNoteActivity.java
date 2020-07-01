@@ -370,6 +370,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                         selectedImages.add(noteImageViewModel);
                         noteImagesAdapter.notifyItemChanged(totalImages.size() - 1);
                     }
+                    else {
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
