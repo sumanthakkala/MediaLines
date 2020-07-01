@@ -1,7 +1,6 @@
 package com.sumanthakkala.medialines.activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -19,7 +18,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -36,6 +34,7 @@ import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.adapters.NoteImagesAdapter;
 import com.sumanthakkala.medialines.database.MediaLinesDatabase;
 import com.sumanthakkala.medialines.entities.Attachments;
+import com.sumanthakkala.medialines.entities.EditedLocations;
 import com.sumanthakkala.medialines.entities.Note;
 import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
@@ -56,7 +55,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class CreateNoteActivity extends AppCompatActivity implements  OnRequestPermissionsResultCallback {
 
@@ -72,16 +70,18 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private LinearLayout webUrlLayout;
     private AlertDialog addUrlDialog;
     private String currentLocationLatLong;
-    private String noteDateTime;
+    private String currentDateTime;
     private String selectedNoteColor;
 
     private Boolean isExistingNote = false;
 
     private List<NoteImageViewModel> totalImages;
     private List<NoteImageViewModel> selectedImages;
+    private List<Attachments> existingImageAttachments = new ArrayList<>();
     private NoteImagesAdapter noteImagesAdapter;
 
     private NoteWithData existingNoteWithData;
+    private int existingNotePosition;
 
     private static final int REQUEST_CODE_STORAGE_PERMISSION = 1;
     private static final int REQUEST_CODE_SELECT_IMAGE = 2;
@@ -104,12 +104,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         imageDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(isExistingNote){
-                    updateNote();
-                }
-                else {
-                    saveNote();
-                }
+                saveNote();
             }
         });
 
@@ -121,10 +116,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         webUrlTV = findViewById(R.id.webUrlText);
         webUrlLayout = findViewById(R.id.webUrlLayout);
 
-        noteDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
+        currentDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
                 .format(new Date());
         textDateTime.setText(
-                noteDateTime
+                currentDateTime
         );
         locationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -140,6 +135,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         if(getIntent().getBooleanExtra("isViewOrUpdate", false)){
             isExistingNote = true;
             existingNoteWithData = (NoteWithData) getIntent().getSerializableExtra("noteData");
+            existingNotePosition = (int) getIntent().getIntExtra("position", -1);
             setExistingNoteData();
         }
         getCurrentLocation();
@@ -155,12 +151,11 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             webUrlTV.setText(existingNoteWithData.note.getWebLink());
             webUrlLayout.setVisibility(View.VISIBLE);
         }
-//        List<Attachments> imageAttachments = new ArrayList<>();
         List<Attachments> audioAttachments = new ArrayList<>();
         int imageIndex = 0;
         for(Attachments attach: existingNoteWithData.attachments){
             if(attach.getAttachmentType().equals("image")){
-//                imageAttachments.add(attach);
+                existingImageAttachments.add(attach);
                 NoteImageViewModel image = new NoteImageViewModel();
                 image.imageUniqueFileName = attach.getAttachmentUniqueFileName();
                 image.index = imageIndex;
@@ -184,10 +179,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         super.onBackPressed();
     }
 
-    private void updateNote(){
-
-    }
-
     private void saveNote() {
         if (noteTitle.getText().toString().trim().isEmpty()) {
             Toast.makeText(this, "Title cannot be empty", Toast.LENGTH_SHORT).show();
@@ -205,30 +196,48 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             note.setWebLink(webUrlTV.getText().toString());
         }
 
-        final NoteWithData noteWithData = new NoteWithData();
+        if(isExistingNote){
+            note.setNoteId(existingNoteWithData.note.getNoteId());
+            note.setCreatedLocation(existingNoteWithData.note.getCreatedLocation());
+            note.setDateTime(existingNoteWithData.note.getDateTime());
+        }
+
+
 
         @SuppressLint("StaticFieldLeak")
         class SaveNoteTask extends AsyncTask<Void, Void, Void> {
 
+            NoteWithData noteWithData = new NoteWithData();
             @Override
             protected Void doInBackground(Void... voids) {
                 long noteId = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().insertNote(note);
                 note.setNoteId(noteId);
-                List<Attachments> attachments = new ArrayList<>();
+
+                // Saving newly added attachments
                 for (NoteImageViewModel imageViewModel : selectedImages){
                     final Attachments attachment = new Attachments();
                     attachment.setAssociatedNoteId(noteId);
                     attachment.setAttachmentUniqueFileName(imageViewModel.imageUniqueFileName);
                     attachment.setAttachmentType(IMAGE_TYPE);
-                    attachment.setDateTime(noteDateTime);
+                    attachment.setDateTime(currentDateTime);
                     attachment.setAttachmentId(
                             MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).attachmentsDao().insertAttachment(attachment)
                     );
-                    attachments.add(attachment);
+                    existingImageAttachments.add(attachment);
                 }
-                noteWithData.attachments = attachments;
-                noteWithData.note = note;
-                noteWithData.editedLocations = new ArrayList<>();
+
+                // Saving edited location
+                final EditedLocations editedLocation = new EditedLocations();
+                editedLocation.setAssociatedNoteId(noteId);
+                editedLocation.setDateTime(currentDateTime);
+                editedLocation.setLocation(currentLocationLatLong);
+                MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).editedLocationsDao().insertEditedLocation(editedLocation);
+
+                // Preparing data to send back to recycler view
+//                noteWithData.attachments = existingImageAttachments;
+//                noteWithData.note = note;
+//                noteWithData.editedLocations = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).editedLocationsDao().getAllEditedLocations();
+                noteWithData = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().getNoteWithDataByNoteId(noteId);
                 return null;
             }
 
@@ -236,7 +245,11 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 Intent intent = new Intent();
-                intent.putExtra("addedNote", noteWithData);
+                intent.putExtra("note", noteWithData);
+                if(isExistingNote && existingNotePosition != -1){
+                    intent.putExtra("isNoteUpdated", true);
+                    intent.putExtra("position", existingNotePosition);
+                }
                 setResult(RESULT_OK, intent);
                 finish();
             }

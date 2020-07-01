@@ -27,4 +27,8 @@ public interface NoteDao {
     @Transaction
     @Query("SELECT * FROM notes ORDER BY noteId DESC")
     public List<NoteWithData> getNotesWithData();
+
+    @Transaction
+    @Query("SELECT * FROM notes WHERE noteId = :noteID")
+    public NoteWithData getNoteWithDataByNoteId(long noteID);
 }

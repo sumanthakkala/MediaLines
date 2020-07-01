@@ -85,6 +85,7 @@ public class HomeFragment extends Fragment implements NotesListener {
         Intent intent = new Intent(getActivity().getApplicationContext(), CreateNoteActivity.class);
         intent.putExtra("isViewOrUpdate", true);
         intent.putExtra("noteData", noteWithData);
+        intent.putExtra("position", position);
         startActivityForResult(intent, REQUEST_CODE_UPDATE_NOTE);
     }
 
@@ -119,9 +120,16 @@ public class HomeFragment extends Fragment implements NotesListener {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(data != null){
-            NoteWithData noteWithData = (NoteWithData) data.getSerializableExtra("addedNote");
-            notesList.add(0, noteWithData);
-            notesAdapter.notifyItemInserted(0);
+            NoteWithData noteWithData = (NoteWithData) data.getSerializableExtra("note");
+            if(data.getBooleanExtra("isNoteUpdated", false)){
+                int position = data.getIntExtra("position", -1);
+                notesList.set(position, noteWithData);
+                notesAdapter.notifyDataSetChanged();
+            }
+            else {
+                notesList.add(0, noteWithData);
+                notesAdapter.notifyItemInserted(0);
+            }
             notesRecyclerView.smoothScrollToPosition(0);
         }
 
