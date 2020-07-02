@@ -32,19 +32,6 @@
             app:layout_constraintBottom_toBottomOf="@id/noteImageView"
             android:layout_margin="@dimen/_5sdp" />
 
-        <TextView
-            android:id="@+id/positionIndicatorInViewPager"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="1/22"
-            android:textSize="@dimen/_8sdp"
-            android:fontFamily="@font/nunito_light"
-            android:background="@drawable/background_dialog"
-            android:textColor="@color/colorNoteSubtitleText"
-            android:padding="@dimen/_4sdp"
-            app:layout_constraintEnd_toEndOf="@id/noteImageView"
-            app:layout_constraintTop_toTopOf="@id/noteImageView"
-            android:layout_margin="@dimen/_5sdp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

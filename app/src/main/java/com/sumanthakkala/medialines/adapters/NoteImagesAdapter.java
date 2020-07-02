@@ -52,7 +52,7 @@ public class NoteImagesAdapter extends RecyclerView.Adapter<NoteImagesAdapter.No
 
     @Override
     public void onBindViewHolder(@NonNull NoteImageViewHolder holder, final int position) {
-        holder.setImageViewData(noteImagesList.get(position));
+        holder.setImageViewData(noteImagesList.get(position), position, noteImagesList.size());
         holder.noteImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,17 +77,15 @@ public class NoteImagesAdapter extends RecyclerView.Adapter<NoteImagesAdapter.No
 
         private ImageView noteImageView;
         private ImageView deleteImageIV;
-        private TextView positionIndicator;
         public NoteImageViewHolder(@NonNull View itemView) {
             super(itemView);
 
             noteImageView = itemView.findViewById(R.id.noteImageView);
             deleteImageIV = itemView.findViewById(R.id.removeImageIV);
-            positionIndicator = itemView.findViewById(R.id.positionIndicatorInViewPager);
 
         }
 
-        void setImageViewData(NoteImageViewModel noteImageViewModel){
+        void setImageViewData(NoteImageViewModel noteImageViewModel, int position, int listSize){
             if(noteImageViewModel.imageUniqueFileName != null){
 //                try {
                     File file = new File(context.getExternalFilesDir(null), noteImageViewModel.imageUniqueFileName);

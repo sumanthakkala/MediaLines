@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
+import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
@@ -70,6 +71,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private TextView textDateTime;
     private View noteColorIndicator;
     private ViewPager2 imagesViewPager;
+    private TextView imagePositionIndicator;
     private FusedLocationProviderClient locationClient;
     private TextView webUrlTV;
     private LinearLayout webUrlLayout;
@@ -95,6 +97,21 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private static final int REQUEST_CODE_SELECT_IMAGE = 2;
     private static final String IMAGE_TYPE = "image";
     private static final String AUDIO_TYPE = "audio";
+
+    ViewPager2.OnPageChangeCallback pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
+        @Override
+        public void onPageSelected(int position) {
+            super.onPageSelected(position);
+            imagePositionIndicator.setText("" + (position + 1) + "/" + totalImages.size());
+        }
+
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            imagePositionIndicator.setText("" + (imagesViewPager.getCurrentItem() + 1) + "/" + totalImages.size());
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,6 +140,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         imagesViewPager = findViewById(R.id.imagesViewPager);
         webUrlTV = findViewById(R.id.webUrlText);
         webUrlLayout = findViewById(R.id.webUrlLayout);
+        imagePositionIndicator = findViewById(R.id.positionIndicatorInViewPager);
 
         currentDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
                 .format(new Date());
@@ -154,7 +172,13 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 webUrlLayout.setVisibility(View.GONE);
             }
         });
-
+        imagesViewPager.registerOnPageChangeCallback(pageChangeCallback);
+        if(totalImages.size() > 0){
+            imagePositionIndicator.setText("" + (imagesViewPager.getCurrentItem() + 1) + "/" + totalImages.size());
+        }
+        else {
+            imagePositionIndicator.setVisibility(View.GONE);
+        }
         getCurrentLocation();
         initMoreOptions();
     }
@@ -174,6 +198,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         selectedImages.remove(imageModel);
 
         noteImagesAdapter.notifyItemRemoved(removedImageIndex);
+        noteImagesAdapter.notifyItemRangeChanged(removedImageIndex, totalImages.size());
+
+        imagePositionIndicator.setText("" + (removedImageIndex + 1) + "/" + totalImages.size());
     }
 
     private void setExistingNoteData(){
@@ -521,6 +548,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                         totalImages.add(noteImageViewModel);
                         selectedImages.add(noteImageViewModel);
                         noteImagesAdapter.notifyItemChanged(totalImages.size() - 1);
+                        imagePositionIndicator.setVisibility(View.VISIBLE);
+                        imagesViewPager.setCurrentItem(totalImages.size() - 1, true);
+
                     }
                     else {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);

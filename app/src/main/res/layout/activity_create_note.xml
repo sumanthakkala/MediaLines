@@ -102,7 +102,22 @@
                 android:layout_marginBottom="20dp"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
-                app:layout_constraintTop_toBottomOf="@id/viewInfoIndicatior" />
+                app:layout_constraintTop_toBottomOf="@id/viewInfoIndicatior"/>
+            <TextView
+                android:id="@+id/positionIndicatorInViewPager"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1/1"
+                android:textSize="@dimen/_8sdp"
+                android:fontFamily="@font/nunito_light"
+                android:background="@drawable/background_dialog"
+                android:textColor="@color/colorNoteSubtitleText"
+                android:padding="@dimen/_4sdp"
+                app:layout_constraintEnd_toEndOf="@id/imagesViewPager"
+                app:layout_constraintTop_toTopOf="@id/imagesViewPager"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginEnd="@dimen/_24sdp"
+                android:layout_marginRight="@dimen/_24sdp" />
 
             <LinearLayout
                 android:id="@+id/webUrlLayout"
