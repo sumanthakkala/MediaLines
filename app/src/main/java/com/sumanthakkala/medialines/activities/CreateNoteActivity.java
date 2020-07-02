@@ -12,6 +12,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -37,6 +39,7 @@ import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.EditedLocations;
 import com.sumanthakkala.medialines.entities.Note;
 import com.sumanthakkala.medialines.entities.NoteWithData;
+import com.sumanthakkala.medialines.listeners.NoteImagesListener;
 import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -46,6 +49,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,7 +61,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class CreateNoteActivity extends AppCompatActivity implements  OnRequestPermissionsResultCallback {
+public class CreateNoteActivity extends AppCompatActivity implements  OnRequestPermissionsResultCallback, NoteImagesListener {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 2;
@@ -69,6 +74,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private TextView webUrlTV;
     private LinearLayout webUrlLayout;
     private AlertDialog addUrlDialog;
+    private AlertDialog showImageDialog;
     private String currentLocationLatLong;
     private String currentDateTime;
     private String selectedNoteColor;
@@ -127,7 +133,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         selectedNoteColor = "#333333";
         selectedImages = new ArrayList<>();
         totalImages = new ArrayList<>();
-        noteImagesAdapter = new NoteImagesAdapter(totalImages);
+        noteImagesAdapter = new NoteImagesAdapter(totalImages, this);
         imagesViewPager.setAdapter(noteImagesAdapter);
 
         setNoteIndicatorColor();
@@ -140,6 +146,11 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         }
         getCurrentLocation();
         initMoreOptions();
+    }
+
+    @Override
+    public void onImageCLicked(String uniqueImageName, int position) {
+        showClickedImage(uniqueImageName, position);
     }
 
     private void setExistingNoteData(){
@@ -562,5 +573,55 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             });
         }
         addUrlDialog.show();
+    }
+
+    private void showClickedImage(String uniqueImageName, int position){
+        if(showImageDialog == null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(CreateNoteActivity.this);
+            View view = LayoutInflater.from(this).inflate(
+                    R.layout.image_view_dialog_layout,
+                    (ViewGroup) findViewById(R.id.imageViewDialogLayout)
+            );
+            builder.setView(view);
+            showImageDialog = builder.create();
+
+            if(showImageDialog.getWindow() != null){
+                showImageDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }
+
+            final ImageView attachmentImageViewInDialog = view.findViewById(R.id.selectedImageViewInModal);
+            final TextView imagePositionTV = view.findViewById(R.id.imagePositionTV);
+
+            view.findViewById(R.id.closeImageViewModalTV).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showImageDialog.dismiss();
+                    showImageDialog = null;
+                }
+            });
+
+            if(uniqueImageName != null){
+                try {
+                    File file = new File(getExternalFilesDir(null), uniqueImageName);
+                    FileInputStream fis = new FileInputStream(file);
+                    Bitmap bitmap = BitmapFactory.decodeStream(fis);
+                    fis.close();
+                    attachmentImageViewInDialog.setImageBitmap(bitmap);
+                    attachmentImageViewInDialog.setVisibility(View.VISIBLE);
+
+                    if(bitmap.getHeight() > 200){
+                        attachmentImageViewInDialog.getLayoutParams().height = 1080;
+                    }
+
+                } catch (FileNotFoundException e) {
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                imagePositionTV.setText("" + (position + 1) + "/" + totalImages.size());
+            }
+        }
+        showImageDialog.show();
     }
 }

@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.sumanthakkala.medialines.R;
+import com.sumanthakkala.medialines.listeners.NoteImagesListener;
+import com.sumanthakkala.medialines.listeners.NotesListener;
 import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
 
 import androidx.annotation.NonNull;
@@ -24,10 +26,12 @@ import java.util.List;
 public class NoteImagesAdapter extends RecyclerView.Adapter<NoteImagesAdapter.NoteImageViewHolder>{
 
     private List<NoteImageViewModel> noteImagesList;
+    private NoteImagesListener imagesListener;
     private static Context context = null;
 
-    public NoteImagesAdapter(List<NoteImageViewModel> noteImagesList) {
+    public NoteImagesAdapter(List<NoteImageViewModel> noteImagesList, NoteImagesListener noteImagesListener) {
         this.noteImagesList = noteImagesList;
+        this.imagesListener = noteImagesListener;
     }
 
     @NonNull
@@ -44,8 +48,14 @@ public class NoteImagesAdapter extends RecyclerView.Adapter<NoteImagesAdapter.No
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NoteImageViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull NoteImageViewHolder holder, final int position) {
         holder.setImageViewData(noteImagesList.get(position));
+        holder.noteImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                imagesListener.onImageCLicked(noteImagesList.get(position).imageUniqueFileName, position);
+            }
+        });
     }
 
     @Override
