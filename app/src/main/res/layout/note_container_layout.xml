@@ -10,14 +10,36 @@
     android:background="@drawable/background_note"
     android:layout_marginLeft="@dimen/_12sdp">
 
-    <com.makeramen.roundedimageview.RoundedImageView
-        android:id="@+id/noteImageRoundedView"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/roundedImageViewContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
-        android:visibility="gone"
-        app:riv_corner_radius_top_left="@dimen/_10sdp"
-        app:riv_corner_radius_top_right="@dimen/_10sdp" />
+        android:visibility="gone">
+        <com.makeramen.roundedimageview.RoundedImageView
+            android:id="@+id/noteImageRoundedView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+
+            app:riv_corner_radius_top_left="@dimen/_10sdp"
+            app:riv_corner_radius_top_right="@dimen/_10sdp"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/attachmentsCountTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/_5sdp"
+            android:layout_marginBottom="@dimen/_5sdp"
+            android:textSize="@dimen/_8ssp"
+            android:textColor="@color/colorWhite"
+            android:fontFamily="@font/nunito_semibold"
+            android:background="@drawable/background_note"
+            android:padding="@dimen/_3sdp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/titleTextView"

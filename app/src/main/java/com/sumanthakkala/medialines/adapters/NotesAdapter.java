@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sumanthakkala.medialines.R;
@@ -54,7 +55,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, final int position) {
-        holder.roundedImageView.setVisibility(View.GONE);
+        holder.roundedImageViewContainer.setVisibility(View.GONE);
+        holder.attachmentsCount.setVisibility(View.VISIBLE);
         holder.setNote(noteWithData.get(position));
         holder.noteLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,6 +87,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         TextView titleTV, noteDescriptionTV, dateTimeTV;
         LinearLayout noteLayout;
         RoundedImageView roundedImageView;
+        ConstraintLayout roundedImageViewContainer;
+        TextView attachmentsCount;
 
         public NoteViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -94,6 +98,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             dateTimeTV = itemView.findViewById(R.id.dateTimeTextView);
             noteLayout = itemView.findViewById(R.id.noteLayout);
             roundedImageView = itemView.findViewById(R.id.noteImageRoundedView);
+            roundedImageViewContainer = itemView.findViewById(R.id.roundedImageViewContainer);
+            attachmentsCount = itemView.findViewById(R.id.attachmentsCountTV);
 
         }
 
@@ -131,12 +137,19 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                         Bitmap bitmap = BitmapFactory.decodeStream(fis);
                         fis.close();
                         roundedImageView.setImageBitmap(bitmap);
-                        roundedImageView.setVisibility(View.VISIBLE);
+                        roundedImageViewContainer.setVisibility(View.VISIBLE);
                     } catch (FileNotFoundException e) {
                         Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+
+                if(noteWithData.attachments.size() > 1){
+                    attachmentsCount.setText("+" + (noteWithData.attachments.size() - 1));
+                }
+                else {
+                    attachmentsCount.setVisibility(View.GONE);
                 }
             }
         }
