@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.NoteWithData;
@@ -131,18 +132,19 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                 }
 
                 if(fileName != ""){
-                    try {
+//                    try {
                         File file = new File(context.getExternalFilesDir(null), fileName);
-                        FileInputStream fis = new FileInputStream(file);
-                        Bitmap bitmap = BitmapFactory.decodeStream(fis);
-                        fis.close();
-                        roundedImageView.setImageBitmap(bitmap);
+                        Picasso.get().load(file).into(roundedImageView);
+//                        FileInputStream fis = new FileInputStream(file);
+//                        Bitmap bitmap = BitmapFactory.decodeStream(fis);
+//                        fis.close();
+//                        roundedImageView.setImageBitmap(bitmap);
                         roundedImageViewContainer.setVisibility(View.VISIBLE);
-                    } catch (FileNotFoundException e) {
-                        Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+//                    } catch (FileNotFoundException e) {
+//                        Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
                 }
 
                 if(noteWithData.attachments.size() > 1){

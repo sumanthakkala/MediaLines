@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.listeners.NoteImagesListener;
 import com.sumanthakkala.medialines.listeners.NotesListener;
@@ -74,18 +75,19 @@ public class NoteImagesAdapter extends RecyclerView.Adapter<NoteImagesAdapter.No
 
         void setImageViewData(NoteImageViewModel noteImageViewModel){
             if(noteImageViewModel.imageUniqueFileName != null){
-                try {
+//                try {
                     File file = new File(context.getExternalFilesDir(null), noteImageViewModel.imageUniqueFileName);
-                    FileInputStream fis = new FileInputStream(file);
-                    Bitmap bitmap = BitmapFactory.decodeStream(fis);
-                    fis.close();
-                    noteImageView.setImageBitmap(bitmap);
+                Picasso.get().load(file).into(noteImageView);
+//                    FileInputStream fis = new FileInputStream(file);
+//                    Bitmap bitmap = BitmapFactory.decodeStream(fis);
+//                    fis.close();
+//                    noteImageView.setImageBitmap(bitmap);
                     noteImageView.setVisibility(View.VISIBLE);
-                } catch (FileNotFoundException e) {
-                    Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                } catch (FileNotFoundException e) {
+//                    Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
         }
     }
