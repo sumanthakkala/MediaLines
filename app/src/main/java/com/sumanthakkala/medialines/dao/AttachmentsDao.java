@@ -15,6 +15,6 @@ public interface AttachmentsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertAttachment(Attachments attachment);
 
-    @Delete
-    void deleteEditedLocation(Attachments attachment);
+    @Query("DELETE FROM attachments WHERE attachment_unique_file_name = :fileName")
+    void deleteAttachmentByUniqueFileName(String fileName);
 }

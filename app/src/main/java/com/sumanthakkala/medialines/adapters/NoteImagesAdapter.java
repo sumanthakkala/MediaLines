@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextClock;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -57,6 +59,13 @@ public class NoteImagesAdapter extends RecyclerView.Adapter<NoteImagesAdapter.No
                 imagesListener.onImageCLicked(noteImagesList.get(position).imageUniqueFileName, position);
             }
         });
+
+        holder.deleteImageIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                imagesListener.onDeleteImageCLicked(noteImagesList.get(position));
+            }
+        });
     }
 
     @Override
@@ -67,10 +76,15 @@ public class NoteImagesAdapter extends RecyclerView.Adapter<NoteImagesAdapter.No
     static class NoteImageViewHolder extends RecyclerView.ViewHolder{
 
         private ImageView noteImageView;
+        private ImageView deleteImageIV;
+        private TextView positionIndicator;
         public NoteImageViewHolder(@NonNull View itemView) {
             super(itemView);
 
             noteImageView = itemView.findViewById(R.id.noteImageView);
+            deleteImageIV = itemView.findViewById(R.id.removeImageIV);
+            positionIndicator = itemView.findViewById(R.id.positionIndicatorInViewPager);
+
         }
 
         void setImageViewData(NoteImageViewModel noteImageViewModel){

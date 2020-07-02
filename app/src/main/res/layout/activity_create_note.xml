@@ -114,7 +114,8 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/imagesViewPager">
+                app:layout_constraintTop_toBottomOf="@id/imagesViewPager"
+                tools:ignore="UseCompoundDrawables">
 
                 <TextView
                     android:id="@+id/webUrlText"
@@ -125,6 +126,14 @@
                     android:fontFamily="@font/nunito_regular"
                     android:includeFontPadding="false"
                     android:textSize="@dimen/_13ssp" />
+
+                <ImageView
+                    android:id="@+id/removeWebUrlImage"
+                    android:layout_width="@dimen/_15sdp"
+                    android:layout_height="@dimen/_15sdp"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/ic_delete"
+                    android:tint="@color/colorDelete" />
 
             </LinearLayout>
 

@@ -83,6 +83,8 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     private List<NoteImageViewModel> totalImages;
     private List<NoteImageViewModel> selectedImages;
+    private List<NoteImageViewModel> imagesToDeleteFromDB = new ArrayList<>();;
+    private List<NoteImageViewModel> existingimagesInImageViewModel = new ArrayList<>();;
     private List<Attachments> existingImageAttachments = new ArrayList<>();
     private NoteImagesAdapter noteImagesAdapter;
 
@@ -144,6 +146,15 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             existingNotePosition = (int) getIntent().getIntExtra("position", -1);
             setExistingNoteData();
         }
+
+        findViewById(R.id.removeWebUrlImage).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                webUrlTV.setText(null);
+                webUrlLayout.setVisibility(View.GONE);
+            }
+        });
+
         getCurrentLocation();
         initMoreOptions();
     }
@@ -151,6 +162,18 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     @Override
     public void onImageCLicked(String uniqueImageName, int position) {
         showClickedImage(uniqueImageName, position);
+    }
+
+    @Override
+    public void onDeleteImageCLicked(NoteImageViewModel imageModel) {
+        int removedImageIndex = totalImages.indexOf(imageModel);
+        if(existingimagesInImageViewModel.remove(imageModel)){
+            imagesToDeleteFromDB.add(imageModel);
+        }
+        totalImages.remove(imageModel);
+        selectedImages.remove(imageModel);
+
+        noteImagesAdapter.notifyItemRemoved(removedImageIndex);
     }
 
     private void setExistingNoteData(){
@@ -172,6 +195,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 image.index = imageIndex;
                 imageIndex += 1;
                 totalImages.add(image);
+                existingimagesInImageViewModel.add(image);
                 noteImagesAdapter.notifyDataSetChanged();
             }
             else {
@@ -243,6 +267,19 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 editedLocation.setDateTime(currentDateTime);
                 editedLocation.setLocation(currentLocationLatLong);
                 MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).editedLocationsDao().insertEditedLocation(editedLocation);
+
+                //Deleting existing images from DB & App storage if any
+                if(imagesToDeleteFromDB.size() > 0){
+                    for(NoteImageViewModel deleteImageModel: imagesToDeleteFromDB){
+                        //Delete from DB
+                        MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).attachmentsDao().deleteAttachmentByUniqueFileName(deleteImageModel.imageUniqueFileName);
+
+                        //Delete from app storage
+                        File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null), deleteImageModel.imageUniqueFileName);
+                        attachmentFile.delete();
+                    }
+
+                }
 
                 // Preparing data to send back to recycler view
 //                noteWithData.attachments = existingImageAttachments;
