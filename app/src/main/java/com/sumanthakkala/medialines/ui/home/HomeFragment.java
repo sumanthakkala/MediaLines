@@ -104,11 +104,6 @@ public class HomeFragment extends Fragment implements NotesListener {
                     notesList.addAll(notes);
                     notesAdapter.notifyDataSetChanged();
                 }
-                else {
-                    notesList.add(0, notes.get(0));
-                    notesAdapter.notifyItemInserted(0);
-                }
-                //notesRecyclerView.smoothScrollToPosition(0);
             }
         }
 
@@ -123,14 +118,16 @@ public class HomeFragment extends Fragment implements NotesListener {
             NoteWithData noteWithData = (NoteWithData) data.getSerializableExtra("note");
             if(data.getBooleanExtra("isNoteUpdated", false)){
                 int position = data.getIntExtra("position", -1);
-                notesList.set(position, noteWithData);
-                notesAdapter.notifyDataSetChanged();
+                notesList.remove(noteClickedPosition);
+                notesList.add(noteClickedPosition, noteWithData);
+                notesAdapter.notifyItemChanged(noteClickedPosition);
             }
             else {
+
                 notesList.add(0, noteWithData);
                 notesAdapter.notifyItemInserted(0);
+                notesRecyclerView.smoothScrollToPosition(0);
             }
-            notesRecyclerView.smoothScrollToPosition(0);
         }
 
     }

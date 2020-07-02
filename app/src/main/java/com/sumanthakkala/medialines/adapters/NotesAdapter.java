@@ -36,6 +36,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     public NotesAdapter(List<NoteWithData> notes, NotesListener listener) {
         this.noteWithData = notes;
         this.notesListener = listener;
+        setHasStableIds(true);
     }
 
     @NonNull
@@ -53,6 +54,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, final int position) {
+        holder.roundedImageView.setVisibility(View.GONE);
         holder.setNote(noteWithData.get(position));
         holder.noteLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,6 +74,12 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         return position;
     }
 
+    @Override
+    public long getItemId(int position) {
+        //Return the stable ID for the item at position
+        return noteWithData.get(position).note.getNoteId();
+    }
+
     static class NoteViewHolder extends RecyclerView.ViewHolder{
 
         TextView titleTV, noteDescriptionTV, dateTimeTV;
@@ -86,6 +94,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             dateTimeTV = itemView.findViewById(R.id.dateTimeTextView);
             noteLayout = itemView.findViewById(R.id.noteLayout);
             roundedImageView = itemView.findViewById(R.id.noteImageRoundedView);
+
         }
 
         void setNote(NoteWithData noteWithData){
@@ -115,7 +124,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                     }
                 }
 
-                if(fileName != null){
+                if(fileName != ""){
                     try {
                         File file = new File(context.getExternalFilesDir(null), fileName);
                         FileInputStream fis = new FileInputStream(file);
