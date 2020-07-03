@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -13,6 +15,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -31,13 +35,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment implements NotesListener {
+public class HomeFragment extends Fragment implements NotesListener, SearchView.OnQueryTextListener {
     public static final int REQUEST_CODE_ADD_NOTE = 1;
     public static final int REQUEST_CODE_UPDATE_NOTE = 2;
 
 
     private RecyclerView notesRecyclerView;
     private List<NoteWithData> notesList;
+    private List<NoteWithData> intactNotesList = new ArrayList<>();
     private List<NoteWithData> selectedNotes = new ArrayList<>();
     private NotesAdapter notesAdapter;
     private FloatingActionButton fab;
@@ -46,12 +51,15 @@ public class HomeFragment extends Fragment implements NotesListener {
     private TextView selectionCountTV;
     private ImageView deleteSelectedNotesIV;
     private ImageView cancelMultiSelectIV;
+    private SearchView searchView;
+    private MenuItem mSearchMenuItem;
 
     private int noteClickedPosition = -1;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
+        setHasOptionsMenu(true);
 
         fab = root.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -91,6 +99,14 @@ public class HomeFragment extends Fragment implements NotesListener {
         notesRecyclerView.setAdapter(notesAdapter);
         getNotes();
         return root;
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        mSearchMenuItem = menu.findItem(R.id.search_view);
+        searchView = (SearchView) mSearchMenuItem.getActionView();
+        searchView.setOnQueryTextListener(this);
     }
 
     @Override
@@ -153,9 +169,12 @@ public class HomeFragment extends Fragment implements NotesListener {
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 notesList.removeAll(selectedNotes);
+                intactNotesList.removeAll(selectedNotes);
+                notesAdapter.setIntactDataSource(intactNotesList);
                 notesAdapter.notifyDataSetChanged();
                 notesAdapter.notifyItemRangeChanged(0, notesList.size());
                 cancelMultiSelectIV.performClick();
+                collapseSearchView();
             }
         }
         new DeleteNotesTask().execute();
@@ -181,6 +200,9 @@ public class HomeFragment extends Fragment implements NotesListener {
                 super.onPostExecute(notes);
                 if(notesList.size() == 0){
                     notesList.addAll(notes);
+                    intactNotesList.clear();
+                    intactNotesList.addAll(notes);
+                    notesAdapter.setIntactDataSource(intactNotesList);
                     notesAdapter.notifyDataSetChanged();
                 }
             }
@@ -217,18 +239,40 @@ public class HomeFragment extends Fragment implements NotesListener {
             NoteWithData noteWithData = (NoteWithData) data.getSerializableExtra("note");
             if(data.getBooleanExtra("isNoteUpdated", false)){
                 int position = data.getIntExtra("position", -1);
-                notesList.remove(noteClickedPosition);
+                NoteWithData removedNote = notesList.remove(noteClickedPosition);
                 notesList.add(noteClickedPosition, noteWithData);
+                int indexInIntactSource = intactNotesList.indexOf(removedNote);
+                intactNotesList.remove(removedNote);
+                intactNotesList.add(indexInIntactSource, noteWithData);
+                notesAdapter.setIntactDataSource(intactNotesList);
                 notesAdapter.notifyItemChanged(noteClickedPosition);
             }
             else {
 
                 notesList.add(0, noteWithData);
+                intactNotesList.add(0, noteWithData);
+                notesAdapter.setIntactDataSource(intactNotesList);
                 notesAdapter.notifyItemInserted(0);
                 notesRecyclerView.smoothScrollToPosition(0);
             }
         }
+        collapseSearchView();
 
     }
 
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        notesAdapter.getFilter().filter(newText);
+        return false;
+    }
+
+    public void collapseSearchView(){
+        searchView.setIconified(true);
+        MenuItemCompat.collapseActionView(mSearchMenuItem);
+    }
 }

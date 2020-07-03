@@ -1,17 +1,15 @@
 package com.sumanthakkala.medialines.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -25,15 +23,14 @@ import com.makeramen.roundedimageview.RoundedImageView;
 import com.sumanthakkala.medialines.listeners.NotesListener;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
+public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> implements Filterable {
 
-    private List<NoteWithData> noteWithData;
+    private List<NoteWithData> notesWithData;
+    private List<NoteWithData> intactNotesWithData;
     private NotesListener notesListener;
     private static Context context;
 
@@ -42,7 +39,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     private List<LinearLayout> selectedNotesLayouts = new ArrayList<>();
 
     public NotesAdapter(List<NoteWithData> notes, NotesListener listener) {
-        this.noteWithData = notes;
+        this.notesWithData = notes;
         this.notesListener = listener;
         setHasStableIds(true);
     }
@@ -64,15 +61,15 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     public void onBindViewHolder(@NonNull final NoteViewHolder holder, final int position) {
         holder.roundedImageViewContainer.setVisibility(View.GONE);
         holder.attachmentsCount.setVisibility(View.VISIBLE);
-        holder.setNote(noteWithData.get(position));
+        holder.setNote(notesWithData.get(position));
         holder.noteLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(multiSelect){
-                    selectNote(holder.noteLayout, noteWithData.get(position));
+                    selectNote(holder.noteLayout, notesWithData.get(position));
                 }
                 else {
-                    notesListener.onNoteCLicked(noteWithData.get(position), position);
+                    notesListener.onNoteCLicked(notesWithData.get(position), position);
                 }
             }
         });
@@ -82,7 +79,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                 notesListener.onMultiSelectBegin();
                 if(!multiSelect){
                     multiSelect = true;
-                    selectNote(holder.noteLayout, noteWithData.get(position));
+                    selectNote(holder.noteLayout, notesWithData.get(position));
                 }
                 return true;
             }
@@ -91,7 +88,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
     @Override
     public int getItemCount() {
-        return noteWithData.size();
+        return notesWithData.size();
     }
 
     @Override
@@ -102,8 +99,48 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     @Override
     public long getItemId(int position) {
         //Return the stable ID for the item at position
-        return noteWithData.get(position).note.getNoteId();
+        return notesWithData.get(position).note.getNoteId();
     }
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+
+    Filter filter = new Filter() {
+
+        //runs on background thread
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            List<NoteWithData> filteredList = new ArrayList<>();
+            if(charSequence.toString().isEmpty()){
+                filteredList.addAll(intactNotesWithData);
+            }
+            else {
+                for(NoteWithData noteWithData: intactNotesWithData){
+                    if((noteWithData.note.getTitle() != null && noteWithData.note.getTitle().contains(charSequence.toString().toLowerCase()))
+                            || (noteWithData.note.getNoteText() != null && noteWithData.note.getNoteText().contains(charSequence.toString().toLowerCase()))
+                            || (noteWithData.note.getWebLink() != null && noteWithData.note.getWebLink().contains(charSequence.toString().toLowerCase()))){
+                        filteredList.add(noteWithData);
+                    }
+                }
+            }
+
+            FilterResults filterResults = new FilterResults();
+            filterResults.values = filteredList;
+            return filterResults;
+        }
+
+        //runs on UI thread
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+
+            notesWithData.clear();
+            notesWithData.addAll((Collection<? extends NoteWithData>) filterResults.values);
+            notifyDataSetChanged();
+
+        }
+    };
 
     private void selectNote(LinearLayout noteLayout, NoteWithData noteData) {
         if(selectedNotes.contains(noteData)){
@@ -132,6 +169,10 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         selectedNotes.clear();
         selectedNotesLayouts.clear();
         notesListener.onMultiSelectEnd();
+    }
+
+    public void setIntactDataSource(List<NoteWithData> data){
+        intactNotesWithData = data;
     }
 
     static class NoteViewHolder extends RecyclerView.ViewHolder{

@@ -6,6 +6,7 @@ import android.view.Menu;
 
 import com.sumanthakkala.medialines.R;
 import com.google.android.material.navigation.NavigationView;
+import com.sumanthakkala.medialines.ui.home.HomeFragment;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.MenuItemCompat;
@@ -45,19 +46,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        MenuItem searchViewMenuItem = menu.findItem(R.id.search_view);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchViewMenuItem);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
         return true;
     }
 
