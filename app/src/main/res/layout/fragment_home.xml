@@ -43,16 +43,18 @@
             android:orientation="horizontal">
             <ImageView
                 android:id="@+id/imageAddNote"
-                android:layout_width="@dimen/_15sdp"
-                android:layout_height="@dimen/_15sdp"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:padding="@dimen/_2sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_add_outline"
                 android:tint="@color/colorIcons"/>
 
             <ImageView
                 android:id="@+id/imageAddImage"
-                android:layout_width="@dimen/_15sdp"
-                android:layout_height="@dimen/_15sdp"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:padding="@dimen/_2sdp"
                 android:layout_marginStart="@dimen/_15sdp"
                 android:layout_marginLeft="@dimen/_15sdp"
                 android:contentDescription="@string/app_name"
@@ -60,14 +62,25 @@
                 android:tint="@color/colorIcons" />
 
             <ImageView
-                android:id="@+id/imageSortNotes"
-                android:layout_width="@dimen/_15sdp"
-                android:layout_height="@dimen/_15sdp"
+                android:id="@+id/imageAddWebLink"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:padding="@dimen/_2sdp"
                 android:layout_marginStart="@dimen/_15sdp"
                 android:layout_marginLeft="@dimen/_15sdp"
                 android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_sort_by_alpha"
+                android:src="@drawable/ic_web_link"
                 android:tint="@color/colorIcons" />
+
+<!--            <ImageView-->
+<!--                android:id="@+id/imageSortNotes"-->
+<!--                android:layout_width="@dimen/_15sdp"-->
+<!--                android:layout_height="@dimen/_15sdp"-->
+<!--                android:layout_marginStart="@dimen/_15sdp"-->
+<!--                android:layout_marginLeft="@dimen/_15sdp"-->
+<!--                android:contentDescription="@string/app_name"-->
+<!--                android:src="@drawable/ic_sort_by_alpha"-->
+<!--                android:tint="@color/colorIcons" />-->
 
         </LinearLayout>
 
@@ -80,8 +93,9 @@
 
             <ImageView
                 android:id="@+id/closeMultiSelect"
-                android:layout_width="@dimen/_15sdp"
-                android:layout_height="@dimen/_15sdp"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:padding="@dimen/_2sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_close"
                 android:tint="@color/colorIcons" />
@@ -89,7 +103,7 @@
             <TextView
                 android:id="@+id/multiSelectCount"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/_15sdp"
+                android:layout_height="@dimen/_20sdp"
                 android:text="0"
                 android:fontFamily="@font/nunito_regular"
                 android:textSize="@dimen/_13sdp"
@@ -107,8 +121,9 @@
 
             <ImageView
                 android:id="@+id/deleteSelectedNotes"
-                android:layout_width="@dimen/_15sdp"
-                android:layout_height="@dimen/_15sdp"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:padding="@dimen/_2sdp"
                 android:layout_marginStart="@dimen/_15sdp"
                 android:layout_marginLeft="@dimen/_15sdp"
                 android:contentDescription="@string/app_name"

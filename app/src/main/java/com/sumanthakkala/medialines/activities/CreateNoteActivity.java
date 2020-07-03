@@ -165,6 +165,24 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             setExistingNoteData();
         }
 
+        if(getIntent().getBooleanExtra("isFromQuickActions", false)){
+            String type = getIntent().getStringExtra("quickActionsType");
+            if(type != null && type.equals("image")){
+                NoteImageViewModel imageViewModel = new NoteImageViewModel();
+                imageViewModel.index = 0;
+                imageViewModel.imageUniqueFileName = getIntent().getStringExtra("imageUniqueFileName");
+                selectedImages.add(imageViewModel);
+                totalImages.add(imageViewModel);
+                noteImagesAdapter.notifyDataSetChanged();
+            }
+
+            if(type != null && type.equals("addUrl")){
+                webUrlTV.setText(getIntent().getStringExtra("url"));
+                webUrlLayout.setVisibility(View.VISIBLE);
+            }
+
+        }
+
         findViewById(R.id.removeWebUrlImage).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -363,6 +381,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
