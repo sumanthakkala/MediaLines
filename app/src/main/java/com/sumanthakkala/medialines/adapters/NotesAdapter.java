@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
@@ -34,6 +36,10 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     private List<NoteWithData> noteWithData;
     private NotesListener notesListener;
     private static Context context;
+
+    private boolean multiSelect = false;
+    private List<NoteWithData> selectedNotes = new ArrayList<>();
+    private List<LinearLayout> selectedNotesLayouts = new ArrayList<>();
 
     public NotesAdapter(List<NoteWithData> notes, NotesListener listener) {
         this.noteWithData = notes;
@@ -55,14 +61,30 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NoteViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final NoteViewHolder holder, final int position) {
         holder.roundedImageViewContainer.setVisibility(View.GONE);
         holder.attachmentsCount.setVisibility(View.VISIBLE);
         holder.setNote(noteWithData.get(position));
         holder.noteLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                notesListener.onNoteCLicked(noteWithData.get(position), position);
+                if(multiSelect){
+                    selectNote(holder.noteLayout, noteWithData.get(position));
+                }
+                else {
+                    notesListener.onNoteCLicked(noteWithData.get(position), position);
+                }
+            }
+        });
+        holder.noteLayout.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                notesListener.onMultiSelectBegin();
+                if(!multiSelect){
+                    multiSelect = true;
+                    selectNote(holder.noteLayout, noteWithData.get(position));
+                }
+                return true;
             }
         });
     }
@@ -81,6 +103,35 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     public long getItemId(int position) {
         //Return the stable ID for the item at position
         return noteWithData.get(position).note.getNoteId();
+    }
+
+    private void selectNote(LinearLayout noteLayout, NoteWithData noteData) {
+        if(selectedNotes.contains(noteData)){
+            selectedNotes.remove(noteData);
+            selectedNotesLayouts.remove(noteLayout);
+            noteLayout.setAlpha(1.0f);
+            notesListener.onNoteClickInMultiSelectMode(noteData, 0);
+            if(selectedNotes.size() == 0){
+                multiSelect = false;
+                notesListener.onMultiSelectEnd();
+            }
+        }
+        else {
+            selectedNotes.add(noteData);
+            selectedNotesLayouts.add(noteLayout);
+            noteLayout.setAlpha(0.2f);
+            notesListener.onNoteClickInMultiSelectMode(noteData, 1);
+        }
+    }
+
+    public void cancelMultiSelect(){
+        multiSelect = false;
+        for(LinearLayout layout: selectedNotesLayouts){
+            layout.setAlpha(1.0f);
+        }
+        selectedNotes.clear();
+        selectedNotesLayouts.clear();
+        notesListener.onMultiSelectEnd();
     }
 
     static class NoteViewHolder extends RecyclerView.ViewHolder{

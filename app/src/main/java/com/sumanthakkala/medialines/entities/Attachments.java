@@ -1,10 +1,13 @@
 package com.sumanthakkala.medialines.entities;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 import java.io.Serializable;
 
-@Entity(tableName = "attachments")
+import static androidx.room.ForeignKey.CASCADE;
+
+@Entity(tableName = "attachments", foreignKeys = @ForeignKey(entity = Note.class, parentColumns = "noteId", childColumns = "associated_note_id", onDelete = CASCADE))
 public class Attachments implements Serializable {
 
     @PrimaryKey(autoGenerate = true)

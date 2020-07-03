@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,11 +21,13 @@ import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.activities.CreateNoteActivity;
 import com.sumanthakkala.medialines.adapters.NotesAdapter;
 import com.sumanthakkala.medialines.database.MediaLinesDatabase;
+import com.sumanthakkala.medialines.entities.Attachments;
+import com.sumanthakkala.medialines.entities.EditedLocations;
 import com.sumanthakkala.medialines.entities.NoteWithData;
-import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sumanthakkala.medialines.listeners.NotesListener;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +37,15 @@ public class HomeFragment extends Fragment implements NotesListener {
 
 
     private RecyclerView notesRecyclerView;
-    private BottomAppBar quickActions;
     private List<NoteWithData> notesList;
+    private List<NoteWithData> selectedNotes = new ArrayList<>();
     private NotesAdapter notesAdapter;
+    private FloatingActionButton fab;
+    private LinearLayout quickActionsLayout;
+    private LinearLayout multiSelectActionsLayout;
+    private TextView selectionCountTV;
+    private ImageView deleteSelectedNotesIV;
+    private ImageView cancelMultiSelectIV;
 
     private int noteClickedPosition = -1;
 
@@ -42,7 +53,7 @@ public class HomeFragment extends Fragment implements NotesListener {
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
-        FloatingActionButton fab = root.findViewById(R.id.fab);
+        fab = root.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -51,26 +62,29 @@ public class HomeFragment extends Fragment implements NotesListener {
             }
         });
 
-        quickActions = root.findViewById(R.id.layoutQuickActions);
-
         notesRecyclerView = root.findViewById(R.id.notesRecyclerView);
         notesRecyclerView.setLayoutManager(
                 new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         );
 
-//        notesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//
-//                if (!recyclerView.canScrollVertically(1) && newState==RecyclerView.SCROLL_STATE_IDLE) {
-//                    quickActions.animate().alpha(0.0f).setDuration(500);;
-//                }
-//                else {
-//                    quickActions.animate().alpha(0.95f).setDuration(100);;
-//                }
-//            }
-//        });
+        quickActionsLayout = root.findViewById(R.id.quickActionsLayout);
+        multiSelectActionsLayout = root.findViewById(R.id.multiSelectActionsLayout);
+        selectionCountTV = root.findViewById(R.id.multiSelectCount);
+        cancelMultiSelectIV = root.findViewById(R.id.closeMultiSelect);
+        cancelMultiSelectIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                selectedNotes.clear();
+                notesAdapter.cancelMultiSelect();
+            }
+        });
+        deleteSelectedNotesIV = root.findViewById(R.id.deleteSelectedNotes);
+        deleteSelectedNotesIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteSelectedNotes();
+            }
+        });
 
         notesList = new ArrayList<>();
         notesAdapter = new NotesAdapter(notesList, this);
@@ -87,6 +101,71 @@ public class HomeFragment extends Fragment implements NotesListener {
         intent.putExtra("noteData", noteWithData);
         intent.putExtra("position", position);
         startActivityForResult(intent, REQUEST_CODE_UPDATE_NOTE);
+    }
+
+    @Override
+    public void onMultiSelectBegin() {
+        quickActionsLayout.setVisibility(View.GONE);
+        fab.hide();
+        multiSelectActionsLayout.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onMultiSelectEnd() {
+        quickActionsLayout.setVisibility(View.VISIBLE);
+        fab.show();
+        multiSelectActionsLayout.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onNoteClickInMultiSelectMode(NoteWithData noteWithData, int action) {
+        if(action == 1){
+            //note selected
+            selectedNotes.add(noteWithData);
+            selectionCountTV.setText("" + selectedNotes.size());
+        }
+        else {
+            //note removed from selection
+            selectedNotes.remove(noteWithData);
+            selectionCountTV.setText("" + selectedNotes.size());
+        }
+
+    }
+
+    private void deleteSelectedNotes(){
+
+        @SuppressLint("StaticFieldLeak")
+        class DeleteNotesTask extends AsyncTask<Void, Void, Void> {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if(selectedNotes.size() > 0){
+                    List<Long> noteIds = new ArrayList<>();
+                    for (NoteWithData note: selectedNotes){
+                        noteIds.add(note.note.getNoteId());
+                        deleteAttachmentsInAppStorage(note.attachments);
+                    }
+                    MediaLinesDatabase.getMediaLinesDatabase(getContext()).noteDao().deleteNotesWithId(noteIds);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                notesList.removeAll(selectedNotes);
+                notesAdapter.notifyDataSetChanged();
+                notesAdapter.notifyItemRangeChanged(0, notesList.size());
+                cancelMultiSelectIV.performClick();
+            }
+        }
+        new DeleteNotesTask().execute();
+    }
+
+    private void deleteAttachmentsInAppStorage(List<Attachments> attachments){
+        for(Attachments attachment: attachments){
+            File attachmentFile = new File(getContext().getExternalFilesDir(null), attachment.getAttachmentUniqueFileName());
+            attachmentFile.delete();
+        }
     }
 
     private void getNotes(){
@@ -107,7 +186,27 @@ public class HomeFragment extends Fragment implements NotesListener {
             }
         }
 
+        class GetAttachmentsCountTask extends AsyncTask<Void,Void,Void>{
+            @Override
+            protected Void doInBackground(Void... voids) {
+                List<Attachments> count =MediaLinesDatabase.getMediaLinesDatabase(getActivity().getApplicationContext()).attachmentsDao().getAllAttachments();
+                System.out.println("Count" + count.size());
+                return null;
+            }
+        }
+
+        class GetLocCountTask extends AsyncTask<Void,Void,Void>{
+            @Override
+            protected Void doInBackground(Void... voids) {
+                List<EditedLocations> count =MediaLinesDatabase.getMediaLinesDatabase(getActivity().getApplicationContext()).editedLocationsDao().getAllEditedLocations();
+                System.out.println("Loc Count" + count.size());
+                return null;
+            }
+        }
+
         new GetNotesTask().execute();
+        new GetAttachmentsCountTask().execute();
+        new GetLocCountTask().execute();
     }
 
     @Override

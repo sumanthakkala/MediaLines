@@ -272,13 +272,18 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             NoteWithData noteWithData = new NoteWithData();
             @Override
             protected Void doInBackground(Void... voids) {
-                long noteId = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().insertNote(note);
-                note.setNoteId(noteId);
+                if(isExistingNote){
+                    MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().updateNote(note);
+                }
+                else {
+                    long noteId = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().insertNote(note);
+                    note.setNoteId(noteId);
+                }
 
                 // Saving newly added attachments
                 for (NoteImageViewModel imageViewModel : selectedImages){
                     final Attachments attachment = new Attachments();
-                    attachment.setAssociatedNoteId(noteId);
+                    attachment.setAssociatedNoteId(note.getNoteId());
                     attachment.setAttachmentUniqueFileName(imageViewModel.imageUniqueFileName);
                     attachment.setAttachmentType(IMAGE_TYPE);
                     attachment.setDateTime(currentDateTime);
@@ -290,7 +295,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
                 // Saving edited location
                 final EditedLocations editedLocation = new EditedLocations();
-                editedLocation.setAssociatedNoteId(noteId);
+                editedLocation.setAssociatedNoteId(note.getNoteId());
                 editedLocation.setDateTime(currentDateTime);
                 editedLocation.setLocation(currentLocationLatLong);
                 MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).editedLocationsDao().insertEditedLocation(editedLocation);
@@ -312,7 +317,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 //                noteWithData.attachments = existingImageAttachments;
 //                noteWithData.note = note;
 //                noteWithData.editedLocations = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).editedLocationsDao().getAllEditedLocations();
-                noteWithData = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().getNoteWithDataByNoteId(noteId);
+                noteWithData = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().getNoteWithDataByNoteId(note.getNoteId());
                 return null;
             }
 
