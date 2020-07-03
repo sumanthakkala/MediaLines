@@ -560,7 +560,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             }
         });
 
-        moreOptionsLayout.findViewById(R.id.addAudioLayout).setOnClickListener(new View.OnClickListener() {
+        moreOptionsLayout.findViewById(R.id.transcribeAudioLayout).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);

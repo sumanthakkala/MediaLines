@@ -194,7 +194,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/addAudioLayout"
+        android:id="@+id/transcribeAudioLayout"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_35sdp"
         android:layout_margin="@dimen/_10sdp"
@@ -206,7 +206,7 @@
             android:layout_width="@dimen/_22sdp"
             android:layout_height="@dimen/_22sdp"
             android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_mic"
+            android:src="@drawable/ic_transcribe_speach"
             android:tint="@color/colorIcons" />
 
         <TextView
@@ -216,7 +216,7 @@
             android:layout_marginLeft="@dimen/_10sdp"
             android:fontFamily="@font/nunito_semibold"
             android:includeFontPadding="false"
-            android:text="Record Audio"
+            android:text="Transcribe Speech"
             android:textColor="@color/colorIcons"
             android:textSize="@dimen/_12ssp"/>
 
