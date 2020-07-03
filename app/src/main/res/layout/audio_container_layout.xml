@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView
+    android:id="@+id/audioContainerCardView"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="12dp"
+    android:layout_marginLeft="12dp"
+    android:layout_marginRight="12dp"
+    app:cardCornerRadius="5dp"
+    app:cardBackgroundColor="@color/colorDefaultNoteColor"
+    app:cardElevation="5dp">
+    <RelativeLayout android:id="@+id/audioLayout"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/playPauseIV"
+            android:layout_width="@dimen/_12sdp"
+            android:layout_height="@dimen/_12sdp"
+            android:src="@drawable/ic_play"
+            android:tint="@color/colorIcons"
+            android:layout_margin="@dimen/_4sdp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <SeekBar
+            android:id="@+id/audioSeekBar"
+            android:layout_width="340dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_4sdp"
+            android:layout_toRightOf="@id/playPauseIV"
+            android:layout_toEndOf="@id/playPauseIV" />
+
+        <ImageView
+            android:id="@+id/deleteAudioIV"
+            android:layout_width="@dimen/_12sdp"
+            android:layout_height="@dimen/_12sdp"
+            android:src="@drawable/ic_delete"
+            android:tint="@color/colorDelete"
+            android:layout_margin="@dimen/_4sdp"
+            android:layout_toRightOf="@id/audioSeekBar"
+            android:layout_toEndOf="@id/audioSeekBar"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true" />
+
+
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

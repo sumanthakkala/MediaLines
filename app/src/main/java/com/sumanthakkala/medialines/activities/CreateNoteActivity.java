@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
-import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
@@ -24,6 +23,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +41,7 @@ import com.sumanthakkala.medialines.entities.EditedLocations;
 import com.sumanthakkala.medialines.entities.Note;
 import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.sumanthakkala.medialines.listeners.NoteImagesListener;
+import com.sumanthakkala.medialines.viewmodels.NoteAudioViewModel;
 import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -85,9 +86,18 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     private List<NoteImageViewModel> totalImages;
     private List<NoteImageViewModel> selectedImages;
-    private List<NoteImageViewModel> imagesToDeleteFromDB = new ArrayList<>();;
-    private List<NoteImageViewModel> existingimagesInImageViewModel = new ArrayList<>();;
+    private List<NoteImageViewModel> imagesToDeleteFromDB = new ArrayList<>();
+    private List<NoteImageViewModel> existingimagesInImageViewModel = new ArrayList<>();
+
+
+    private List<NoteAudioViewModel> totalAudios = new ArrayList<>();
+    private List<NoteAudioViewModel> newAudios = new ArrayList<>();
+    private List<NoteAudioViewModel> audiosToDeleteFromDB = new ArrayList<>();
+    private List<NoteAudioViewModel> existingAudiosInAudioViewModel = new ArrayList<>();
+
+
     private List<Attachments> existingImageAttachments = new ArrayList<>();
+    private List<Attachments> existingAudioAttachments = new ArrayList<>();
     private NoteImagesAdapter noteImagesAdapter;
 
     private NoteWithData existingNoteWithData;
@@ -95,6 +105,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     private static final int REQUEST_CODE_STORAGE_PERMISSION = 1;
     private static final int REQUEST_CODE_SELECT_IMAGE = 2;
+    private static final int REQUEST_CODE_SPEECH_INPUT = 3;
     private static final String IMAGE_TYPE = "image";
     private static final String AUDIO_TYPE = "audio";
 
@@ -230,8 +241,8 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             webUrlTV.setText(existingNoteWithData.note.getWebLink());
             webUrlLayout.setVisibility(View.VISIBLE);
         }
-        List<Attachments> audioAttachments = new ArrayList<>();
         int imageIndex = 0;
+        int audioIndex = 0;
         for(Attachments attach: existingNoteWithData.attachments){
             if(attach.getAttachmentType().equals("image")){
                 existingImageAttachments.add(attach);
@@ -244,7 +255,13 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 noteImagesAdapter.notifyDataSetChanged();
             }
             else {
-                audioAttachments.add(attach);
+                existingAudioAttachments.add(attach);
+                NoteAudioViewModel audio = new NoteAudioViewModel();
+                audio.audioUniqueFileName = attach.getAttachmentUniqueFileName();
+                audio.index = audioIndex;
+                audioIndex += 1;
+                totalAudios.add(audio);
+                existingAudiosInAudioViewModel.add(audio);
             }
         }
 
@@ -254,6 +271,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     public void onBackPressed() {
         for (NoteImageViewModel attachment: selectedImages){
             File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.imageUniqueFileName);
+            attachmentFile.delete();
+        }
+        for (NoteAudioViewModel attachment: newAudios){
+            File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.audioUniqueFileName);
             attachmentFile.delete();
         }
         super.onBackPressed();
@@ -538,6 +559,14 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 showAddUrlDialig();
             }
         });
+
+        moreOptionsLayout.findViewById(R.id.addAudioLayout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                showRecordAudioUI();
+            }
+        });
     }
 
     private void setNoteIndicatorColor(){
@@ -587,6 +616,33 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
             }
         }
+
+        if(requestCode == REQUEST_CODE_SPEECH_INPUT && resultCode == RESULT_OK){
+            if(data != null){
+                try {
+                        // the resulting text is in the getExtras:
+                        Bundle bundle = data.getExtras();
+                        ArrayList<String> transcribedStrings = bundle.getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
+                        noteText.setText(noteText.getText().toString() + transcribedStrings.get(0));
+                        // the recording url is in getData:
+//                        Uri audioUri = data.getData();
+//                        String fileName = generateUUID() + textDateTime.getText().toString();
+//                        File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),fileName);
+//                        FileOutputStream fos = new FileOutputStream(attachmentFile);
+//                        fos.write(byteArrayFromUri(audioUri));
+//                        fos.close();
+//
+//                        NoteAudioViewModel audioViewModel = new NoteAudioViewModel();
+//                        audioViewModel.audioUniqueFileName = fileName;
+//                        audioViewModel.index = totalAudios.size();
+//                        totalAudios.add(audioViewModel);
+//                        newAudios.add(audioViewModel);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private byte[] byteArrayFromUri(Uri contentUri) throws IOException {
@@ -620,6 +676,24 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private boolean isExternalStorageReadable() {
         return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) ||
                 Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState());
+    }
+
+    private void showRecordAudioUI(){
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hi, Speak something.");
+//        intent.putExtra("android.speech.extra.GET_AUDIO_FORMAT", "audio/AMR");
+//        intent.putExtra("android.speech.extra.GET_AUDIO", true);
+
+
+        try {
+            startActivityForResult(intent, REQUEST_CODE_SPEECH_INPUT);
+            //Toast.makeText(this, "Your audio will be sent to Google APIs to provide speech recognition service.", Toast.LENGTH_LONG).show();
+        }
+        catch (Exception e){
+            Toast.makeText(this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showAddUrlDialig(){
