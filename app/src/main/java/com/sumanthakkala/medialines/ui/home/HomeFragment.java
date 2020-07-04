@@ -313,7 +313,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_CODE_ADD_NOTE && resultCode == Activity.RESULT_OK){
+        if((requestCode == REQUEST_CODE_ADD_NOTE || requestCode == REQUEST_CODE_UPDATE_NOTE) && resultCode == Activity.RESULT_OK){
             if(data != null){
                 NoteWithData noteWithData = (NoteWithData) data.getSerializableExtra("note");
                 if(data.getBooleanExtra("isNoteUpdated", false)){

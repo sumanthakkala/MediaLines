@@ -714,7 +714,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private void takePhotoHandler(){
         if(isCameraPermissionGranted()){
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
             // Ensure that there's a camera activity to handle the intent
             if (intent.resolveActivity(getPackageManager()) != null) {
                 // Create the File where the photo should go
@@ -733,10 +732,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                     startActivityForResult(intent, REQUEST_CODE_CAPTURE_IMAGE);
                 }
             }
-
-
-
-
         }
         else {
             ActivityCompat.requestPermissions(
