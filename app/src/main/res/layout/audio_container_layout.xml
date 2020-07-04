@@ -12,7 +12,7 @@
     app:cardCornerRadius="5dp"
     app:cardBackgroundColor="@color/colorDefaultNoteColor"
     app:cardElevation="5dp">
-    <RelativeLayout android:id="@+id/audioLayout"
+    <LinearLayout android:id="@+id/audioLayout"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -22,17 +22,14 @@
             android:layout_height="@dimen/_12sdp"
             android:src="@drawable/ic_play"
             android:tint="@color/colorIcons"
-            android:layout_margin="@dimen/_4sdp"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:layout_margin="@dimen/_4sdp" />
 
         <SeekBar
             android:id="@+id/audioSeekBar"
-            android:layout_width="340dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_4sdp"
-            android:layout_toRightOf="@id/playPauseIV"
-            android:layout_toEndOf="@id/playPauseIV" />
+            android:layout_weight="1"
+            android:layout_margin="@dimen/_4sdp" />
 
         <ImageView
             android:id="@+id/deleteAudioIV"
@@ -40,12 +37,8 @@
             android:layout_height="@dimen/_12sdp"
             android:src="@drawable/ic_delete"
             android:tint="@color/colorDelete"
-            android:layout_margin="@dimen/_4sdp"
-            android:layout_toRightOf="@id/audioSeekBar"
-            android:layout_toEndOf="@id/audioSeekBar"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true" />
+            android:layout_margin="@dimen/_4sdp" />
 
 
-    </RelativeLayout>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>
