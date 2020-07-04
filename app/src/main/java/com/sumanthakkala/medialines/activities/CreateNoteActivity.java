@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -14,13 +16,16 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.location.Location;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -31,6 +36,7 @@ import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.util.Patterns;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
@@ -73,9 +79,13 @@ import java.util.UUID;
 
 public class CreateNoteActivity extends AppCompatActivity implements  OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener {
 
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private static final int STORAGE_PERMISSION_REQUEST_CODE = 2;
-    private static final int RECORD_AUDIO_PERMISSION_REQUEST_CODE = 3;
+    private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
+    private static final int REQUEST_CODE_RECORD_AUDIO_PERMISSION = 2;
+    private static final int REQUEST_CODE_CAMERA_PERMISSION = 3;
+    private static final int REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION = 4;
+    private static final int REQUEST_CODE_SELECT_IMAGE = 5;
+    private static final int REQUEST_CODE_SPEECH_INPUT = 6;
+    private static final int REQUEST_CODE_CAPTURE_IMAGE = 7;
 
     private EditText noteTitle, noteText;
     private TextView textDateTime;
@@ -97,6 +107,8 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private MediaRecorder mediaRecorder;
 
     private boolean isRecording = false;
+
+    private String currentTempPhotoPath = "";
 
 
     private List<NoteImageViewModel> totalImages;
@@ -122,9 +134,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
 
 
-    private static final int REQUEST_CODE_STORAGE_PERMISSION = 1;
-    private static final int REQUEST_CODE_SELECT_IMAGE = 2;
-    private static final int REQUEST_CODE_SPEECH_INPUT = 3;
+
     private static final String IMAGE_TYPE = "image";
     private static final String AUDIO_TYPE = "audio";
 
@@ -470,7 +480,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             return;
         }
         else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
         }
 
     }
@@ -478,7 +488,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.length > 0){
+        if(requestCode == REQUEST_CODE_LOCATION_PERMISSION && grantResults.length > 0){
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     &&
                     ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -498,7 +508,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         }
 
 
-        if(requestCode == REQUEST_CODE_STORAGE_PERMISSION && grantResults.length > 0){
+        if(requestCode == REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION && grantResults.length > 0){
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 selectImageHandler();
             }
@@ -507,9 +517,18 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             }
         }
 
-        if(requestCode == RECORD_AUDIO_PERMISSION_REQUEST_CODE && grantResults.length > 0){
+        if(requestCode == REQUEST_CODE_RECORD_AUDIO_PERMISSION && grantResults.length > 0){
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 showRecordAudioDialog();
+            }
+            else {
+                Toast.makeText(this,"Permission Denied!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        if(requestCode == REQUEST_CODE_CAMERA_PERMISSION && grantResults.length > 0){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                takePhotoHandler();
             }
             else {
                 Toast.makeText(this,"Permission Denied!", Toast.LENGTH_SHORT).show();
@@ -624,18 +643,15 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             @Override
             public void onClick(View view) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                if(ContextCompat.checkSelfPermission(
-                        getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED){
-                    ActivityCompat.requestPermissions(
-                            CreateNoteActivity.this,
-                            new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
-                            REQUEST_CODE_STORAGE_PERMISSION
-                    );
-                }
-                else {
-                    selectImageHandler();
-                }
+                selectImageHandler();
+            }
+        });
+
+        moreOptionsLayout.findViewById(R.id.takePhotoLayout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                takePhotoHandler();
             }
         });
 
@@ -670,46 +686,116 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     }
 
     private void selectImageHandler(){
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        if(intent.resolveActivity(getPackageManager()) != null){
-            startActivityForResult(intent, REQUEST_CODE_SELECT_IMAGE);
+        if(isReadExternalStoragePermissionGranted()){
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            if(intent.resolveActivity(getPackageManager()) != null){
+                startActivityForResult(intent, REQUEST_CODE_SELECT_IMAGE);
+            }
         }
+        else {
+            ActivityCompat.requestPermissions(
+                    CreateNoteActivity.this,
+                    new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION
+            );
+        }
+
+    }
+
+    private boolean isReadExternalStoragePermissionGranted(){
+        if(ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    private void takePhotoHandler(){
+        if(isCameraPermissionGranted()){
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+            // Ensure that there's a camera activity to handle the intent
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                // Create the File where the photo should go
+                File photoFile = null;
+                try {
+                    photoFile = createTempImageFile();
+                } catch (IOException ex) {
+
+                }
+                // Continue only if the File was successfully created
+                if (photoFile != null) {
+                    Uri photoURI = FileProvider.getUriForFile(this,
+                            getPackageName() + ".fileprovider",
+                            photoFile);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    startActivityForResult(intent, REQUEST_CODE_CAPTURE_IMAGE);
+                }
+            }
+
+
+
+
+        }
+        else {
+            ActivityCompat.requestPermissions(
+                    CreateNoteActivity.this,
+                    new String[] {Manifest.permission.CAMERA},
+                    REQUEST_CODE_CAMERA_PERMISSION
+            );
+        }
+    }
+
+    private boolean isCameraPermissionGranted(){
+        if(ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    private File createTempImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalCacheDir();
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentTempPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_CODE_SELECT_IMAGE && resultCode == RESULT_OK){
-            if( data != null){
-
+        if((requestCode == REQUEST_CODE_SELECT_IMAGE && data != null) || (requestCode == REQUEST_CODE_CAPTURE_IMAGE) && resultCode == RESULT_OK){
                 try {
                     if(isExternalStorageWritable() && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-
-                        String fileName = generateUUID() + textDateTime.getText().toString();
-                        File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),fileName);
-                        FileOutputStream fos = new FileOutputStream(attachmentFile);
-                        fos.write(byteArrayFromUri(data.getData()));
-                        fos.close();
-                        NoteImageViewModel noteImageViewModel = new NoteImageViewModel();
-                        noteImageViewModel.imageUniqueFileName = fileName;
-                        noteImageViewModel.index = totalImages.size();
-                        totalImages.add(noteImageViewModel);
-                        selectedImages.add(noteImageViewModel);
-                        noteImagesAdapter.notifyItemChanged(totalImages.size() - 1);
-                        imagePositionIndicator.setVisibility(View.VISIBLE);
-                        imagesViewPager.setCurrentItem(totalImages.size() - 1, true);
-
+                        if(requestCode == REQUEST_CODE_SELECT_IMAGE){
+                            Uri imageUri = data.getData();
+                            compressImageAndUpdateViewPager(getRealPathFromURI(imageUri));
+                        }
+                        else {
+                            compressImageAndUpdateViewPager(currentTempPhotoPath);
+                        }
+                        File tempFile = new File(currentTempPhotoPath);
+                        tempFile.delete();
+                        currentTempPhotoPath = "";
                     }
                     else {
-                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION);
                     }
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-
-            }
         }
 
         if(requestCode == REQUEST_CODE_SPEECH_INPUT && resultCode == RESULT_OK){
@@ -727,10 +813,27 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         }
     }
 
+    public String getRealPathFromURI(Uri uri) {
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+        return cursor.getString(idx);
+    }
+
+    private byte[] byteArrayFromBitmap(Bitmap bitmap){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        bitmap.recycle();
+        return byteArray;
+    }
+
     private byte[] byteArrayFromUri(Uri contentUri) throws IOException {
-        InputStream iStream =   getContentResolver().openInputStream(contentUri);
-        byte[] inputData = getBytes(iStream);
-        return inputData;
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentUri);
+        return byteArrayFromBitmap(bitmap);
+//        InputStream iStream =   getContentResolver().openInputStream(contentUri);
+//        byte[] inputData = getBytes(iStream);
+//        return inputData;
     }
     public byte[] getBytes(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
@@ -755,7 +858,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     }
 
     // Checks if a volume containing external storage is available to at least read.
-    private boolean isExternalStorageReadable() {
+    private boolean isExternalMountedStorageReadable() {
         return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) ||
                 Environment.MEDIA_MOUNTED_READ_ONLY.equals(Environment.getExternalStorageState());
     }
@@ -786,7 +889,8 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 );
                 builder.setView(view);
                 recordAudioDialog = builder.create();
-
+                recordAudioDialog.setCancelable(false);
+                recordAudioDialog.setCanceledOnTouchOutside(false);
                 if(recordAudioDialog.getWindow() != null){
                     recordAudioDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
                 }
@@ -817,7 +921,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             return true;
         }
         else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO_PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_CODE_RECORD_AUDIO_PERMISSION);
             return false;
         }
     }
@@ -827,7 +931,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             mediaRecorder = new MediaRecorder();
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            String fileName = "audio" + generateUUID() + new Date().getTime();
+            String fileName = "AUDIO" + generateUUID() + new Date().getTime();
             String filePath = getApplicationContext().getExternalFilesDir("/").getAbsolutePath();
             mediaRecorder.setOutputFile(filePath + "/" + fileName);
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
@@ -943,5 +1047,168 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             }
         }
         showImageDialog.show();
+    }
+
+
+    private void compressImageAndUpdateViewPager(String originalImagePath){
+        class ImageCompression extends AsyncTask<String, Void, String> {
+            private String mImageName = "";
+            private static final float maxHeight = 1280.0f;
+            private static final float maxWidth = 1280.0f;
+
+
+            @Override
+            protected String doInBackground(String... strings) {
+                if(strings.length == 0 || strings[0] == null)
+                    return null;
+
+                return compressImage(strings[0]);
+            }
+
+            protected void onPostExecute(String imageName){
+                // imagePath is path of new compressed image.
+                addImageToViewPager(imageName);
+            }
+
+
+            public String compressImage(String imagePath) {
+                Bitmap scaledBitmap = null;
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                Bitmap bmp = BitmapFactory.decodeFile(imagePath, options);
+
+                int actualHeight = options.outHeight;
+                int actualWidth = options.outWidth;
+
+                float imgRatio = (float) actualWidth / (float) actualHeight;
+                float maxRatio = maxWidth / maxHeight;
+
+                if (actualHeight > maxHeight || actualWidth > maxWidth) {
+                    if (imgRatio < maxRatio) {
+                        imgRatio = maxHeight / actualHeight;
+                        actualWidth = (int) (imgRatio * actualWidth);
+                        actualHeight = (int) maxHeight;
+                    } else if (imgRatio > maxRatio) {
+                        imgRatio = maxWidth / actualWidth;
+                        actualHeight = (int) (imgRatio * actualHeight);
+                        actualWidth = (int) maxWidth;
+                    } else {
+                        actualHeight = (int) maxHeight;
+                        actualWidth = (int) maxWidth;
+
+                    }
+                }
+
+                options.inSampleSize = calculateInSampleSize(options, actualWidth, actualHeight);
+                options.inJustDecodeBounds = false;
+                options.inDither = false;
+                options.inPurgeable = true;
+                options.inInputShareable = true;
+                options.inTempStorage = new byte[16 * 1024];
+
+                try {
+                    bmp = BitmapFactory.decodeFile(imagePath, options);
+                } catch (OutOfMemoryError exception) {
+                    exception.printStackTrace();
+
+                }
+                try {
+                    scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.RGB_565);
+                } catch (OutOfMemoryError exception) {
+                    exception.printStackTrace();
+                }
+
+                float ratioX = actualWidth / (float) options.outWidth;
+                float ratioY = actualHeight / (float) options.outHeight;
+                float middleX = actualWidth / 2.0f;
+                float middleY = actualHeight / 2.0f;
+
+                Matrix scaleMatrix = new Matrix();
+                scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
+
+                Canvas canvas = new Canvas(scaledBitmap);
+                canvas.setMatrix(scaleMatrix);
+                canvas.drawBitmap(bmp, middleX - bmp.getWidth() / 2, middleY - bmp.getHeight() / 2, new Paint(Paint.FILTER_BITMAP_FLAG));
+
+                if(bmp!=null)
+                {
+                    bmp.recycle();
+                }
+
+                ExifInterface exif;
+                try {
+                    exif = new ExifInterface(imagePath);
+                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+                    Matrix matrix = new Matrix();
+                    if (orientation == 6) {
+                        matrix.postRotate(90);
+                    } else if (orientation == 3) {
+                        matrix.postRotate(180);
+                    } else if (orientation == 8) {
+                        matrix.postRotate(270);
+                    }
+                    scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                FileOutputStream out = null;
+                String filepath = getFilePath();
+                try {
+                    out = new FileOutputStream(filepath);
+
+                    //write the compressed bitmap at the destination specified by filename.
+                    scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                return getFileName();
+            }
+
+            public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+                final int height = options.outHeight;
+                final int width = options.outWidth;
+                int inSampleSize = 1;
+
+                if (height > reqHeight || width > reqWidth) {
+                    final int heightRatio = Math.round((float) height / (float) reqHeight);
+                    final int widthRatio = Math.round((float) width / (float) reqWidth);
+                    inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+                }
+                final float totalPixels = width * height;
+                final float totalReqPixelsCap = reqWidth * reqHeight * 2;
+
+                while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
+                    inSampleSize++;
+                }
+
+                return inSampleSize;
+            }
+
+            public String getFilePath() {
+                mImageName="IMG_"+ String.valueOf(System.currentTimeMillis()) +".jpg";
+                String uriString = (getApplicationContext().getExternalFilesDir("/").getAbsolutePath() + "/"+ mImageName);;
+                return uriString;
+            }
+
+            public String getFileName(){
+                return mImageName;
+            }
+
+        }
+        new ImageCompression().execute(originalImagePath);
+    }
+
+    private void addImageToViewPager(String imageName){
+        NoteImageViewModel noteImageViewModel = new NoteImageViewModel();
+        noteImageViewModel.imageUniqueFileName = imageName;
+        noteImageViewModel.index = totalImages.size();
+        totalImages.add(noteImageViewModel);
+        selectedImages.add(noteImageViewModel);
+        noteImagesAdapter.notifyItemChanged(totalImages.size() - 1);
+        imagePositionIndicator.setVisibility(View.VISIBLE);
+        imagesViewPager.setCurrentItem(totalImages.size() - 1, true);
     }
 }
