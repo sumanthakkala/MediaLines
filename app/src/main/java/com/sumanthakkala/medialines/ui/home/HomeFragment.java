@@ -34,6 +34,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.google.android.material.bottomappbar.BottomAppBar;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.activities.CreateNoteActivity;
 import com.sumanthakkala.medialines.activities.MainActivity;
@@ -53,16 +54,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class HomeFragment extends Fragment implements NotesListener, SearchView.OnQueryTextListener {
+public class HomeFragment extends Fragment implements NotesListener, SearchView.OnQueryTextListener{
     public static final int REQUEST_CODE_ADD_NOTE = 1;
     public static final int REQUEST_CODE_UPDATE_NOTE = 2;
     public static final int REQUEST_CODE_SELECT_IMAGE = 3;
     public static final int REQUEST_CODE_STORAGE_PERMISSION = 4;
+
+    public static final String SORT_BY_DATE = "date";
+    public static final String SORT_BY_TITLE = "title";
+
 
 
     private RecyclerView notesRecyclerView;
@@ -76,11 +83,16 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     private TextView selectionCountTV;
     private ImageView deleteSelectedNotesIV;
     private ImageView cancelMultiSelectIV;
+    private ImageView sortModeIV;
     private SearchView searchView;
     private MenuItem mSearchMenuItem;
     private AlertDialog addUrlDialog;
+    private BottomAppBar bottomAppBar;
 
     private int noteClickedPosition = -1;
+
+    private String currentSortMode = SORT_BY_DATE;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -101,6 +113,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         );
 
+        bottomAppBar = root.findViewById(R.id.bottomAppBar);
         quickActionsLayout = root.findViewById(R.id.quickActionsLayout);
         multiSelectActionsLayout = root.findViewById(R.id.multiSelectActionsLayout);
         selectionCountTV = root.findViewById(R.id.multiSelectCount);
@@ -120,11 +133,18 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             }
         });
 
-        root.findViewById(R.id.imageAddNote).setOnClickListener(new View.OnClickListener() {
+        root.findViewById(R.id.imageTranscribeSpeech).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivityForResult(new Intent(getActivity().getApplicationContext(), CreateNoteActivity.class),
-                        REQUEST_CODE_ADD_NOTE);
+                onTranscribeSpeechQuickActionPressed();
+            }
+        });
+
+        sortModeIV = root.findViewById(R.id.imageSortNotes);
+        sortModeIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sortNotes();
             }
         });
 
@@ -174,9 +194,24 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     }
 
     @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull final Menu menu) {
         super.onPrepareOptionsMenu(menu);
         mSearchMenuItem = menu.findItem(R.id.search_view);
+        mSearchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                bottomAppBar.setVisibility(View.GONE);
+                fab.hide();
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                bottomAppBar.setVisibility(View.VISIBLE);
+                fab.show();
+                return true;
+            }
+        });
         searchView = (SearchView) mSearchMenuItem.getActionView();
         searchView.setOnQueryTextListener(this);
     }
@@ -328,11 +363,32 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 }
                 else {
 
-                    notesList.add(0, noteWithData);
-                    intactNotesList.add(0, noteWithData);
-                    notesAdapter.setIntactDataSource(intactNotesList);
-                    notesAdapter.notifyItemInserted(0);
-                    notesRecyclerView.smoothScrollToPosition(0);
+                    switch (currentSortMode){
+                        case SORT_BY_DATE:
+                            notesList.add(0, noteWithData);
+                            intactNotesList.add(0, noteWithData);
+                            notesAdapter.setIntactDataSource(intactNotesList);
+                            notesAdapter.notifyItemInserted(0);
+                            notesRecyclerView.smoothScrollToPosition(0);
+                            break;
+                        case SORT_BY_TITLE:
+                            List<NoteWithData> tempNotesList = new ArrayList<>(notesList);
+                            tempNotesList.add(noteWithData);
+                            Collections.sort(tempNotesList, new Comparator<NoteWithData>() {
+                                @Override
+                                public int compare(NoteWithData note1, NoteWithData note2) {
+                                    return note1.note.getTitle().toLowerCase().compareTo(note2.note.getTitle().toLowerCase());
+                                }
+                            });
+                            int sortedIndex = tempNotesList.indexOf(noteWithData);
+                            notesList.add(sortedIndex, noteWithData);
+                            intactNotesList.add(0, noteWithData);
+                            notesAdapter.setIntactDataSource(intactNotesList);
+                            notesAdapter.notifyItemInserted(sortedIndex);
+                            break;
+                    }
+
+
                 }
             }
         }
@@ -461,5 +517,36 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             });
         }
         addUrlDialog.show();
+    }
+
+    private void onTranscribeSpeechQuickActionPressed(){
+
+    }
+
+    private void sortNotes(){
+
+        switch (currentSortMode){
+            case SORT_BY_DATE:
+                Collections.sort(notesList, new Comparator<NoteWithData>() {
+                    @Override
+                    public int compare(NoteWithData note1, NoteWithData note2) {
+                        return note1.note.getTitle().toLowerCase().compareTo(note2.note.getTitle().toLowerCase());
+                    }
+                });
+                sortModeIV.setImageResource(R.drawable.ic_sort_by_alpha);
+                notesAdapter.notifyDataSetChanged();
+                currentSortMode = SORT_BY_TITLE;
+                break;
+            case SORT_BY_TITLE:
+                notesList.clear();
+                notesList.addAll(intactNotesList);
+                sortModeIV.setImageResource(R.drawable.ic_date);
+                notesAdapter.notifyDataSetChanged();
+                notesAdapter.notifyItemRangeChanged(0, notesList.size());
+                currentSortMode = SORT_BY_DATE;
+                break;
+        }
+
+
     }
 }
