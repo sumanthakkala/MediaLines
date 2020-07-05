@@ -1,8 +1,10 @@
 package com.sumanthakkala.medialines.activities;
 
+import android.app.ActionBar;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.Menu;
+import android.view.View;
 
 import com.sumanthakkala.medialines.R;
 import com.google.android.material.navigation.NavigationView;

@@ -18,8 +18,8 @@
         android:layout_height="wrap_content">
         <ImageView
             android:id="@+id/playPauseIV"
-            android:layout_width="@dimen/_12sdp"
-            android:layout_height="@dimen/_12sdp"
+            android:layout_width="@dimen/_18sdp"
+            android:layout_height="@dimen/_18sdp"
             android:src="@drawable/ic_play"
             android:tint="@color/colorIcons"
             android:layout_margin="@dimen/_4sdp" />
@@ -29,12 +29,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_margin="@dimen/_4sdp" />
+            android:layout_margin="@dimen/_4sdp"
+            android:layout_gravity="center"/>
 
         <ImageView
             android:id="@+id/deleteAudioIV"
-            android:layout_width="@dimen/_12sdp"
-            android:layout_height="@dimen/_12sdp"
+            android:layout_width="@dimen/_18sdp"
+            android:layout_height="@dimen/_18sdp"
             android:src="@drawable/ic_delete"
             android:tint="@color/colorDelete"
             android:layout_margin="@dimen/_4sdp" />

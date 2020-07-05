@@ -52,7 +52,7 @@
         android:fontFamily="@font/nunito_bold"
         android:includeFontPadding="false"
         android:textColor="@color/colorWhite"
-        android:textSize="@dimen/_13ssp"
+        android:textSize="@dimen/_12ssp"
         android:ellipsize="end"/>
 
     <TextView

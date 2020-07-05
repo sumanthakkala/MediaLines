@@ -32,7 +32,7 @@
         android:layout_gravity="bottom"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="@dimen/_10sdp"
+        android:padding="@dimen/_5sdp"
         app:fabAlignmentMode="end"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -48,7 +48,8 @@
                 android:padding="@dimen/_2sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_image"
-                android:tint="@color/colorIcons"/>
+                android:tint="@color/colorIcons"
+                android:background="@drawable/background_button"/>
 
             <ImageView
                 android:id="@+id/imageAddWebLink"
@@ -59,7 +60,8 @@
                 android:layout_marginLeft="@dimen/_15sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_web_link"
-                android:tint="@color/colorIcons" />
+                android:tint="@color/colorIcons"
+                android:background="@drawable/background_button"/>
 
             <ImageView
                 android:id="@+id/imageTranscribeSpeech"
@@ -70,7 +72,8 @@
                 android:layout_marginLeft="@dimen/_15sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_transcribe_speach"
-                android:tint="@color/colorIcons" />
+                android:tint="@color/colorIcons"
+                android:background="@drawable/background_button"/>
 
             <ImageView
                 android:id="@+id/imageSortNotes"
@@ -81,7 +84,8 @@
                 android:layout_marginLeft="@dimen/_15sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_date"
-                android:tint="@color/colorIcons" />
+                android:tint="@color/colorIcons"
+                android:background="@drawable/background_button"/>
 
         </LinearLayout>
 

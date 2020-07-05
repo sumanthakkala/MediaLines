@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:drawable="@drawable/background_nav_selected_item">
+
+    </item>
+    <item android:drawable="@drawable/background_nav_item" />
+
+</selector>
