@@ -14,4 +14,8 @@
     <string name="home_second">Home Second</string>
     <string name="title">Title</string>
     <string name="take_note_here">Take note here...</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="hire_me">Want to hire me? Click &lt;a href=https://sumanthakkala.work>here&lt;/a>!"</string>
 </resources>

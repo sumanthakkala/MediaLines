@@ -15,6 +15,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -40,6 +41,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -342,6 +345,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.audioUniqueFileName);
                 attachmentFile.delete();
             }
+            finish();
             super.onBackPressed();
         }
 

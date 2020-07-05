@@ -2,6 +2,7 @@ package com.sumanthakkala.medialines.ui.home;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
@@ -17,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -99,7 +101,6 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         setHasOptionsMenu(true);
-
         fab = root.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -451,7 +452,6 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 }
             }
         }
-
         collapseSearchView();
 
     }

@@ -5,29 +5,41 @@
     android:layout_height="@dimen/nav_header_height"
     android:background="@drawable/background_header"
     android:gravity="center_vertical"
-    android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:orientation="horizontal"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:text="Media Lines"
-        android:fontFamily="@font/nunito_bold"
-        android:textSize="@dimen/_18sdp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
-
-    <TextView
-        android:id="@+id/textView"
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Never miss a memory!"
-        android:fontFamily="@font/nunito_light"
-        android:textSize="@dimen/_14sdp"/>
+        android:src="@drawable/logo_hq"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:adjustViewBounds="true"
+        android:padding="@dimen/_10sdp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="@dimen/_20sdp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/nav_header_vertical_spacing"
+            android:text="Media Lines"
+            android:fontFamily="@font/nunito_bold"
+            android:textSize="@dimen/_18sdp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Never miss a memory!"
+            android:fontFamily="@font/nunito_light"
+            android:textSize="@dimen/_9sdp"/>
+    </LinearLayout>
 
 </LinearLayout>

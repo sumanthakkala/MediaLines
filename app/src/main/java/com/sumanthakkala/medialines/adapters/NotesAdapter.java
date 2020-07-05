@@ -118,9 +118,9 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             }
             else {
                 for(NoteWithData noteWithData: intactNotesWithData){
-                    if((noteWithData.note.getTitle() != null && noteWithData.note.getTitle().contains(charSequence.toString().toLowerCase()))
-                            || (noteWithData.note.getNoteText() != null && noteWithData.note.getNoteText().contains(charSequence.toString().toLowerCase()))
-                            || (noteWithData.note.getWebLink() != null && noteWithData.note.getWebLink().contains(charSequence.toString().toLowerCase()))){
+                    if((noteWithData.note.getTitle() != null && noteWithData.note.getTitle().toLowerCase().contains(charSequence.toString().toLowerCase()))
+                            || (noteWithData.note.getNoteText() != null && noteWithData.note.getNoteText().toLowerCase().contains(charSequence.toString().toLowerCase()))
+                            || (noteWithData.note.getWebLink() != null && noteWithData.note.getWebLink().toLowerCase().contains(charSequence.toString().toLowerCase()))){
                         filteredList.add(noteWithData);
                     }
                 }

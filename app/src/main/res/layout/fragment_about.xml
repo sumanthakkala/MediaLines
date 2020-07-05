@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/colorPrimaryDark"
+    tools:context=".ui.about.AboutFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/_50sdp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/developedBy"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center_vertical">
+
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="@dimen/_80sdp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/logo_hq"
+            android:adjustViewBounds="true"
+            android:padding="@dimen/_10sdp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/aboutTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Media Lines"
+                    android:fontFamily="@font/nunito_bold"
+                    android:textSize="@dimen/_30sdp"
+                    android:textColor="@color/colorWhite"/>
+
+                <TextView
+                    android:id="@+id/aboutVersion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/nunito_extralight"
+                    android:textSize="@dimen/_8sdp"
+                    android:textColor="@color/colorWhite"
+                    android:layout_marginLeft="@dimen/_5sdp"
+                    />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/aboutSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Never miss a memory!"
+                android:fontFamily="@font/nunito_light"
+                android:textSize="@dimen/_12sdp"
+                android:textColor="@color/colorWhite"/>
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+
+
+    <TextView
+        android:id="@+id/developedBy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text="Developed by Sumanth Akkala!"
+        android:fontFamily="@font/nunito_light"
+        android:textSize="@dimen/_10sdp"
+        android:textColor="@color/colorWhite"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/socialProfileLayout"
+        android:gravity="center"
+        android:textAlignment="center"/>
+
+
+    <LinearLayout
+        android:id="@+id/socialProfileLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_30sdp"
+        android:layout_marginLeft="@dimen/_5sdp"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginRight="@dimen/_5sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+
+        <ImageView
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_20sdp"
+            android:contentDescription="@string/app_name"
+            android:layout_marginLeft="@dimen/_5sdp"
+            android:src="@drawable/facebook"
+            android:tint="@color/colorWhite"
+            android:tag="https://www.facebook.com/profile.php?id=100006273858165"
+            android:onClick="openBrowser"
+            android:background="@drawable/background_button"/>
+        <ImageView
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_20sdp"
+            android:contentDescription="@string/app_name"
+            android:layout_marginLeft="@dimen/_5sdp"
+            android:src="@drawable/github"
+            android:tint="@color/colorWhite"
+            android:tag="https://github.com/sumanthakkala"
+            android:onClick="openBrowser"
+            android:background="@drawable/background_button"/>
+        <ImageView
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_20sdp"
+            android:contentDescription="@string/app_name"
+            android:layout_marginLeft="@dimen/_5sdp"
+            android:src="@drawable/linkedin"
+            android:tint="@color/colorWhite"
+            android:tag="https://www.linkedin.com/in/nirmal-sumanth-63239a168/"
+            android:onClick="openBrowser"
+            android:background="@drawable/background_button"/>
+        <ImageView
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_20sdp"
+            android:padding="@dimen/_2sdp"
+            android:contentDescription="@string/app_name"
+            android:layout_marginLeft="@dimen/_5sdp"
+            android:src="@drawable/skype"
+            android:tint="@color/colorWhite"
+            android:tag="https://join.skype.com/invite/bcwAS6WkizFW"
+            android:onClick="openBrowser"
+            android:background="@drawable/background_button"/>
+
+    </LinearLayout>
+
+<!--    <TextView-->
+<!--        android:id="@+id/hireMe"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:clickable="true"-->
+<!--        android:fontFamily="@font/nunito_light"-->
+<!--        android:textSize="@dimen/_10sdp"-->
+<!--        android:textColor="@color/colorWhite"-->
+<!--        android:layout_marginBottom="@dimen/_10sdp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        android:gravity="center"-->
+<!--        android:textAlignment="center"/>-->
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

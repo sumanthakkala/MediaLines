@@ -8,7 +8,8 @@
     android:layout_marginStart="@dimen/_12sdp"
     android:layout_marginTop="@dimen/_12sdp"
     android:background="@drawable/background_note"
-    android:layout_marginLeft="@dimen/_12sdp">
+    android:layout_marginLeft="@dimen/_12sdp"
+    android:focusable="false">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/roundedImageViewContainer"
