@@ -2,7 +2,6 @@ package com.sumanthakkala.medialines.ui.home;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
@@ -11,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,7 +37,6 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.activities.CreateNoteActivity;
-import com.sumanthakkala.medialines.activities.MainActivity;
 import com.sumanthakkala.medialines.adapters.NotesAdapter;
 import com.sumanthakkala.medialines.database.MediaLinesDatabase;
 import com.sumanthakkala.medialines.entities.Attachments;
@@ -45,7 +44,6 @@ import com.sumanthakkala.medialines.entities.EditedLocations;
 import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sumanthakkala.medialines.listeners.NotesListener;
-import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -61,11 +59,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import static android.app.Activity.RESULT_OK;
+
 public class HomeFragment extends Fragment implements NotesListener, SearchView.OnQueryTextListener{
     public static final int REQUEST_CODE_ADD_NOTE = 1;
     public static final int REQUEST_CODE_UPDATE_NOTE = 2;
     public static final int REQUEST_CODE_SELECT_IMAGE = 3;
-    public static final int REQUEST_CODE_STORAGE_PERMISSION = 4;
+    public static final int REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION = 4;
+    public static final int REQUEST_CODE_SPEECH_INPUT = 5;
 
     public static final String SORT_BY_DATE = "date";
     public static final String SORT_BY_TITLE = "title";
@@ -151,18 +152,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         root.findViewById(R.id.imageAddImage).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(ContextCompat.checkSelfPermission(
-                        getActivity().getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED){
-                    ActivityCompat.requestPermissions(
-                            getActivity(),
-                            new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
-                            REQUEST_CODE_STORAGE_PERMISSION
-                    );
-                }
-                else {
                     selectImageHandler();
-                }
             }
         });
 
@@ -183,7 +173,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == REQUEST_CODE_STORAGE_PERMISSION && grantResults.length > 0){
+        if(requestCode == REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION && grantResults.length > 0){
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 selectImageHandler();
             }
@@ -255,10 +245,30 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
 
     }
 
+
     private void selectImageHandler(){
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        if(intent.resolveActivity(getActivity().getPackageManager()) != null){
-            startActivityForResult(intent, REQUEST_CODE_SELECT_IMAGE);
+        if(isReadExternalStoragePermissionGranted()){
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            if(intent.resolveActivity(getActivity().getPackageManager()) != null){
+                startActivityForResult(intent, REQUEST_CODE_SELECT_IMAGE);
+            }
+        }
+        else {
+            ActivityCompat.requestPermissions(
+                    getActivity(),
+                    new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION
+            );
+        }
+
+    }
+
+    private boolean isReadExternalStoragePermissionGranted(){
+        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
@@ -348,7 +358,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if((requestCode == REQUEST_CODE_ADD_NOTE || requestCode == REQUEST_CODE_UPDATE_NOTE) && resultCode == Activity.RESULT_OK){
+        if((requestCode == REQUEST_CODE_ADD_NOTE || requestCode == REQUEST_CODE_UPDATE_NOTE) && resultCode == RESULT_OK){
             if(data != null){
                 NoteWithData noteWithData = (NoteWithData) data.getSerializableExtra("note");
                 if(data.getBooleanExtra("isNoteUpdated", false)){
@@ -393,7 +403,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             }
         }
 
-        if(requestCode == REQUEST_CODE_SELECT_IMAGE && resultCode == Activity.RESULT_OK){
+        if(requestCode == REQUEST_CODE_SELECT_IMAGE && resultCode == RESULT_OK){
             if( data != null){
 
                 try {
@@ -413,7 +423,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                         startActivityForResult(intent, REQUEST_CODE_ADD_NOTE);
                     }
                     else {
-                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_STORAGE_PERMISSION);
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION);
                     }
 
                 } catch (Exception e) {
@@ -421,6 +431,24 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 }
 
 
+            }
+        }
+
+        if(requestCode == REQUEST_CODE_SPEECH_INPUT && resultCode == RESULT_OK){
+            if(data != null){
+                try {
+                    // the resulting text is in the getExtras:
+                    Bundle bundle = data.getExtras();
+                    ArrayList<String> transcribedStrings = bundle.getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
+                    Intent intent = new Intent(getContext(), CreateNoteActivity.class);
+                    intent.putExtra("isFromQuickActions", true);
+                    intent.putExtra("quickActionsType", "transcribe");
+                    intent.putExtra("transcribedText", transcribedStrings.get(0) + "\n");
+                    startActivityForResult(intent, REQUEST_CODE_ADD_NOTE);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -520,7 +548,18 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     }
 
     private void onTranscribeSpeechQuickActionPressed(){
-
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 2000);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hi, Speak something.");
+        try {
+            startActivityForResult(intent, REQUEST_CODE_SPEECH_INPUT);
+            //Toast.makeText(this, "Your audio will be sent to Google APIs to provide speech recognition service.", Toast.LENGTH_LONG).show();
+        }
+        catch (Exception e){
+            Toast.makeText(getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void sortNotes(){

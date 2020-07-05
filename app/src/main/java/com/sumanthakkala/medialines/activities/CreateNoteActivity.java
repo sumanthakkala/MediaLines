@@ -102,6 +102,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private String currentLocationLatLong;
     private String currentDateTime;
     private String selectedNoteColor;
+    private BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
 
     private Boolean isExistingNote = false;
     private MediaRecorder mediaRecorder;
@@ -225,6 +226,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 webUrlLayout.setVisibility(View.VISIBLE);
             }
 
+            if(type != null && type.equals("transcribe")){
+                noteText.setText(getIntent().getStringExtra("transcribedText"));
+            }
+
         }
 
         findViewById(R.id.removeWebUrlImage).setOnClickListener(new View.OnClickListener() {
@@ -321,18 +326,24 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     @Override
     public void onBackPressed() {
-        if(noteAudiosAdapter.isPlaying){
-            noteAudiosAdapter.stopAudioPlayback();
+        if(bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED){
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
-        for (NoteImageViewModel attachment: selectedImages){
-            File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.imageUniqueFileName);
-            attachmentFile.delete();
+        else {
+            if(noteAudiosAdapter.isPlaying){
+                noteAudiosAdapter.stopAudioPlayback();
+            }
+            for (NoteImageViewModel attachment: selectedImages){
+                File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.imageUniqueFileName);
+                attachmentFile.delete();
+            }
+            for (NoteAudioViewModel attachment: newAudios){
+                File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.audioUniqueFileName);
+                attachmentFile.delete();
+            }
+            super.onBackPressed();
         }
-        for (NoteAudioViewModel attachment: newAudios){
-            File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.audioUniqueFileName);
-            attachmentFile.delete();
-        }
-        super.onBackPressed();
+
     }
 
     private void saveNote() {
@@ -538,7 +549,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     private void initMoreOptions(){
         final LinearLayout moreOptionsLayout = findViewById(R.id.moreOptionsLayout);
-        final BottomSheetBehavior<LinearLayout> bottomSheetBehavior = BottomSheetBehavior.from(moreOptionsLayout);
+        bottomSheetBehavior = BottomSheetBehavior.from(moreOptionsLayout);
         moreOptionsLayout.findViewById(R.id.textMoreOptions).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
