@@ -49,6 +49,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.adapters.NoteAudiosAdapter;
 import com.sumanthakkala.medialines.adapters.NoteImagesAdapter;
@@ -103,6 +105,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private AlertDialog addUrlDialog;
     private AlertDialog recordAudioDialog;
     private AlertDialog showImageDialog;
+    private AlertDialog exitDialog;
     private String currentLocationLatLong;
     private String currentDateTime;
     private String selectedNoteColor;
@@ -334,23 +337,57 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
         else {
-            if(noteAudiosAdapter.isPlaying){
-                noteAudiosAdapter.stopAudioPlayback();
+            if(isExistingNote){
+                finish();
+                super.onBackPressed();
             }
-            for (NoteImageViewModel attachment: selectedImages){
-                File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.imageUniqueFileName);
-                attachmentFile.delete();
+            else {
+                showExitDialog();
             }
-            for (NoteAudioViewModel attachment: newAudios){
-                File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.audioUniqueFileName);
-                attachmentFile.delete();
-            }
-            finish();
-            super.onBackPressed();
         }
 
     }
 
+    private void showExitDialog(){
+        if(exitDialog == null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(CreateNoteActivity.this);
+            View view = LayoutInflater.from(this).inflate(
+                    R.layout.on_back_pressed,
+                    (ViewGroup) findViewById(R.id.onBackPressedDialogContainer)
+            );
+            builder.setView(view);
+            exitDialog = builder.create();
+
+            if(exitDialog.getWindow() != null){
+                exitDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }
+            view.findViewById(R.id.yesGoBackTV).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(noteAudiosAdapter.isPlaying){
+                        noteAudiosAdapter.stopAudioPlayback();
+                    }
+                    for (NoteImageViewModel attachment: selectedImages){
+                        File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.imageUniqueFileName);
+                        attachmentFile.delete();
+                    }
+                    for (NoteAudioViewModel attachment: newAudios){
+                        File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.audioUniqueFileName);
+                        attachmentFile.delete();
+                    }
+                    finish();
+                }
+            });
+
+            view.findViewById(R.id.cancelGoBackTV).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    exitDialog.dismiss();
+                }
+            });
+        }
+        exitDialog.show();
+    }
     private void saveNote() {
         if (noteTitle.getText().toString().trim().isEmpty()) {
             Toast.makeText(this, "Title cannot be empty", Toast.LENGTH_SHORT).show();
@@ -452,11 +489,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                     }
 
                 }
-
-                // Preparing data to send back to recycler view
-//                noteWithData.attachments = existingImageAttachments;
-//                noteWithData.note = note;
-//                noteWithData.editedLocations = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).editedLocationsDao().getAllEditedLocations();
                 noteWithData = MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().getNoteWithDataByNoteId(note.getNoteId());
                 return null;
             }
@@ -519,6 +551,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                         }
                     }
                 });
+                Toast.makeText(this,"Location details are attached to the note creater. This will be used to display note details on map. (Feature coming soon)", Toast.LENGTH_LONG).show();
                 return;
             }
         }
@@ -643,7 +676,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 case "#fffdbe38":
                     moreOptionsLayout.findViewById(R.id.viewColor2).performClick();
                     break;
-                case "#fff4842":
+                case "#ffff4842":
                     moreOptionsLayout.findViewById(R.id.viewColor3).performClick();
                     break;
                 case "#ff3a52fc":
@@ -737,7 +770,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 try {
                     photoFile = createTempImageFile();
                 } catch (IOException ex) {
-
+                    System.out.println(ex.getMessage());
                 }
                 // Continue only if the File was successfully created
                 if (photoFile != null) {
@@ -788,7 +821,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         super.onActivityResult(requestCode, resultCode, data);
         if((requestCode == REQUEST_CODE_SELECT_IMAGE && data != null) || (requestCode == REQUEST_CODE_CAPTURE_IMAGE) && resultCode == RESULT_OK){
                 try {
-                    if(isExternalStorageWritable() && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                    if(isExternalStorageWritable()){
                         if(requestCode == REQUEST_CODE_SELECT_IMAGE){
                             Uri imageUri = data.getData();
                             compressImageAndUpdateViewPager(getRealPathFromURI(imageUri));
@@ -796,9 +829,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                         else {
                             compressImageAndUpdateViewPager(currentTempPhotoPath);
                         }
-                        File tempFile = new File(currentTempPhotoPath);
-                        tempFile.delete();
-                        currentTempPhotoPath = "";
                     }
                     else {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION);
@@ -810,17 +840,18 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         }
 
         if(requestCode == REQUEST_CODE_SPEECH_INPUT && resultCode == RESULT_OK){
-            if(data != null){
-                try {
+                if(data != null){
+                    try {
                         // the resulting text is in the getExtras:
                         Bundle bundle = data.getExtras();
                         ArrayList<String> transcribedStrings = bundle.getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
                         noteText.setText(noteText.getText().toString() + transcribedStrings.get(0) + "\n");
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
+
         }
     }
 
@@ -885,7 +916,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             //Toast.makeText(this, "Your audio will be sent to Google APIs to provide speech recognition service.", Toast.LENGTH_LONG).show();
         }
         catch (Exception e){
-            Toast.makeText(this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),"Transcribing speech requires Google app. Please install and try again.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -1020,6 +1051,8 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             builder.setView(view);
             showImageDialog = builder.create();
 
+            showImageDialog.setCancelable(false);
+            showImageDialog.setCanceledOnTouchOutside(false);
             if(showImageDialog.getWindow() != null){
                 showImageDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
             }
@@ -1036,23 +1069,11 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             });
 
             if(uniqueImageName != null){
-                try {
-                    File file = new File(getExternalFilesDir(null), uniqueImageName);
-                    FileInputStream fis = new FileInputStream(file);
-                    Bitmap bitmap = BitmapFactory.decodeStream(fis);
-                    fis.close();
-                    attachmentImageViewInDialog.setImageBitmap(bitmap);
-                    attachmentImageViewInDialog.setVisibility(View.VISIBLE);
+                File file = new File(getExternalFilesDir(null), uniqueImageName);
+                Picasso.get().load(file).into(attachmentImageViewInDialog);
+                attachmentImageViewInDialog.setVisibility(View.VISIBLE);
 
-                    if(bitmap.getHeight() > 200){
-                        attachmentImageViewInDialog.getLayoutParams().height = 1080;
-                    }
-
-                } catch (FileNotFoundException e) {
-                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                        attachmentImageViewInDialog.setMaxHeight(1080);
 
                 imagePositionTV.setText("" + (position + 1) + "/" + totalImages.size());
             }
@@ -1079,6 +1100,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             protected void onPostExecute(String imageName){
                 // imagePath is path of new compressed image.
                 addImageToViewPager(imageName);
+                File tempFile = new File(currentTempPhotoPath);
+                tempFile.delete();
+                currentTempPhotoPath = "";
             }
 
 

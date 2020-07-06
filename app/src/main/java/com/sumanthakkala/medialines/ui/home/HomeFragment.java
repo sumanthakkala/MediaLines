@@ -63,7 +63,7 @@ import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
 
-public class HomeFragment extends Fragment implements NotesListener, SearchView.OnQueryTextListener{
+public class HomeFragment extends Fragment implements NotesListener, SearchView.OnQueryTextListener, ActivityCompat.OnRequestPermissionsResultCallback {
     public static final int REQUEST_CODE_ADD_NOTE = 1;
     public static final int REQUEST_CODE_UPDATE_NOTE = 2;
     public static final int REQUEST_CODE_SELECT_IMAGE = 3;
@@ -255,8 +255,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             }
         }
         else {
-            ActivityCompat.requestPermissions(
-                    getActivity(),
+            requestPermissions(
                     new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION
             );
@@ -408,7 +407,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             if( data != null){
 
                 try {
-                    if(isExternalStorageWritable() && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                    if(isExternalStorageWritable()){
 
                         String fileName = generateUUID() + new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
                                 .format(new Date());
@@ -436,21 +435,23 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         }
 
         if(requestCode == REQUEST_CODE_SPEECH_INPUT && resultCode == RESULT_OK){
-            if(data != null){
-                try {
-                    // the resulting text is in the getExtras:
-                    Bundle bundle = data.getExtras();
-                    ArrayList<String> transcribedStrings = bundle.getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
-                    Intent intent = new Intent(getContext(), CreateNoteActivity.class);
-                    intent.putExtra("isFromQuickActions", true);
-                    intent.putExtra("quickActionsType", "transcribe");
-                    intent.putExtra("transcribedText", transcribedStrings.get(0) + "\n");
-                    startActivityForResult(intent, REQUEST_CODE_ADD_NOTE);
+                if(data != null){
+                    try {
+                        // the resulting text is in the getExtras:
+                        Bundle bundle = data.getExtras();
+                        ArrayList<String> transcribedStrings = bundle.getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
+                        Intent intent = new Intent(getContext(), CreateNoteActivity.class);
+                        intent.putExtra("isFromQuickActions", true);
+                        intent.putExtra("quickActionsType", "transcribe");
+                        intent.putExtra("transcribedText", transcribedStrings.get(0) + "\n");
+                        startActivityForResult(intent, REQUEST_CODE_ADD_NOTE);
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
+
+
         }
         collapseSearchView();
 
@@ -558,7 +559,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             //Toast.makeText(this, "Your audio will be sent to Google APIs to provide speech recognition service.", Toast.LENGTH_LONG).show();
         }
         catch (Exception e){
-            Toast.makeText(getActivity(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(),"Transcribing speech requires Google app. Please install and try again.", Toast.LENGTH_LONG).show();
         }
     }
 

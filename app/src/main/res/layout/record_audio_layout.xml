@@ -71,7 +71,8 @@
         android:padding="@dimen/_8sdp"
         android:includeFontPadding="false"
         android:gravity="center"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:background="@drawable/background_button"/>
 
 
 

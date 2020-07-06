@@ -64,7 +64,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:padding="@dimen/_8sdp"
-        android:includeFontPadding="false"/>
+        android:includeFontPadding="false"
+        android:background="@drawable/background_button"/>
 
 
 

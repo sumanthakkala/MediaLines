@@ -65,7 +65,10 @@ public class NoteAudiosAdapter extends RecyclerView.Adapter<NoteAudiosAdapter.No
             @Override
             public void onClick(View view) {
                 audiosListener.onDeleteAudioCLicked(noteAudiosList.get(position));
-                stopAudioPlayback();
+                currentPlaybackHolder = holder;
+                if(isPlaying){
+                    stopAudioPlayback();
+                }
             }
         });
     }
