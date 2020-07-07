@@ -190,5 +190,6 @@
     </ScrollView>
 
     <include layout="@layout/more_options_layout" />
+    <include layout="@layout/info_sheet_layout" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

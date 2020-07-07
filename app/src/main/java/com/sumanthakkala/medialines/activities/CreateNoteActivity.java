@@ -50,6 +50,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.adapters.NoteAudiosAdapter;
@@ -83,7 +91,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class CreateNoteActivity extends AppCompatActivity implements  OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener {
+public class CreateNoteActivity extends AppCompatActivity implements  OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener, OnMapReadyCallback {
 
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private static final int REQUEST_CODE_RECORD_AUDIO_PERMISSION = 2;
@@ -109,7 +117,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private String currentLocationLatLong;
     private String currentDateTime;
     private String selectedNoteColor;
+    private GoogleMap map;
     private BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
+    private BottomSheetBehavior<LinearLayout> infoSheetBehavior;
 
     private Boolean isExistingNote = false;
     private MediaRecorder mediaRecorder;
@@ -255,6 +265,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         }
         getCurrentLocation();
         initMoreOptions();
+        if(isExistingNote){
+            initInfoSheet();
+        }
     }
 
     @Override
@@ -335,6 +348,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     public void onBackPressed() {
         if(bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED){
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+        else if(infoSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED){
+            infoSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
         else {
             if(isExistingNote){
@@ -727,6 +744,101 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 showRecordAudioDialog();
             }
         });
+
+        if(isExistingNote){
+            moreOptionsLayout.findViewById(R.id.infoNoteOptionLayout).setVisibility(View.VISIBLE);
+            moreOptionsLayout.findViewById(R.id.infoNoteOptionLayout).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+            });
+        }
+        else {
+            moreOptionsLayout.findViewById(R.id.infoNoteOptionLayout).setVisibility(View.GONE);
+        }
+
+
+    }
+
+    private void initInfoSheet(){
+        final LinearLayout infoSheetLayout = findViewById(R.id.infoSheetLayout);
+        infoSheetBehavior = BottomSheetBehavior.from(infoSheetLayout);
+        infoSheetLayout.findViewById(R.id.textInfo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(infoSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED){
+                    infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+                else{
+                    infoSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+            }
+        });
+        infoSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == BottomSheetBehavior.STATE_DRAGGING) {
+                    infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
+
+        final TextView imagesCountTV = infoSheetLayout.findViewById(R.id.imageAttachmentsCountTV);
+        final TextView audiosCountTV = infoSheetLayout.findViewById(R.id.audioAttachmentsCountTV);
+
+        if(existingNoteWithData != null && existingimagesInImageViewModel != null && existingAudiosInAudioViewModel != null){
+            imagesCountTV.setText("Images: " + existingimagesInImageViewModel.size());
+            audiosCountTV.setText("Recordings: " + existingAudiosInAudioViewModel.size());
+        }
+        SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+
+        if(isExistingNote){
+            List<LatLng> pinnedLatLngs = new ArrayList<>();
+            for(int i = 0; i < existingNoteWithData.editedLocations.size(); i++){
+                if(i > 5){
+                    break;
+                }
+                else {
+                    if(i == 0){
+                        EditedLocations location = existingNoteWithData.editedLocations.get(i);
+                        String latlongStr = location.getLocation();
+                        String[] latLongList = latlongStr.split(" ");
+                        LatLng coordinate = new LatLng(Double.parseDouble(latLongList[0]), Double.parseDouble(latLongList[1]));
+                        pinnedLatLngs.add(coordinate);
+                        map.addMarker(new MarkerOptions().position(coordinate).title("Created here on " + location.getDateTime()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    }
+                    else {
+                        EditedLocations location = existingNoteWithData.editedLocations.get(i);
+                        String latlongStr = location.getLocation();
+                        String[] latLongList = latlongStr.split(" ");
+                        LatLng coordinate = new LatLng(Double.parseDouble(latLongList[0]), Double.parseDouble(latLongList[1]));
+                        pinnedLatLngs.add(coordinate);
+                        map.addMarker(new MarkerOptions().position(coordinate).title("Edited here on " + location.getDateTime()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                    }
+                }
+            }
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for(LatLng location: pinnedLatLngs){
+                builder.include(location);
+            }
+            LatLngBounds bounds = builder.build();
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 10));
+        }
     }
 
     private void setNoteIndicatorColor(){
