@@ -349,7 +349,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         if(bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED){
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
-        else if(infoSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED){
+        else if(isExistingNote && (infoSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)){
             infoSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
