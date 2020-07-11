@@ -37,9 +37,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.navigation.NavigationView;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.activities.CreateNoteActivity;
 import com.sumanthakkala.medialines.adapters.NotesAdapter;
+import com.sumanthakkala.medialines.constants.Constants;
 import com.sumanthakkala.medialines.database.MediaLinesDatabase;
 import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.EditedLocations;
@@ -85,12 +87,19 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     private LinearLayout multiSelectActionsLayout;
     private TextView selectionCountTV;
     private ImageView deleteSelectedNotesIV;
+    private ImageView archiveSelectedNotesIV;
+    private ImageView unArchiveSelectedNotesIV;
+    private ImageView addImageQuickActionIV;
+    private ImageView addUrlQuickActionIV;
+    private ImageView transcribeSpeechQuickActionIV;
     private ImageView cancelMultiSelectIV;
     private ImageView sortModeIV;
     private SearchView searchView;
     private MenuItem mSearchMenuItem;
     private AlertDialog addUrlDialog;
     private BottomAppBar bottomAppBar;
+
+    private int notesType = 1;
 
     private int noteClickedPosition = -1;
 
@@ -101,6 +110,14 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         setHasOptionsMenu(true);
+        NavigationView navigationView = getActivity().findViewById(R.id.nav_view);
+        MenuItem selectedMenuItem = navigationView.getCheckedItem();
+        if(selectedMenuItem.getItemId() == R.id.nav_home){
+            notesType = Constants.IS_ACTIVE;
+        }
+        if(selectedMenuItem.getItemId() == R.id.nav_archive){
+            notesType = Constants.IS_ARCHIVE;
+        }
         fab = root.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,7 +152,24 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             }
         });
 
-        root.findViewById(R.id.imageTranscribeSpeech).setOnClickListener(new View.OnClickListener() {
+        archiveSelectedNotesIV = root.findViewById(R.id.archiveSelectedNotes);
+        archiveSelectedNotesIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                archiveSelectedNotes();
+            }
+        });
+
+        unArchiveSelectedNotesIV = root.findViewById(R.id.unArchiveSelectedNotes);
+        unArchiveSelectedNotesIV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                unArchiveSelectedNotes();
+            }
+        });
+
+        transcribeSpeechQuickActionIV = root.findViewById(R.id.imageTranscribeSpeech);
+        transcribeSpeechQuickActionIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onTranscribeSpeechQuickActionPressed();
@@ -150,14 +184,16 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             }
         });
 
-        root.findViewById(R.id.imageAddImage).setOnClickListener(new View.OnClickListener() {
+        addImageQuickActionIV = root.findViewById(R.id.imageAddImage);
+        addImageQuickActionIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                     selectImageHandler();
             }
         });
 
-        root.findViewById(R.id.imageAddWebLink).setOnClickListener(new View.OnClickListener() {
+        addUrlQuickActionIV = root.findViewById(R.id.imageAddWebLink);
+        addUrlQuickActionIV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showAddUrlDialig();
@@ -167,8 +203,102 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         notesList = new ArrayList<>();
         notesAdapter = new NotesAdapter(notesList, this);
         notesRecyclerView.setAdapter(notesAdapter);
+
+        switch (notesType){
+            case Constants
+                    .IS_ACTIVE:
+                setupActiveNotesView();
+                break;
+            case Constants.IS_ARCHIVE:
+                setupArchiveNotesView();
+                break;
+        }
+
         getNotes();
         return root;
+    }
+
+    private void unArchiveSelectedNotes() {
+
+        @SuppressLint("StaticFieldLeak")
+        class UnArchiveNotesTask extends AsyncTask<Void, Void, Void> {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if(selectedNotes.size() > 0){
+                    List<Long> noteIds = new ArrayList<>();
+                    for (NoteWithData note: selectedNotes){
+                        noteIds.add(note.note.getNoteId());
+                    }
+                    MediaLinesDatabase.getMediaLinesDatabase(getContext()).noteDao().unArchiveNotesWithId(noteIds);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                notesList.removeAll(selectedNotes);
+                intactNotesList.removeAll(selectedNotes);
+                notesAdapter.setIntactDataSource(intactNotesList);
+                notesAdapter.notifyDataSetChanged();
+                notesAdapter.notifyItemRangeChanged(0, notesList.size());
+                cancelMultiSelectIV.performClick();
+                collapseSearchView();
+            }
+        }
+        new UnArchiveNotesTask().execute();
+
+    }
+
+    private void archiveSelectedNotes() {
+        @SuppressLint("StaticFieldLeak")
+        class ArchiveNotesTask extends AsyncTask<Void, Void, Void> {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if(selectedNotes.size() > 0){
+                    List<Long> noteIds = new ArrayList<>();
+                    for (NoteWithData note: selectedNotes){
+                        noteIds.add(note.note.getNoteId());
+                    }
+                    MediaLinesDatabase.getMediaLinesDatabase(getContext()).noteDao().archiveNotesWithId(noteIds);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                notesList.removeAll(selectedNotes);
+                intactNotesList.removeAll(selectedNotes);
+                notesAdapter.setIntactDataSource(intactNotesList);
+                notesAdapter.notifyDataSetChanged();
+                notesAdapter.notifyItemRangeChanged(0, notesList.size());
+                cancelMultiSelectIV.performClick();
+                collapseSearchView();
+            }
+        }
+        new ArchiveNotesTask().execute();
+    }
+
+    private void setupActiveNotesView() {
+        addImageQuickActionIV.setVisibility(View.VISIBLE);
+        addUrlQuickActionIV.setVisibility(View.VISIBLE);
+        transcribeSpeechQuickActionIV.setVisibility(View.VISIBLE);
+        archiveSelectedNotesIV.setVisibility(View.VISIBLE);
+        unArchiveSelectedNotesIV.setVisibility(View.GONE);
+        fab.show();
+    }
+
+    private void setupArchiveNotesView() {
+        addImageQuickActionIV.setVisibility(View.GONE);
+        addUrlQuickActionIV.setVisibility(View.GONE);
+        transcribeSpeechQuickActionIV.setVisibility(View.GONE);
+        archiveSelectedNotesIV.setVisibility(View.GONE);
+        unArchiveSelectedNotesIV.setVisibility(View.VISIBLE);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, 0, 0);
+        sortModeIV.setLayoutParams(lp);
+        fab.hide();
     }
 
     @Override
@@ -199,7 +329,9 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             @Override
             public boolean onMenuItemActionCollapse(MenuItem menuItem) {
                 bottomAppBar.setVisibility(View.VISIBLE);
-                fab.show();
+                if(notesType == Constants.IS_ACTIVE){
+                    fab.show();
+                }
                 return true;
             }
         });
@@ -227,8 +359,10 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     @Override
     public void onMultiSelectEnd() {
         quickActionsLayout.setVisibility(View.VISIBLE);
-        fab.show();
         multiSelectActionsLayout.setVisibility(View.GONE);
+        if(notesType == Constants.IS_ACTIVE){
+            fab.show();
+        }
     }
 
     @Override
@@ -316,7 +450,12 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         class GetNotesTask extends AsyncTask<Void, Void, List<NoteWithData>>{
             @Override
             protected List<NoteWithData> doInBackground(Void... voids) {
-                return MediaLinesDatabase.getMediaLinesDatabase(getActivity().getApplicationContext()).noteDao().getNotesWithData();
+                if(notesType == Constants.IS_ACTIVE){
+                    return MediaLinesDatabase.getMediaLinesDatabase(getActivity().getApplicationContext()).noteDao().getActiveNotesWithData();
+                }
+                else {
+                    return MediaLinesDatabase.getMediaLinesDatabase(getActivity().getApplicationContext()).noteDao().getArchiveNotesWithData();
+                }
             }
 
             @Override
@@ -370,6 +509,14 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     intactNotesList.add(indexInIntactSource, noteWithData);
                     notesAdapter.setIntactDataSource(intactNotesList);
                     notesAdapter.notifyItemChanged(noteClickedPosition);
+                }
+                else if(data.getBooleanExtra("isNoteArchivedOrUnArchived", false)){
+                    int position = data.getIntExtra("position", -1);
+                    NoteWithData removedNote = notesList.remove(noteClickedPosition);
+                    intactNotesList.remove(removedNote);
+                    notesAdapter.setIntactDataSource(intactNotesList);
+                    notesAdapter.notifyItemRemoved(noteClickedPosition);
+                    notesAdapter.notifyItemRangeChanged(0, notesList.size());
                 }
                 else {
 

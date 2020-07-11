@@ -12,6 +12,9 @@ public class Note implements Serializable {
     @PrimaryKey(autoGenerate = true)
     private long noteId;
 
+    @ColumnInfo(name = "is_active")
+    private int isActive;
+
     @ColumnInfo(name = "title")
     private String title;
 
@@ -60,6 +63,14 @@ public class Note implements Serializable {
 
     public void setCreatedLocation(String createdLocation) {
         this.createdLocation = createdLocation;
+    }
+
+    public int getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(int isActive) {
+        this.isActive = isActive;
     }
 
     public String getNoteText() {

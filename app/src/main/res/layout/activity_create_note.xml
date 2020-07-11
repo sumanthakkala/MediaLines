@@ -52,6 +52,42 @@
                 android:background="@drawable/background_button"
                 />
 
+            <ImageView
+                android:id="@+id/imageArchiveNote"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_archive"
+                android:tint="@color/colorIcons"
+                android:layout_marginStart="@dimen/_6sdp"
+                android:layout_marginLeft="@dimen/_6sdp"
+                android:layout_marginEnd="@dimen/_12sdp"
+                android:layout_marginRight="@dimen/_12sdp"
+                app:layout_constraintBottom_toBottomOf="@id/imageBack"
+                app:layout_constraintEnd_toStartOf="@id/imageSaveNote"
+                app:layout_constraintTop_toTopOf="@id/imageBack"
+                android:background="@drawable/background_button"
+                android:visibility="gone"
+                />
+
+            <ImageView
+                android:id="@+id/imageUnArchiveNote"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_unarchive"
+                android:tint="@color/colorIcons"
+                android:layout_marginStart="@dimen/_6sdp"
+                android:layout_marginLeft="@dimen/_6sdp"
+                android:layout_marginEnd="@dimen/_12sdp"
+                android:layout_marginRight="@dimen/_12sdp"
+                app:layout_constraintBottom_toBottomOf="@id/imageBack"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/imageBack"
+                android:background="@drawable/background_button"
+                android:visibility="gone"
+                />
+
             <EditText
                 android:id="@+id/inputNoteTitle"
                 android:layout_width="match_parent"

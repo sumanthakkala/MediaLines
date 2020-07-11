@@ -8,6 +8,12 @@
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_view_list"
             android:title="Notes"/>
+
+        <item
+            android:id="@+id/nav_archive"
+            android:icon="@drawable/ic_archive"
+            android:title="Archives"/>
+
         <item
             android:id="@+id/nav_about"
             android:icon="@drawable/ic_info"

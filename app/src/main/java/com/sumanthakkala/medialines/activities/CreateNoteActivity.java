@@ -37,6 +37,7 @@ import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.util.Patterns;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -62,6 +63,7 @@ import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.adapters.NoteAudiosAdapter;
 import com.sumanthakkala.medialines.adapters.NoteImagesAdapter;
+import com.sumanthakkala.medialines.constants.Constants;
 import com.sumanthakkala.medialines.database.MediaLinesDatabase;
 import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.EditedLocations;
@@ -102,6 +104,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private static final int REQUEST_CODE_CAPTURE_IMAGE = 7;
 
     private EditText noteTitle, noteText;
+    private ImageView imageDone;
+    private ImageView imageUnArchive;
+    private ImageView imageArchive;
     private TextView textDateTime;
     private View noteColorIndicator;
     private ViewPager2 imagesViewPager;
@@ -174,6 +179,8 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_note);
+        initMoreOptions();
+
 
         ImageView imageBack = findViewById(R.id.imageBack);
         imageBack.setOnClickListener(new View.OnClickListener() {
@@ -183,11 +190,27 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             }
         });
 
-        ImageView imageDone = findViewById(R.id.imageSaveNote);
+        imageDone = findViewById(R.id.imageSaveNote);
         imageDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 saveNote();
+            }
+        });
+
+        imageUnArchive = findViewById(R.id.imageUnArchiveNote);
+        imageUnArchive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                unArchiveNote();
+            }
+        });
+
+        imageArchive = findViewById(R.id.imageArchiveNote);
+        imageArchive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                archiveNote();
             }
         });
 
@@ -224,6 +247,14 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             isExistingNote = true;
             existingNoteWithData = (NoteWithData) getIntent().getSerializableExtra("noteData");
             existingNotePosition = (int) getIntent().getIntExtra("position", -1);
+            initInfoSheet();
+            if(existingNoteWithData.note.getIsActive() == Constants.IS_ACTIVE){
+                imageArchive.setVisibility(View.VISIBLE);
+            }
+            else {
+                imageUnArchive.setVisibility(View.VISIBLE);
+                imageDone.setVisibility(View.GONE);
+            }
             setExistingNoteData();
         }
 
@@ -264,10 +295,60 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             imagePositionIndicator.setVisibility(View.GONE);
         }
         getCurrentLocation();
-        initMoreOptions();
-        if(isExistingNote){
-            initInfoSheet();
+    }
+
+    private void archiveNote() {
+        @SuppressLint("StaticFieldLeak")
+        class ArchiveNoteTask extends AsyncTask<Void, Void, Void> {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                List<Long> noteIds = new ArrayList<>();
+                noteIds.add(existingNoteWithData.note.getNoteId());
+                MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().archiveNotesWithId(noteIds);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                Intent intent = new Intent();
+                intent.putExtra("note", existingNoteWithData);
+                if(isExistingNote && existingNotePosition != -1){
+                    intent.putExtra("isNoteArchivedOrUnArchived", true);
+                    intent.putExtra("position", existingNotePosition);
+                }
+                setResult(RESULT_OK, intent);
+                finish();
+            }
         }
+        new ArchiveNoteTask().execute();
+    }
+
+    private void unArchiveNote(){
+        @SuppressLint("StaticFieldLeak")
+        class UnArchiveNoteTask extends AsyncTask<Void, Void, Void> {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                List<Long> noteIds = new ArrayList<>();
+                noteIds.add(existingNoteWithData.note.getNoteId());
+                MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).noteDao().unArchiveNotesWithId(noteIds);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                Intent intent = new Intent();
+                intent.putExtra("note", existingNoteWithData);
+                if(isExistingNote && existingNotePosition != -1){
+                    intent.putExtra("isNoteArchivedOrUnArchived", true);
+                    intent.putExtra("position", existingNotePosition);
+                }
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+        }
+        new UnArchiveNoteTask().execute();
     }
 
     @Override
@@ -310,6 +391,28 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     private void setExistingNoteData(){
 
+        if(isExistingNote){
+            findViewById(R.id.infoNoteOptionLayout).setVisibility(View.VISIBLE);
+            findViewById(R.id.infoNoteOptionLayout).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+            });
+        }
+        else {
+            findViewById(R.id.infoNoteOptionLayout).setVisibility(View.GONE);
+        }
+
+        if(existingNoteWithData.note.getIsActive() == Constants.IS_ARCHIVE){
+            imageDone.setVisibility(View.GONE);
+            bottomSheetBehavior.setPeekHeight(0);
+            infoSheetBehavior.setPeekHeight((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, getResources().getDisplayMetrics()));
+            imageDone.setVisibility(View.GONE);
+            imageUnArchive.setVisibility(View.VISIBLE);
+        }
+
         noteTitle.setText(existingNoteWithData.note.getTitle());
         textDateTime.setText(existingNoteWithData.note.getDateTime());
         noteText.setText(existingNoteWithData.note.getNoteText());
@@ -349,9 +452,12 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         if(bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED){
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
-        else if(isExistingNote && (infoSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)){
+        else if(isExistingNote && (infoSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) && (existingNoteWithData.note.getIsActive() == Constants.IS_ACTIVE)){
             infoSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
+        else if(isExistingNote && (infoSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) && (existingNoteWithData.note.getIsActive() == Constants.IS_ARCHIVE)){
+            infoSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
         else {
             if(isExistingNote){
@@ -420,6 +526,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         note.setNoteText(noteText.getText().toString());
         note.setDateTime(textDateTime.getText().toString());
         note.setCreatedLocation(currentLocationLatLong);
+        note.setIsActive(Constants.IS_ACTIVE);
         note.setColor(selectedNoteColor);
 
         if(webUrlLayout.getVisibility() == View.VISIBLE){
@@ -745,19 +852,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             }
         });
 
-        if(isExistingNote){
-            moreOptionsLayout.findViewById(R.id.infoNoteOptionLayout).setVisibility(View.VISIBLE);
-            moreOptionsLayout.findViewById(R.id.infoNoteOptionLayout).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                    infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                }
-            });
-        }
-        else {
-            moreOptionsLayout.findViewById(R.id.infoNoteOptionLayout).setVisibility(View.GONE);
-        }
 
 
     }
@@ -770,6 +864,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             public void onClick(View view) {
                 if(infoSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED){
                     infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+                else if(isExistingNote && (existingNoteWithData.note.getIsActive() == Constants.IS_ARCHIVE)){
+                    infoSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }
                 else{
                     infoSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);

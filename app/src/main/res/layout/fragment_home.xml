@@ -125,12 +125,34 @@
                 android:layout_weight="1"/>
 
             <ImageView
+                android:id="@+id/unArchiveSelectedNotes"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:padding="@dimen/_2sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_unarchive"
+                android:tint="@color/colorIcons" />
+
+            <ImageView
+                android:id="@+id/archiveSelectedNotes"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:padding="@dimen/_2sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_archive"
+                android:tint="@color/colorIcons" />
+
+            <ImageView
                 android:id="@+id/deleteSelectedNotes"
                 android:layout_width="@dimen/_20sdp"
                 android:layout_height="@dimen/_20sdp"
                 android:padding="@dimen/_2sdp"
-                android:layout_marginStart="@dimen/_15sdp"
-                android:layout_marginLeft="@dimen/_15sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_delete"
                 android:tint="@color/colorIcons"

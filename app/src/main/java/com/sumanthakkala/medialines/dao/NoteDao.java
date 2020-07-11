@@ -33,11 +33,27 @@ public interface NoteDao {
     public List<NoteWithData> getNotesWithData();
 
     @Transaction
+    @Query("SELECT * FROM notes WHERE is_active = 1 ORDER BY noteId DESC")
+    public List<NoteWithData> getActiveNotesWithData();
+
+    @Transaction
+    @Query("SELECT * FROM notes WHERE is_active = 0 ORDER BY noteId DESC")
+    public List<NoteWithData> getArchiveNotesWithData();
+
+    @Transaction
     @Query("SELECT * FROM notes WHERE noteId = :noteID")
     public NoteWithData getNoteWithDataByNoteId(long noteID);
 
     @Transaction
     @Query("DELETE FROM notes WHERE noteId in (:ids)")
     public void deleteNotesWithId(List<Long> ids);
+
+    @Transaction
+    @Query("UPDATE notes SET is_active = 0 WHERE noteId in (:ids)")
+    public void archiveNotesWithId(List<Long> ids);
+
+    @Transaction
+    @Query("UPDATE notes SET is_active = 1 WHERE noteId in (:ids)")
+    public void unArchiveNotesWithId(List<Long> ids);
 
 }
