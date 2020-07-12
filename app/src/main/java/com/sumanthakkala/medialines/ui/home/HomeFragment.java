@@ -782,9 +782,8 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                         notesAdapter.notifyItemRangeChanged(0, notesList.size());
                     }
                     else {
-                        NoteWithData removedNote = notesList.remove(noteClickedPosition);
+                        NoteWithData removedNote = bookmarkedNotesList.remove(noteClickedPosition);
                         intactNotesList.remove(removedNote);
-                        bookmarkedNotesList.remove(removedNote);
                         intactBookmarkedNotesList.remove(removedNote);
                         bookmarkedNotesAdapter.setIntactDataSource(intactBookmarkedNotesList);
                         bookmarkedNotesAdapter.notifyItemRemoved(noteClickedPosition);
