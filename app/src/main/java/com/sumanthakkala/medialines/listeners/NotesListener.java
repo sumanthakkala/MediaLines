@@ -7,4 +7,6 @@ public interface NotesListener {
     void onMultiSelectBegin();
     void onMultiSelectEnd();
     void onNoteClickInMultiSelectMode(NoteWithData noteWithData, int action);
+    void onFilterNotesDone();
+
 }

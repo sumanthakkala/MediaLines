@@ -138,9 +138,13 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             notesWithData.clear();
             notesWithData.addAll((Collection<? extends NoteWithData>) filterResults.values);
             notifyDataSetChanged();
-
+            notesListener.onFilterNotesDone();
         }
     };
+
+    public List<NoteWithData> getDataSource(){
+        return notesWithData;
+    }
 
     private void selectNote(LinearLayout noteLayout, NoteWithData noteData) {
         if(selectedNotes.contains(noteData)){

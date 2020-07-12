@@ -527,7 +527,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         note.setDateTime(textDateTime.getText().toString());
         note.setCreatedLocation(currentLocationLatLong);
         note.setIsActive(Constants.IS_ACTIVE);
-        note.setIsBookmarked(0);
         note.setColor(selectedNoteColor);
 
         if(webUrlLayout.getVisibility() == View.VISIBLE){
@@ -538,6 +537,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             note.setNoteId(existingNoteWithData.note.getNoteId());
             note.setCreatedLocation(existingNoteWithData.note.getCreatedLocation());
             note.setDateTime(existingNoteWithData.note.getDateTime());
+            note.setIsBookmarked(existingNoteWithData.note.getIsBookmarked());
         }
 
 

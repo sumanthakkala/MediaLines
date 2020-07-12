@@ -7,26 +7,30 @@
     tools:context=".ui.home.HomeFragment"
     android:animateLayoutChanges="true">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
         <LinearLayout
-            android:id="@+id/bookmarkedNotesRVLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/bookmarksTV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Bookmarks"
                 android:fontFamily="@font/nunito_extralight"
-                android:textSize="@dimen/_8ssp"
+                android:textSize="@dimen/_10ssp"
                 android:textColor="@color/colorWhite"
-                android:layout_marginStart="@dimen/_2sdp"
-                android:layout_marginLeft="@dimen/_2sdp" />
+                android:layout_marginStart="@dimen/_8sdp"
+                android:layout_marginLeft="@dimen/_8sdp"
+                android:layout_marginTop="@dimen/_8ssp"/>
+
+<!--            set padding bottom in recyclerview to 45 sdp -->
+<!--            if you need padding in last element in scroll view-->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/bookmarkedNotesRecyclerView"
                 android:layout_width="match_parent"
@@ -36,18 +40,10 @@
                 android:paddingLeft="0dp"
                 android:paddingEnd="@dimen/_12sdp"
                 android:paddingRight="@dimen/_12sdp"
-                android:paddingBottom="@dimen/_45sdp"
+                android:paddingBottom="@dimen/_15sdp"
                 tools:layout_editor_absoluteX="3dp"
                 android:layout_marginStart="@dimen/_2sdp"
                 android:layout_marginEnd="@dimen/_2sdp"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/otherNotesRVLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
 
             <TextView
                 android:id="@+id/othersTV"
@@ -55,10 +51,11 @@
                 android:layout_height="wrap_content"
                 android:text="Others"
                 android:fontFamily="@font/nunito_extralight"
-                android:textSize="@dimen/_8ssp"
+                android:textSize="@dimen/_10ssp"
                 android:textColor="@color/colorWhite"
-                android:layout_marginStart="@dimen/_2sdp"
-                android:layout_marginLeft="@dimen/_2sdp" />
+                android:layout_marginStart="@dimen/_8sdp"
+                android:layout_marginLeft="@dimen/_8sdp"
+                android:layout_marginTop="@dimen/_8sdp"/>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/notesRecyclerView"
                 android:layout_width="match_parent"
@@ -74,7 +71,7 @@
                 android:layout_marginEnd="@dimen/_2sdp"/>
         </LinearLayout>
 
-    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 
 
@@ -160,7 +157,8 @@
                 android:padding="@dimen/_2sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_close"
-                android:tint="@color/colorIcons" />
+                android:tint="@color/colorIcons"
+                android:background="@drawable/background_button"/>
 
             <TextView
                 android:id="@+id/multiSelectCount"
@@ -191,6 +189,7 @@
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_bookmark_border"
                 android:tint="@color/colorIcons"
+                android:background="@drawable/background_button"
                 android:tag="bookmark"/>
 
             <ImageView
@@ -202,6 +201,7 @@
                 android:layout_marginLeft="@dimen/_10sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_unarchive"
+                android:background="@drawable/background_button"
                 android:tint="@color/colorIcons" />
 
             <ImageView
@@ -213,6 +213,7 @@
                 android:layout_marginLeft="@dimen/_10sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_archive"
+                android:background="@drawable/background_button"
                 android:tint="@color/colorIcons" />
 
             <ImageView
@@ -224,6 +225,7 @@
                 android:layout_marginLeft="@dimen/_10sdp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_delete"
+                android:background="@drawable/background_button"
                 android:tint="@color/colorIcons"
                 />
         </LinearLayout>
