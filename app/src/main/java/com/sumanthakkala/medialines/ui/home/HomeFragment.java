@@ -794,6 +794,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 }
                 else {
                     //When new note is created
+                    notesRecyclerView.setVisibility(View.VISIBLE);
                     switch (currentSortMode){
                         case SORT_BY_DATE:
                             notesList.add(0, noteWithData);

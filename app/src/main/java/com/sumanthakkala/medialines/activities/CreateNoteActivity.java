@@ -676,7 +676,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                         }
                     }
                 });
-                Toast.makeText(this,"Location details are attached to the note creater. This will be used to display note details on map. (Feature coming soon)", Toast.LENGTH_LONG).show();
                 return;
             }
         }
