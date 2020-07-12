@@ -25,6 +25,7 @@ public abstract class MediaLinesDatabase extends RoomDatabase {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE 'notes' ADD COLUMN 'is_active' INT NOT NULL DEFAULT 1");
+            database.execSQL("ALTER TABLE 'notes' ADD COLUMN 'is_bookmarked' INT NOT NULL DEFAULT 0");
         }
     };
 

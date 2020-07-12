@@ -77,7 +77,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             @Override
             public boolean onLongClick(View view) {
                 notesListener.onMultiSelectBegin();
-                if(!multiSelect){
+                if(multiSelect){
                     multiSelect = true;
                     selectNote(holder.noteLayout, notesWithData.get(position));
                 }
@@ -149,7 +149,6 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             noteLayout.setAlpha(1.0f);
             notesListener.onNoteClickInMultiSelectMode(noteData, 0);
             if(selectedNotes.size() == 0){
-                multiSelect = false;
                 notesListener.onMultiSelectEnd();
             }
         }
@@ -173,6 +172,12 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
     public void setIntactDataSource(List<NoteWithData> data){
         intactNotesWithData = data;
+    }
+    public void setMultiSelectMode(boolean option){
+        multiSelect = option;
+    }
+    public boolean getMultiSelectMode(){
+        return multiSelect;
     }
 
     static class NoteViewHolder extends RecyclerView.ViewHolder{

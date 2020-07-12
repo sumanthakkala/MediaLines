@@ -56,4 +56,12 @@ public interface NoteDao {
     @Query("UPDATE notes SET is_active = 1 WHERE noteId in (:ids)")
     public void unArchiveNotesWithId(List<Long> ids);
 
+    @Transaction
+    @Query("UPDATE notes SET is_bookmarked = 1 WHERE noteId in (:ids)")
+    public void bookmarkNotesWithId(List<Long> ids);
+
+    @Transaction
+    @Query("UPDATE notes SET is_bookmarked = 0 WHERE noteId in (:ids)")
+    public void unBookmarkNotesWithId(List<Long> ids);
+
 }

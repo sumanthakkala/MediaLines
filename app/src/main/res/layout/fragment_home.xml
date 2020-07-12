@@ -7,19 +7,76 @@
     tools:context=".ui.home.HomeFragment"
     android:animateLayoutChanges="true">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/notesRecyclerView"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/bookmarkedNotesRVLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clipToPadding="false"
-            android:paddingStart="0dp"
-            android:paddingLeft="0dp"
-            android:paddingEnd="@dimen/_12sdp"
-            android:paddingRight="@dimen/_12sdp"
-            android:paddingBottom="@dimen/_45sdp"
-            tools:layout_editor_absoluteX="3dp"
-            android:layout_marginStart="@dimen/_2sdp"
-            android:layout_marginEnd="@dimen/_2sdp"/>
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bookmarks"
+                android:fontFamily="@font/nunito_extralight"
+                android:textSize="@dimen/_8ssp"
+                android:textColor="@color/colorWhite"
+                android:layout_marginStart="@dimen/_2sdp"
+                android:layout_marginLeft="@dimen/_2sdp" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/bookmarkedNotesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:paddingStart="0dp"
+                android:paddingLeft="0dp"
+                android:paddingEnd="@dimen/_12sdp"
+                android:paddingRight="@dimen/_12sdp"
+                android:paddingBottom="@dimen/_45sdp"
+                tools:layout_editor_absoluteX="3dp"
+                android:layout_marginStart="@dimen/_2sdp"
+                android:layout_marginEnd="@dimen/_2sdp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/otherNotesRVLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:id="@+id/othersTV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Others"
+                android:fontFamily="@font/nunito_extralight"
+                android:textSize="@dimen/_8ssp"
+                android:textColor="@color/colorWhite"
+                android:layout_marginStart="@dimen/_2sdp"
+                android:layout_marginLeft="@dimen/_2sdp" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/notesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:paddingStart="0dp"
+                android:paddingLeft="0dp"
+                android:paddingEnd="@dimen/_12sdp"
+                android:paddingRight="@dimen/_12sdp"
+                android:paddingBottom="@dimen/_45sdp"
+                tools:layout_editor_absoluteX="3dp"
+                android:layout_marginStart="@dimen/_2sdp"
+                android:layout_marginEnd="@dimen/_2sdp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+
 
 
 
@@ -123,6 +180,18 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/bookmarkHandlerSelectedNotes"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:padding="@dimen/_2sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_bookmark_border"
+                android:tint="@color/colorIcons"
+                android:tag="bookmark"/>
 
             <ImageView
                 android:id="@+id/unArchiveSelectedNotes"

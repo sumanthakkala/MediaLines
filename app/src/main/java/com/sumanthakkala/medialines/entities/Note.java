@@ -15,6 +15,9 @@ public class Note implements Serializable {
     @ColumnInfo(name = "is_active")
     private int isActive;
 
+    @ColumnInfo(name = "is_bookmarked")
+    private int isBookmarked;
+
     @ColumnInfo(name = "title")
     private String title;
 
@@ -63,6 +66,14 @@ public class Note implements Serializable {
 
     public void setCreatedLocation(String createdLocation) {
         this.createdLocation = createdLocation;
+    }
+
+    public int getIsBookmarked() {
+        return isBookmarked;
+    }
+
+    public void setIsBookmarked(int isBookmarked) {
+        this.isBookmarked = isBookmarked;
     }
 
     public int getIsActive() {
