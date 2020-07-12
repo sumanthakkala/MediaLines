@@ -247,7 +247,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             isExistingNote = true;
             existingNoteWithData = (NoteWithData) getIntent().getSerializableExtra("noteData");
             existingNotePosition = (int) getIntent().getIntExtra("position", -1);
-            initInfoSheet();
             if(existingNoteWithData.note.getIsActive() == Constants.IS_ACTIVE){
                 imageArchive.setVisibility(View.VISIBLE);
             }
@@ -256,6 +255,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 imageDone.setVisibility(View.GONE);
             }
             setExistingNoteData();
+            initInfoSheet();
         }
 
         if(getIntent().getBooleanExtra("isFromQuickActions", false)){
