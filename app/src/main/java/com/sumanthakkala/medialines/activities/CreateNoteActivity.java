@@ -254,8 +254,8 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 imageUnArchive.setVisibility(View.VISIBLE);
                 imageDone.setVisibility(View.GONE);
             }
-            setExistingNoteData();
             initInfoSheet();
+            setExistingNoteData();
         }
 
         if(getIntent().getBooleanExtra("isFromQuickActions", false)){

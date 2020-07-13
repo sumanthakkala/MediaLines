@@ -245,13 +245,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             }
         });
 
-        notesList = new ArrayList<>();
-        notesAdapter = new NotesAdapter(notesList, this);
-        notesRecyclerView.setAdapter(notesAdapter);
 
-        bookmarkedNotesList = new ArrayList<>();
-        bookmarkedNotesAdapter = new NotesAdapter(bookmarkedNotesList, this);
-        bookmarkedNotesRecyclerView.setAdapter(bookmarkedNotesAdapter);
 
         switch (notesType){
             case Constants
@@ -312,12 +306,15 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     notesAdapter.setIntactDataSource(intactOtherNotesList);
                     notesAdapter.notifyDataSetChanged();
                     notesAdapter.notifyItemRangeChanged(0, notesList.size());
+
                     bookmarkedNotesList.addAll(0, notesToBookmarkInSelectedNotes);
                     intactBookmarkedNotesList.addAll(0, notesToBookmarkInSelectedNotes);
                     bookmarkedNotesAdapter.setIntactDataSource(intactBookmarkedNotesList);
-                    bookmarkedNotesAdapter.notifyItemRangeInserted(0, notesToBookmarkInSelectedNotes.size());
-//                    bookmarkedNotesAdapter.notifyItemRangeChanged(0, bookmarkedNotesList.size());
+                    bookmarkedNotesAdapter.notifyDataSetChanged();
+//                    bookmarkedNotesAdapter.notifyItemRangeInserted(0, notesToBookmarkInSelectedNotes.size());
+                    bookmarkedNotesAdapter.notifyItemRangeChanged(0, bookmarkedNotesList.size());
                     cancelMultiSelectIV.performClick();
+
                     bookmarkedNotesRecyclerView.setVisibility(View.VISIBLE);
                     bookmarksTV.setVisibility(View.VISIBLE);
                     othersTV.setVisibility(View.VISIBLE);
@@ -331,14 +328,6 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     }
                 }
                 else {
-                    bookmarkedNotesList.clear();
-                    intactBookmarkedNotesList.clear();
-                    notesList.clear();
-                    intactOtherNotesList.clear();
-                    notesAdapter.setIntactDataSource(intactOtherNotesList);
-                    bookmarkedNotesAdapter.setIntactDataSource(bookmarkedNotesList);
-                    notesAdapter.notifyDataSetChanged();
-                    bookmarkedNotesAdapter.notifyDataSetChanged();
                     cancelMultiSelectIV.performClick();
                     getNotes();
                 }
@@ -490,12 +479,6 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 //bottomAppBar.setVisibility(View.VISIBLE);
                 notesAdapter.setMultiSelectMode(false);
                 bookmarkedNotesAdapter.setMultiSelectMode(false);
-//                notesAdapter.setIntactDataSource(intactOtherNotesList);
-//                bookmarkedNotesAdapter.setIntactDataSource(intactBookmarkedNotesList);
-//                notesAdapter.notifyDataSetChanged();
-//                notesAdapter.notifyItemRangeChanged(0, intactOtherNotesList.size());
-//                bookmarkedNotesAdapter.notifyDataSetChanged();
-//                bookmarkedNotesAdapter.notifyItemRangeChanged(0, intactBookmarkedNotesList.size());
                 cancelMultiSelectIV.performClick();
                 if(notesType == Constants.IS_ACTIVE){
                     fab.show();
@@ -718,6 +701,15 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             @Override
             protected void onPostExecute(List<NoteWithData> notes) {
                 super.onPostExecute(notes);
+                notesRecyclerView.setAdapter(null);
+                bookmarkedNotesRecyclerView.setAdapter(null);
+                notesList = new ArrayList<>();
+                notesAdapter = new NotesAdapter(notesList, HomeFragment.this);
+                notesRecyclerView.setAdapter(notesAdapter);
+
+                bookmarkedNotesList = new ArrayList<>();
+                bookmarkedNotesAdapter = new NotesAdapter(bookmarkedNotesList, HomeFragment.this);
+                bookmarkedNotesRecyclerView.setAdapter(bookmarkedNotesAdapter);
                 if(notesList.size() == 0){
                     for (NoteWithData noteWithData: notes){
                         if(noteWithData.note.getIsBookmarked() == Constants.IS_BOOKMARKED){
@@ -738,18 +730,18 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     notesAdapter.notifyDataSetChanged();
                     bookmarkedNotesAdapter.setIntactDataSource(intactBookmarkedNotesList);
                     bookmarkedNotesAdapter.notifyDataSetChanged();
-                    if(bookmarkedNotesList.size() == 0){
-                        bookmarkedNotesRecyclerView.setVisibility(View.GONE);
-                        bookmarksTV.setVisibility(View.GONE);
-                        othersTV.setVisibility(View.GONE);
-                    }
                     if(notesList.size() == 0){
                         notesRecyclerView.setVisibility(View.GONE);
                         othersTV.setVisibility(View.GONE);
                     }
                     else {
                         notesRecyclerView.setVisibility(View.VISIBLE);
-                        //othersTV.setVisibility(View.VISIBLE);
+                        othersTV.setVisibility(View.VISIBLE);
+                    }
+                    if(bookmarkedNotesList.size() == 0){
+                        bookmarkedNotesRecyclerView.setVisibility(View.GONE);
+                        bookmarksTV.setVisibility(View.GONE);
+                        othersTV.setVisibility(View.GONE);
                     }
                 }
             }
