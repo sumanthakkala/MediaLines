@@ -234,19 +234,9 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                 }
 
                 if(fileName != ""){
-//                    try {
-                        File file = new File(context.getExternalFilesDir(null), fileName);
-                        Picasso.get().load(file).into(roundedImageView);
-//                        FileInputStream fis = new FileInputStream(file);
-//                        Bitmap bitmap = BitmapFactory.decodeStream(fis);
-//                        fis.close();
-//                        roundedImageView.setImageBitmap(bitmap);
-                        roundedImageViewContainer.setVisibility(View.VISIBLE);
-//                    } catch (FileNotFoundException e) {
-//                        Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
+                    File file = new File(context.getExternalFilesDir(null), fileName);
+                    Picasso.get().load(file).into(roundedImageView);
+                    roundedImageViewContainer.setVisibility(View.VISIBLE);
                 }
 
                 if(noteWithData.attachments.size() > 1){
