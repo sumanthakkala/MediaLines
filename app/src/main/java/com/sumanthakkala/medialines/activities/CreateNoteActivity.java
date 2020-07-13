@@ -527,6 +527,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         note.setDateTime(textDateTime.getText().toString());
         note.setCreatedLocation(currentLocationLatLong);
         note.setIsActive(Constants.IS_ACTIVE);
+        note.setIsBookmarked(0);
         note.setColor(selectedNoteColor);
 
         if(webUrlLayout.getVisibility() == View.VISIBLE){

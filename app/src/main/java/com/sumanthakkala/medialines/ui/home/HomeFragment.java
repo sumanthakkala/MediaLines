@@ -306,16 +306,17 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-
                 if(bookmarkHandlerIVTag.equals(Constants.BOOKMARK)){
                     notesList.removeAll(selectedNotes);
+                    intactOtherNotesList.removeAll(selectedNotes);
+                    notesAdapter.setIntactDataSource(intactOtherNotesList);
                     notesAdapter.notifyDataSetChanged();
                     notesAdapter.notifyItemRangeChanged(0, notesList.size());
                     bookmarkedNotesList.addAll(0, notesToBookmarkInSelectedNotes);
                     intactBookmarkedNotesList.addAll(0, notesToBookmarkInSelectedNotes);
                     bookmarkedNotesAdapter.setIntactDataSource(intactBookmarkedNotesList);
-                    bookmarkedNotesAdapter.notifyDataSetChanged();
-                    bookmarkedNotesAdapter.notifyItemRangeChanged(0, bookmarkedNotesList.size());
+                    bookmarkedNotesAdapter.notifyItemRangeInserted(0, notesToBookmarkInSelectedNotes.size());
+//                    bookmarkedNotesAdapter.notifyItemRangeChanged(0, bookmarkedNotesList.size());
                     cancelMultiSelectIV.performClick();
                     bookmarkedNotesRecyclerView.setVisibility(View.VISIBLE);
                     bookmarksTV.setVisibility(View.VISIBLE);
@@ -331,7 +332,13 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 }
                 else {
                     bookmarkedNotesList.clear();
+                    intactBookmarkedNotesList.clear();
                     notesList.clear();
+                    intactOtherNotesList.clear();
+                    notesAdapter.setIntactDataSource(intactOtherNotesList);
+                    bookmarkedNotesAdapter.setIntactDataSource(bookmarkedNotesList);
+                    notesAdapter.notifyDataSetChanged();
+                    bookmarkedNotesAdapter.notifyDataSetChanged();
                     cancelMultiSelectIV.performClick();
                     getNotes();
                 }
@@ -473,14 +480,23 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         mSearchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                bottomAppBar.setVisibility(View.GONE);
+                //bottomAppBar.setVisibility(View.GONE);
                 fab.hide();
                 return true;
             }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-                bottomAppBar.setVisibility(View.VISIBLE);
+                //bottomAppBar.setVisibility(View.VISIBLE);
+                notesAdapter.setMultiSelectMode(false);
+                bookmarkedNotesAdapter.setMultiSelectMode(false);
+//                notesAdapter.setIntactDataSource(intactOtherNotesList);
+//                bookmarkedNotesAdapter.setIntactDataSource(intactBookmarkedNotesList);
+//                notesAdapter.notifyDataSetChanged();
+//                notesAdapter.notifyItemRangeChanged(0, intactOtherNotesList.size());
+//                bookmarkedNotesAdapter.notifyDataSetChanged();
+//                bookmarkedNotesAdapter.notifyItemRangeChanged(0, intactBookmarkedNotesList.size());
+                cancelMultiSelectIV.performClick();
                 if(notesType == Constants.IS_ACTIVE){
                     fab.show();
                 }
@@ -714,7 +730,9 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     //notesList.addAll(notes);
                     intactNotesList.clear();
                     intactNotesList.addAll(notes);
+                    intactOtherNotesList.clear();
                     intactOtherNotesList.addAll(notesList);
+                    intactBookmarkedNotesList.clear();
                     intactBookmarkedNotesList.addAll(bookmarkedNotesList);
                     notesAdapter.setIntactDataSource(intactOtherNotesList);
                     notesAdapter.notifyDataSetChanged();
@@ -731,7 +749,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     }
                     else {
                         notesRecyclerView.setVisibility(View.VISIBLE);
-                        othersTV.setVisibility(View.VISIBLE);
+                        //othersTV.setVisibility(View.VISIBLE);
                     }
                 }
             }

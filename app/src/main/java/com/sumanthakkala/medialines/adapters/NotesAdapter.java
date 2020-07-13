@@ -29,8 +29,8 @@ import java.util.List;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> implements Filterable {
 
-    private List<NoteWithData> notesWithData;
-    private List<NoteWithData> intactNotesWithData;
+    private List<NoteWithData> notesWithData = new ArrayList<>();
+    private List<NoteWithData> intactNotesWithData = new ArrayList<>();
     private NotesListener notesListener;
     private static Context context;
 
@@ -175,7 +175,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     }
 
     public void setIntactDataSource(List<NoteWithData> data){
-        intactNotesWithData = data;
+        intactNotesWithData.clear();
+        intactNotesWithData.addAll(data);
     }
     public void setMultiSelectMode(boolean option){
         multiSelect = option;
