@@ -153,6 +153,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     private NoteWithData existingNoteWithData;
     private int existingNotePosition;
+    private LinearLayout moreOptionsLayout;
+    private LinearLayout infoSheetLayout;
+    private TextView imagesCountTV;
+    private TextView audiosCountTV;
 
 
 
@@ -179,8 +183,12 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_note);
+        moreOptionsLayout = findViewById(R.id.moreOptionsLayout);
         initMoreOptions();
 
+        infoSheetLayout = findViewById(R.id.infoSheetLayout);
+        imagesCountTV = infoSheetLayout.findViewById(R.id.imageAttachmentsCountTV);
+        audiosCountTV = infoSheetLayout.findViewById(R.id.audioAttachmentsCountTV);
 
         ImageView imageBack = findViewById(R.id.imageBack);
         imageBack.setOnClickListener(new View.OnClickListener() {
@@ -420,6 +428,22 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             webUrlTV.setText(existingNoteWithData.note.getWebLink());
             webUrlLayout.setVisibility(View.VISIBLE);
         }
+        if(existingNoteWithData != null && existingNoteWithData.note.getColor() != null && !existingNoteWithData.note.getColor().trim().toString().isEmpty()){
+            switch (existingNoteWithData.note.getColor()){
+                case "#fffdbe38":
+                    moreOptionsLayout.findViewById(R.id.viewColor2).performClick();
+                    break;
+                case "#ffff4842":
+                    moreOptionsLayout.findViewById(R.id.viewColor3).performClick();
+                    break;
+                case "#ff3a52fc":
+                    moreOptionsLayout.findViewById(R.id.viewColor4).performClick();
+                    break;
+                case "#ff000000":
+                    moreOptionsLayout.findViewById(R.id.viewColor5).performClick();
+                    break;
+            }
+        }
         int imageIndex = 0;
         int audioIndex = 0;
         for(Attachments attach: existingNoteWithData.attachments){
@@ -443,6 +467,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 existingAudiosInAudioViewModel.add(audio);
                 noteAudiosAdapter.notifyDataSetChanged();
             }
+        }
+        if(existingNoteWithData != null && existingimagesInImageViewModel != null && existingAudiosInAudioViewModel != null){
+            imagesCountTV.setText("Images: " + existingimagesInImageViewModel.size());
+            audiosCountTV.setText("Recordings: " + existingAudiosInAudioViewModel.size());
         }
 
     }
@@ -711,7 +739,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     }
 
     private void initMoreOptions(){
-        final LinearLayout moreOptionsLayout = findViewById(R.id.moreOptionsLayout);
         bottomSheetBehavior = BottomSheetBehavior.from(moreOptionsLayout);
         moreOptionsLayout.findViewById(R.id.textMoreOptions).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -796,23 +823,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             }
         });
 
-        if(existingNoteWithData != null && existingNoteWithData.note.getColor() != null && !existingNoteWithData.note.getColor().trim().toString().isEmpty()){
-            switch (existingNoteWithData.note.getColor()){
-                case "#fffdbe38":
-                    moreOptionsLayout.findViewById(R.id.viewColor2).performClick();
-                    break;
-                case "#ffff4842":
-                    moreOptionsLayout.findViewById(R.id.viewColor3).performClick();
-                    break;
-                case "#ff3a52fc":
-                    moreOptionsLayout.findViewById(R.id.viewColor4).performClick();
-                    break;
-                case "#ff000000":
-                    moreOptionsLayout.findViewById(R.id.viewColor5).performClick();
-                    break;
-            }
-        }
-
         moreOptionsLayout.findViewById(R.id.addImageLayout).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -858,7 +868,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     }
 
     private void initInfoSheet(){
-        final LinearLayout infoSheetLayout = findViewById(R.id.infoSheetLayout);
         infoSheetBehavior = BottomSheetBehavior.from(infoSheetLayout);
         infoSheetLayout.findViewById(R.id.textInfo).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -889,13 +898,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             }
         });
 
-        final TextView imagesCountTV = infoSheetLayout.findViewById(R.id.imageAttachmentsCountTV);
-        final TextView audiosCountTV = infoSheetLayout.findViewById(R.id.audioAttachmentsCountTV);
-
-        if(existingNoteWithData != null && existingimagesInImageViewModel != null && existingAudiosInAudioViewModel != null){
-            imagesCountTV.setText("Images: " + existingimagesInImageViewModel.size());
-            audiosCountTV.setText("Recordings: " + existingAudiosInAudioViewModel.size());
-        }
         SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
