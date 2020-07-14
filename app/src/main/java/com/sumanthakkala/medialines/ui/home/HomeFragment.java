@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
@@ -75,6 +76,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
 
 
 
+    private ConstraintLayout noDataScreen;
     private RecyclerView notesRecyclerView;
     private RecyclerView bookmarkedNotesRecyclerView;
     private TextView othersTV;
@@ -150,6 +152,8 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                         REQUEST_CODE_ADD_NOTE);
             }
         });
+
+        noDataScreen = root.findViewById(R.id.noDataLayout);
 
         bookmarksTV = root.findViewById(R.id.bookmarksTV);
         bookmarkedNotesRecyclerView = root.findViewById(R.id.bookmarkedNotesRecyclerView);
@@ -394,6 +398,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 }
                 cancelMultiSelectIV.performClick();
                 collapseSearchView();
+                checkForEmptyData();
             }
         }
         new UnArchiveNotesTask().execute();
@@ -439,6 +444,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 }
                 cancelMultiSelectIV.performClick();
                 collapseSearchView();
+                checkForEmptyData();
             }
         }
         new ArchiveNotesTask().execute();
@@ -690,6 +696,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
 
                 cancelMultiSelectIV.performClick();
                 collapseSearchView();
+                checkForEmptyData();
             }
         }
         new DeleteNotesTask().execute();
@@ -758,6 +765,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     }
                     notesAdapter.notifyDataSetChanged();
                     bookmarkedNotesAdapter.notifyDataSetChanged();
+                    checkForEmptyData();
                 }
             }
         }
@@ -1038,5 +1046,14 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         }
 
 
+    }
+
+    private void checkForEmptyData(){
+        if(intactNotesList.size() == 0){
+            noDataScreen.setVisibility(View.VISIBLE);
+        }
+        else {
+            noDataScreen.setVisibility(View.GONE);
+        }
     }
 }

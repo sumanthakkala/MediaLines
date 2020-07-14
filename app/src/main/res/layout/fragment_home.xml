@@ -74,6 +74,92 @@
     </androidx.core.widget.NestedScrollView>
 
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/noDataLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimaryDark"
+        android:layout_marginBottom="@dimen/_40sdp"
+        android:visibility="gone">
+        <LinearLayout
+            android:id="@+id/noDataLogoLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/_50sdp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:gravity="center_vertical">
+
+
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="@dimen/_80sdp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/logo_hq"
+                android:adjustViewBounds="true"
+                android:padding="@dimen/_10sdp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/aboutTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Media Lines"
+                        android:fontFamily="@font/nunito_bold"
+                        android:textSize="@dimen/_30sdp"
+                        android:textColor="@color/colorWhite"/>
+
+                    <TextView
+                        android:id="@+id/aboutVersion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/nunito_extralight"
+                        android:textSize="@dimen/_8sdp"
+                        android:textColor="@color/colorWhite"
+                        android:layout_marginLeft="@dimen/_5sdp"
+                        />
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/aboutSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Never miss a memory!"
+                    android:fontFamily="@font/nunito_light"
+                    android:textSize="@dimen/_12sdp"
+                    android:textColor="@color/colorWhite"/>
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/noDataLogoLayout"
+            android:text="Explore the app to fill up this space."
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/_14ssp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:fontFamily="@font/nunito_regular"
+            android:layout_marginTop="@dimen/_5sdp"/>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 
 
