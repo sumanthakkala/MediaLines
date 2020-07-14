@@ -860,7 +860,23 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                             notesAdapter.notifyItemInserted(sortedIndex);
                             break;
                     }
-
+                    if(notesList.size() == 0){
+                        notesRecyclerView.setVisibility(View.GONE);
+                        othersTV.setVisibility(View.GONE);
+                    }
+                    else {
+                        notesRecyclerView.setVisibility(View.VISIBLE);
+                        othersTV.setVisibility(View.VISIBLE);
+                    }
+                    if(bookmarkedNotesList.size() == 0){
+                        bookmarkedNotesRecyclerView.setVisibility(View.GONE);
+                        bookmarksTV.setVisibility(View.GONE);
+                        othersTV.setVisibility(View.GONE);
+                    }
+                    else {
+                        bookmarkedNotesRecyclerView.setVisibility(View.VISIBLE);
+                        bookmarksTV.setVisibility(View.VISIBLE);
+                    }
 
                 }
             }
@@ -1028,7 +1044,6 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     }
 
     private void sortNotes(){
-
         switch (currentSortMode){
             case SORT_BY_DATE:
                 Collections.sort(notesList, new Comparator<NoteWithData>() {
@@ -1050,8 +1065,6 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 currentSortMode = SORT_BY_DATE;
                 break;
         }
-
-
     }
 
     private void checkForEmptyData(){

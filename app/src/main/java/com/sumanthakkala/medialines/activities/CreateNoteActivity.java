@@ -56,6 +56,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -157,9 +158,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private LinearLayout infoSheetLayout;
     private TextView imagesCountTV;
     private TextView audiosCountTV;
-
-
-
 
 
     private static final String IMAGE_TYPE = "image";
@@ -907,38 +905,63 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
 
-        if(isExistingNote){
-            List<LatLng> pinnedLatLngs = new ArrayList<>();
-            for(int i = 0; i < existingNoteWithData.editedLocations.size(); i++){
-                if(i > 5){
-                    break;
-                }
-                else {
-                    if(i == 0){
-                        EditedLocations location = existingNoteWithData.editedLocations.get(i);
-                        String latlongStr = location.getLocation();
-                        String[] latLongList = latlongStr.split(" ");
-                        LatLng coordinate = new LatLng(Double.parseDouble(latLongList[0]), Double.parseDouble(latLongList[1]));
-                        pinnedLatLngs.add(coordinate);
-                        map.addMarker(new MarkerOptions().position(coordinate).title("Created here on " + location.getDateTime()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                if(isExistingNote){
+                    List<LatLng> pinnedLatLngs = new ArrayList<>();
+                    for(int i = 0; i < existingNoteWithData.editedLocations.size(); i++){
+                        if(i > 5){
+                            break;
+                        }
+                        else {
+                            if(i == 0){
+                                EditedLocations location = existingNoteWithData.editedLocations.get(i);
+                                String latlongStr = location.getLocation();
+                                if(latlongStr != "" && latlongStr != null){
+                                    String[] latLongList = latlongStr.split(" ");
+                                    LatLng coordinate = new LatLng(Double.parseDouble(latLongList[0]), Double.parseDouble(latLongList[1]));
+                                    pinnedLatLngs.add(coordinate);
+                                    map.addMarker(new MarkerOptions().position(coordinate).title("Created here on " + location.getDateTime()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                                }
+                            }
+                            else {
+                                EditedLocations location = existingNoteWithData.editedLocations.get(i);
+                                String latlongStr = location.getLocation();
+                                if(latlongStr != "" && latlongStr != null){
+                                    String[] latLongList = latlongStr.split(" ");
+                                    LatLng coordinate = new LatLng(Double.parseDouble(latLongList[0]), Double.parseDouble(latLongList[1]));
+                                    pinnedLatLngs.add(coordinate);
+                                    map.addMarker(new MarkerOptions().position(coordinate).title("Edited here on " + location.getDateTime()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                                }
+                            }
+                        }
+                    }
+                    if(pinnedLatLngs.size() != 0){
+                        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                        for(LatLng location: pinnedLatLngs){
+                            builder.include(location);
+                        }
+                        LatLngBounds bounds = builder.build();
+                        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 10));
                     }
                     else {
-                        EditedLocations location = existingNoteWithData.editedLocations.get(i);
-                        String latlongStr = location.getLocation();
-                        String[] latLongList = latlongStr.split(" ");
-                        LatLng coordinate = new LatLng(Double.parseDouble(latLongList[0]), Double.parseDouble(latLongList[1]));
-                        pinnedLatLngs.add(coordinate);
-                        map.addMarker(new MarkerOptions().position(coordinate).title("Edited here on " + location.getDateTime()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                        LatLngBounds newarkBounds = new LatLngBounds(
+                                new LatLng(40.712216, -74.22655),       // South west corner
+                                new LatLng(40.773941, -74.12544));      // North east corner
+                        GroundOverlayOptions noDataOverlay = new GroundOverlayOptions()
+                                .image(BitmapDescriptorFactory.fromResource(R.drawable.no_location_data_overlay))
+                                .positionFromBounds(map.getProjection().getVisibleRegion().latLngBounds);
+                        map.addGroundOverlay(noDataOverlay);
+                        map.getUiSettings().setScrollGesturesEnabled(false);
+                        map.getUiSettings().setZoomControlsEnabled(false);
+                        map.getUiSettings().setZoomGesturesEnabled(false);
+                        map.getUiSettings().setTiltGesturesEnabled(false);
+                        map.getUiSettings().setRotateGesturesEnabled(false);
                     }
                 }
             }
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            for(LatLng location: pinnedLatLngs){
-                builder.include(location);
-            }
-            LatLngBounds bounds = builder.build();
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 10));
-        }
+        });
     }
 
     private void setNoteIndicatorColor(){
