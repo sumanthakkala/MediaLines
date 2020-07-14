@@ -33,6 +33,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
@@ -123,7 +127,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                              ViewGroup container, Bundle savedInstanceState) {
         final View root = inflater.inflate(R.layout.fragment_home, container, false);
         setHasOptionsMenu(true);
-        requireActivity().getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+        getActivity().getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 if(shouldInterceptBackPress()){
@@ -132,7 +136,9 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 }
                 else {
                     setEnabled(false);
-                    requireActivity().onBackPressed();
+                    remove();
+                    NavController navController = Navigation.findNavController(root);
+                    navController.popBackStack(R.id.nav_home, false);
                 }
             }
         });
