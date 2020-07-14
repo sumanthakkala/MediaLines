@@ -866,7 +866,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 try {
                     if(isExternalStorageWritable()){
 
-                        String fileName = generateUUID() + new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
+                        String fileName = generateUUID() + new SimpleDateFormat("EEEE, dd MMMM yyyy hh:mm a", Locale.getDefault())
                                 .format(new Date());
                         File attachmentFile = new File(getContext().getExternalFilesDir(null),fileName);
                         FileOutputStream fos = new FileOutputStream(attachmentFile);

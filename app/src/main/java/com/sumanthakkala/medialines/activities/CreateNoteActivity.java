@@ -233,7 +233,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         webUrlLayout = findViewById(R.id.webUrlLayout);
         imagePositionIndicator = findViewById(R.id.positionIndicatorInViewPager);
 
-        currentDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
+        currentDateTime = new SimpleDateFormat("EEEE, dd MMMM yyyy hh:mm a", Locale.getDefault())
                 .format(new Date());
         textDateTime.setText(
                 currentDateTime
@@ -1014,7 +1014,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
     private File createTempImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalCacheDir();
         File image = File.createTempFile(
