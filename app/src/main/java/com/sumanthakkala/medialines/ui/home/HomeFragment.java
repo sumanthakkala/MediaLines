@@ -911,7 +911,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
 
         }
         collapseSearchView();
-
+        checkForEmptyData();
     }
 
     @Override
