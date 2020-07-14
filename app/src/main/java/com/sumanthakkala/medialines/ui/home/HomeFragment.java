@@ -351,8 +351,8 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
 //                notesRecyclerView.setAdapter(null);
 
                 cancelMultiSelectIV.performClick();
-                getNotes();
                 collapseSearchView();
+                getNotes();
             }
         }
         new BookmarkNotesTask().execute();
