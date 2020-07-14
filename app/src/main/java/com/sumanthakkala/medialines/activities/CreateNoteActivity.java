@@ -1,4 +1,5 @@
 package com.sumanthakkala.medialines.activities;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -14,9 +15,8 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -33,17 +33,15 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.util.Patterns;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -51,6 +49,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -60,6 +65,7 @@ import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.adapters.NoteAudiosAdapter;
@@ -82,7 +88,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -94,7 +99,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class CreateNoteActivity extends AppCompatActivity implements  OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener, OnMapReadyCallback {
+public class CreateNoteActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener, OnMapReadyCallback {
 
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private static final int REQUEST_CODE_RECORD_AUDIO_PERMISSION = 2;
@@ -103,6 +108,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private static final int REQUEST_CODE_SELECT_IMAGE = 5;
     private static final int REQUEST_CODE_SPEECH_INPUT = 6;
     private static final int REQUEST_CODE_CAPTURE_IMAGE = 7;
+    private static final int REQUEST_CODE_LOCATION_RESOLUTION = 8;
 
     private EditText noteTitle, noteText;
     private ImageView imageDone;
@@ -113,7 +119,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private ViewPager2 imagesViewPager;
     private RecyclerView audiosRecyclerView;
     private TextView imagePositionIndicator;
-    private FusedLocationProviderClient locationClient;
+    private FusedLocationProviderClient fusedLocationProviderClient;
     private TextView webUrlTV;
     private LinearLayout webUrlLayout;
     private AlertDialog addUrlDialog;
@@ -158,6 +164,8 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
     private LinearLayout infoSheetLayout;
     private TextView imagesCountTV;
     private TextView audiosCountTV;
+
+    private LocationRequest locationRequest;
 
 
     private static final String IMAGE_TYPE = "image";
@@ -236,7 +244,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         textDateTime.setText(
                 currentDateTime
         );
-        locationClient = LocationServices.getFusedLocationProviderClient(this);
 
         //Default note color
         selectedNoteColor = "#333333";
@@ -249,14 +256,13 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
 
         setNoteIndicatorColor();
 
-        if(getIntent().getBooleanExtra("isViewOrUpdate", false)){
+        if (getIntent().getBooleanExtra("isViewOrUpdate", false)) {
             isExistingNote = true;
             existingNoteWithData = (NoteWithData) getIntent().getSerializableExtra("noteData");
             existingNotePosition = (int) getIntent().getIntExtra("position", -1);
-            if(existingNoteWithData.note.getIsActive() == Constants.IS_ACTIVE){
+            if (existingNoteWithData.note.getIsActive() == Constants.IS_ACTIVE) {
                 imageArchive.setVisibility(View.VISIBLE);
-            }
-            else {
+            } else {
                 imageUnArchive.setVisibility(View.VISIBLE);
                 imageDone.setVisibility(View.GONE);
             }
@@ -264,9 +270,9 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             setExistingNoteData();
         }
 
-        if(getIntent().getBooleanExtra("isFromQuickActions", false)){
+        if (getIntent().getBooleanExtra("isFromQuickActions", false)) {
             String type = getIntent().getStringExtra("quickActionsType");
-            if(type != null && type.equals("image")){
+            if (type != null && type.equals("image")) {
                 NoteImageViewModel imageViewModel = new NoteImageViewModel();
                 imageViewModel.index = 0;
                 imageViewModel.imageUniqueFileName = getIntent().getStringExtra("imageUniqueFileName");
@@ -275,12 +281,12 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                 noteImagesAdapter.notifyDataSetChanged();
             }
 
-            if(type != null && type.equals("addUrl")){
+            if (type != null && type.equals("addUrl")) {
                 webUrlTV.setText(getIntent().getStringExtra("url"));
                 webUrlLayout.setVisibility(View.VISIBLE);
             }
 
-            if(type != null && type.equals("transcribe")){
+            if (type != null && type.equals("transcribe")) {
                 noteText.setText(getIntent().getStringExtra("transcribedText"));
             }
 
@@ -294,14 +300,87 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
             }
         });
         imagesViewPager.registerOnPageChangeCallback(pageChangeCallback);
-        if(totalImages.size() > 0){
+        if (totalImages.size() > 0) {
             imagePositionIndicator.setText("" + (imagesViewPager.getCurrentItem() + 1) + "/" + totalImages.size());
-        }
-        else {
+        } else {
             imagePositionIndicator.setVisibility(View.GONE);
         }
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        setupLocationRequest();
         getCurrentLocation();
     }
+
+    private void setupLocationRequest() {
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(4000);
+        locationRequest.setFastestInterval(2000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private void getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+            checkSettingsAndStartLocationUpdates();
+            return;
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
+        }
+
+    }
+
+    private void checkSettingsAndStartLocationUpdates() {
+        LocationSettingsRequest request = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build();
+        SettingsClient client = LocationServices.getSettingsClient(CreateNoteActivity.this);
+        Task<LocationSettingsResponse> locationSettingsResponseTask = client.checkLocationSettings(request);
+        locationSettingsResponseTask.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                startLocationUpdates();
+            }
+        });
+        locationSettingsResponseTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    ResolvableApiException apiException = (ResolvableApiException) e;
+                    try {
+                        apiException.startResolutionForResult(CreateNoteActivity.this, REQUEST_CODE_LOCATION_RESOLUTION);
+                    } catch (IntentSender.SendIntentException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+            return;
+        }
+    }
+
+    private void stopLocationUpdates(){
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+    LocationCallback locationCallback = new LocationCallback(){
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            if(locationResult == null){
+                return;
+            }
+            Location location = locationResult.getLastLocation();
+            if(location != null){
+                currentLocationLatLong = String.valueOf(location.getLatitude()) + " " + String.valueOf(location.getLongitude());
+                System.out.println(currentLocationLatLong);
+                stopLocationUpdates();
+            }
+
+        }
+    };
 
     private void archiveNote() {
         @SuppressLint("StaticFieldLeak")
@@ -662,29 +741,6 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
         new SaveNoteTask().execute();
     }
 
-    private void getCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-            Task<Location> task = locationClient.getLastLocation();
-            task.addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if(location != null){
-                        currentLocationLatLong = String.valueOf(location.getLatitude()) + " " + String.valueOf(location.getLongitude());
-                        System.out.println(currentLocationLatLong);
-                    }
-                }
-            });
-            return;
-        }
-        else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
-        }
-
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -693,16 +749,7 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                     &&
                     ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                Task<Location> task = locationClient.getLastLocation();
-                task.addOnSuccessListener(new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        if(location != null){
-                            currentLocationLatLong = String.valueOf(location.getLatitude()) + " " + String.valueOf(location.getLongitude());
-                            System.out.println(currentLocationLatLong);
-                        }
-                    }
-                });
+                checkSettingsAndStartLocationUpdates();
                 return;
             }
         }
@@ -1086,7 +1133,10 @@ public class CreateNoteActivity extends AppCompatActivity implements  OnRequestP
                         e.printStackTrace();
                     }
                 }
+        }
 
+        if(requestCode == REQUEST_CODE_LOCATION_RESOLUTION && resultCode == RESULT_OK){
+            checkSettingsAndStartLocationUpdates();
         }
     }
 
