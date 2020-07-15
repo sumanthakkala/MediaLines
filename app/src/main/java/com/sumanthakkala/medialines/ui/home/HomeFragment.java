@@ -790,6 +790,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     if(notesList.contains(clickedNote)){
                         NoteWithData removedNote = notesList.remove(noteClickedPosition);
                         notesList.add(noteClickedPosition, noteWithData);
+                        intactOtherNotesList.remove(removedNote);
                         intactOtherNotesList.add(noteClickedPosition, noteWithData);
                         int indexInIntactSource = intactNotesList.indexOf(removedNote);
                         intactNotesList.remove(removedNote);
