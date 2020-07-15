@@ -620,6 +620,9 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         }
         else {
             if(isExistingNote){
+                if(noteAudiosAdapter.isPlaying){
+                    noteAudiosAdapter.stopAudioPlayback();
+                }
                 finish();
                 super.onBackPressed();
             }
