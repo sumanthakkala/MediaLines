@@ -114,6 +114,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private ImageView imageDone;
     private ImageView imageUnArchive;
     private ImageView imageArchive;
+    private ImageView imageShareNote;
     private TextView textDateTime;
     private View noteColorIndicator;
     private ViewPager2 imagesViewPager;
@@ -225,6 +226,14 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             @Override
             public void onClick(View view) {
                 archiveNote();
+            }
+        });
+
+        imageShareNote = findViewById(R.id.imageShareNote);
+        imageShareNote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                shareNote();
             }
         });
 
@@ -382,6 +391,50 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         }
     };
 
+    private void shareNote(){
+        boolean isImagesAvailable = false;
+        boolean isAudiosAvailable = false;
+        List<String> extraMimeTypes = new ArrayList<>();
+        ArrayList<Uri> mediaUris = new ArrayList<Uri>();
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, existingNoteWithData.note.getTitle() + "\n\n" + existingNoteWithData.note.getNoteText());
+        if(existingimagesInImageViewModel.size() > 0){
+            isImagesAvailable = true;
+            for(NoteImageViewModel image:existingimagesInImageViewModel){
+                File file = new File(getExternalFilesDir(null), image.imageUniqueFileName);
+                Uri uri = FileProvider.getUriForFile(this,
+                        getPackageName() + ".fileprovider",
+                        file);
+                mediaUris.add(uri); // Add your image URIs here
+            }
+            extraMimeTypes.add("image/*");
+        }
+        if(existingAudiosInAudioViewModel.size() > 0){
+            isAudiosAvailable = true;
+            for(NoteAudioViewModel audio:existingAudiosInAudioViewModel){
+                File file = new File(getExternalFilesDir(null), audio.audioUniqueFileName);
+                Uri uri = FileProvider.getUriForFile(this,
+                        getPackageName() + ".fileprovider",
+                        file);
+                mediaUris.add(uri); // Add your audio URIs here
+            }extraMimeTypes.add("audio/*");
+        }
+        if((isImagesAvailable && isAudiosAvailable) || isImagesAvailable){
+            shareIntent.putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes.toArray(new String[extraMimeTypes.size()]));
+            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, mediaUris);
+            shareIntent.setType("*/*");
+        }
+        else if(!isImagesAvailable && isAudiosAvailable){
+            shareIntent.setType("text/plain");
+            Toast.makeText(this, "Text cannot be shared when audios are the only attachments. So priority is given to text. If you wish to share audio as well, attach an image to the note & try again. ", Toast.LENGTH_LONG).show();
+        }
+        else {
+            shareIntent.setType("text/plain");
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share note to.."));
+    }
+
     private void archiveNote() {
         @SuppressLint("StaticFieldLeak")
         class ArchiveNoteTask extends AsyncTask<Void, Void, Void> {
@@ -497,6 +550,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             imageDone.setVisibility(View.GONE);
             imageUnArchive.setVisibility(View.VISIBLE);
         }
+        imageShareNote.setVisibility(View.VISIBLE);
 
         noteTitle.setText(existingNoteWithData.note.getTitle());
         textDateTime.setText(existingNoteWithData.note.getDateTime());
@@ -1257,11 +1311,11 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         try{
             mediaRecorder = new MediaRecorder();
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            String fileName = "AUDIO" + generateUUID() + new Date().getTime();
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS);
+            String fileName = "AUDIO" + generateUUID() + new Date().getTime()+".aac";
             String filePath = getApplicationContext().getExternalFilesDir("/").getAbsolutePath();
             mediaRecorder.setOutputFile(filePath + "/" + fileName);
-            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
             mediaRecorder.prepare();
             mediaRecorder.start();
             NoteAudioViewModel audioViewModel = new NoteAudioViewModel();
