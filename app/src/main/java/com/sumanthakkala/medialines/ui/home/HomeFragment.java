@@ -85,6 +85,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     private RecyclerView bookmarkedNotesRecyclerView;
     private TextView othersTV;
     private TextView bookmarksTV;
+    private TextView quickActionsSeperator;
     private List<NoteWithData> notesList;
     private List<NoteWithData> bookmarkedNotesList;
     private List<NoteWithData> intactBookmarkedNotesList = new ArrayList<>();
@@ -160,7 +161,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         });
 
         noDataScreen = root.findViewById(R.id.noDataLayout);
-
+        quickActionsSeperator = root.findViewById(R.id.quickActionsSeperator);
         bookmarksTV = root.findViewById(R.id.bookmarksTV);
         bookmarkedNotesRecyclerView = root.findViewById(R.id.bookmarkedNotesRecyclerView);
         bookmarkedNotesRecyclerView.setLayoutManager(
@@ -472,6 +473,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         archiveSelectedNotesIV.setVisibility(View.GONE);
         unArchiveSelectedNotesIV.setVisibility(View.VISIBLE);
         bookmarkHandlerSelectedNotesIV.setVisibility(View.GONE);
+        quickActionsSeperator.setVisibility(View.GONE);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.setMargins(0, 0, 0, 0);
         sortModeIV.setLayoutParams(lp);
@@ -830,6 +832,14 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                         bookmarkedNotesAdapter.notifyItemRangeChanged(0, notesList.size());
                     }
 
+                    if(bookmarkedNotesList.size() == 0){
+                        bookmarkedNotesRecyclerView.setVisibility(View.GONE);
+                        bookmarksTV.setVisibility(View.GONE);
+                    }
+                    if(notesList.size() == 0){
+                        notesRecyclerView.setVisibility(View.GONE);
+                        othersTV.setVisibility(View.GONE);
+                    }
 
                 }
                 else {

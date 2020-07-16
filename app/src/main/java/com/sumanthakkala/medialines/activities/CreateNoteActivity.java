@@ -551,7 +551,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         if(existingNoteWithData.note.getIsActive() == Constants.IS_ARCHIVE){
             imageDone.setVisibility(View.GONE);
             bottomSheetBehavior.setPeekHeight(0);
-            infoSheetBehavior.setPeekHeight((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, getResources().getDisplayMetrics()));
+            infoSheetBehavior.setPeekHeight((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
             imageDone.setVisibility(View.GONE);
             imageUnArchive.setVisibility(View.VISIBLE);
         }
