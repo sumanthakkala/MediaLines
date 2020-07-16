@@ -15,6 +15,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -66,6 +67,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.skydoves.colorpickerview.ColorEnvelope;
+import com.skydoves.colorpickerview.ColorPickerDialog;
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
+import com.skydoves.colorpickerview.listeners.ColorListener;
 import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.adapters.NoteAudiosAdapter;
@@ -573,6 +578,14 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 case "#ff000000":
                     moreOptionsLayout.findViewById(R.id.viewColor5).performClick();
                     break;
+                default:
+                    selectedNoteColor = existingNoteWithData.note.getColor();
+                    ImageView firstColorDone = (ImageView) moreOptionsLayout.findViewById(R.id.imageForColor1);
+                    firstColorDone.setImageResource(0);
+                    ImageView colorPickerDone = (ImageView) moreOptionsLayout.findViewById(R.id.imageForColorPicker);
+                    colorPickerDone.setImageResource(R.drawable.ic_done);
+                    setNoteIndicatorColor();
+                    break;
             }
         }
         int imageIndex = 0;
@@ -859,6 +872,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         final ImageView imageColor3 = moreOptionsLayout.findViewById(R.id.imageForColor3);
         final ImageView imageColor4 = moreOptionsLayout.findViewById(R.id.imageForColor4);
         final ImageView imageColor5 = moreOptionsLayout.findViewById(R.id.imageForColor5);
+        final ImageView imageColorPicker = moreOptionsLayout.findViewById(R.id.imageForColorPicker);
 
         moreOptionsLayout.findViewById(R.id.viewColor1).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -869,6 +883,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 imageColor3.setImageResource(0);
                 imageColor4.setImageResource(0);
                 imageColor5.setImageResource(0);
+                imageColorPicker.setImageResource(0);
                 setNoteIndicatorColor();
             }
         });
@@ -882,6 +897,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 imageColor3.setImageResource(0);
                 imageColor4.setImageResource(0);
                 imageColor5.setImageResource(0);
+                imageColorPicker.setImageResource(0);
                 setNoteIndicatorColor();
             }
         });
@@ -895,6 +911,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 imageColor3.setImageResource(R.drawable.ic_done);
                 imageColor4.setImageResource(0);
                 imageColor5.setImageResource(0);
+                imageColorPicker.setImageResource(0);
                 setNoteIndicatorColor();
             }
         });
@@ -908,6 +925,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 imageColor3.setImageResource(0);
                 imageColor4.setImageResource(R.drawable.ic_done);
                 imageColor5.setImageResource(0);
+                imageColorPicker.setImageResource(0);
                 setNoteIndicatorColor();
             }
         });
@@ -921,7 +939,45 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 imageColor3.setImageResource(0);
                 imageColor4.setImageResource(0);
                 imageColor5.setImageResource(R.drawable.ic_done);
+                imageColorPicker.setImageResource(0);
                 setNoteIndicatorColor();
+            }
+        });
+
+        moreOptionsLayout.findViewById(R.id.imageViewColorPicker).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //selectedNoteColor = getResources().getString(R.color.colorNoteColor5);
+                new ColorPickerDialog.Builder(CreateNoteActivity.this)
+                        .setTitle("Color Picker")
+                        .setPreferenceName("MyColorPickerDialog")
+                        .setPositiveButton("SELECT",
+                                new ColorEnvelopeListener() {
+                                    @Override
+                                    public void onColorSelected(ColorEnvelope envelope, boolean fromUser) {
+                                        selectedNoteColor = "#" + envelope.getHexCode();
+                                        imageColor1.setImageResource(0);
+                                        imageColor2.setImageResource(0);
+                                        imageColor3.setImageResource(0);
+                                        imageColor4.setImageResource(0);
+                                        imageColor5.setImageResource(0);
+                                        imageColorPicker.setImageResource(R.drawable.ic_done);
+                                        setNoteIndicatorColor();
+                                        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                                    }
+                                })
+                        .setNegativeButton("CANCEL",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                    }
+                                })
+                        .attachAlphaSlideBar(false) // default is true. If false, do not show the AlphaSlideBar.
+                        .attachBrightnessSlideBar(true)  // default is true. If false, do not show the BrightnessSlideBar.
+                        .setBottomSpace(12) // set bottom space between the last slidebar and buttons.
+                        .show();
+
             }
         });
 

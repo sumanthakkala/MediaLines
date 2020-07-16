@@ -63,4 +63,7 @@ dependencies {
 
     // Picasso for image loading
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+    // Color picker
+    implementation "com.github.skydoves:colorpickerview:2.1.7"
 }
