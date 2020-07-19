@@ -402,7 +402,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         List<String> extraMimeTypes = new ArrayList<>();
         ArrayList<Uri> mediaUris = new ArrayList<Uri>();
         Intent shareIntent = new Intent();
-        shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+
         shareIntent.putExtra(Intent.EXTRA_TEXT, existingNoteWithData.note.getTitle() + "\n\n" + existingNoteWithData.note.getNoteText());
         if(existingimagesInImageViewModel.size() > 0){
             isImagesAvailable = true;
@@ -429,13 +429,16 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             shareIntent.putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes.toArray(new String[extraMimeTypes.size()]));
             shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, mediaUris);
             shareIntent.setType("*/*");
+            shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
         }
         else if(!isImagesAvailable && isAudiosAvailable){
             shareIntent.setType("text/plain");
+            shareIntent.setAction(Intent.ACTION_SEND);
             Toast.makeText(this, "Text cannot be shared when audios are the only attachments. So priority is given to text. If you wish to share audio as well, attach an image to the note & try again. ", Toast.LENGTH_LONG).show();
         }
         else {
             shareIntent.setType("text/plain");
+            shareIntent.setAction(Intent.ACTION_SEND);
         }
         startActivity(Intent.createChooser(shareIntent, "Share note to.."));
     }
