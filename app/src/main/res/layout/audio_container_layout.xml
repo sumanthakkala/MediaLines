@@ -10,7 +10,7 @@
     android:layout_marginLeft="12dp"
     android:layout_marginRight="12dp"
     app:cardCornerRadius="5dp"
-    app:cardBackgroundColor="@color/colorDefaultNoteColor"
+    app:cardBackgroundColor="@color/colorSheetBackground"
     app:cardElevation="5dp">
     <LinearLayout android:id="@+id/audioLayout"
         android:orientation="horizontal"

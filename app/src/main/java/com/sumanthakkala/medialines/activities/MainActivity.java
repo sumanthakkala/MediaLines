@@ -2,6 +2,7 @@ package com.sumanthakkala.medialines.activities;
 
 import android.app.ActionBar;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_archive, R.id.nav_about)
+                R.id.nav_home, R.id.nav_archive, R.id.nav_settings, R.id.nav_about)
                 .setDrawerLayout(drawer)
                 .build();
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);

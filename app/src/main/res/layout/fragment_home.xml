@@ -24,7 +24,7 @@
                 android:text="Bookmarks"
                 android:fontFamily="@font/nunito_extralight"
                 android:textSize="@dimen/_10ssp"
-                android:textColor="@color/colorWhite"
+                android:textColor="@color/textPrimary"
                 android:layout_marginStart="@dimen/_8sdp"
                 android:layout_marginLeft="@dimen/_8sdp"
                 android:layout_marginTop="@dimen/_8ssp"/>
@@ -52,7 +52,7 @@
                 android:text="Others"
                 android:fontFamily="@font/nunito_extralight"
                 android:textSize="@dimen/_10ssp"
-                android:textColor="@color/colorWhite"
+                android:textColor="@color/textPrimary"
                 android:layout_marginStart="@dimen/_8sdp"
                 android:layout_marginLeft="@dimen/_8sdp"
                 android:layout_marginTop="@dimen/_8sdp"/>
@@ -118,7 +118,7 @@
                         android:text="Media Lines"
                         android:fontFamily="@font/nunito_bold"
                         android:textSize="@dimen/_30sdp"
-                        android:textColor="@color/colorWhite"/>
+                        android:textColor="@color/textPrimary"/>
 
                     <TextView
                         android:id="@+id/aboutVersion"
@@ -126,7 +126,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito_extralight"
                         android:textSize="@dimen/_8sdp"
-                        android:textColor="@color/colorWhite"
+                        android:textColor="@color/textPrimary"
                         android:layout_marginLeft="@dimen/_5sdp"
                         />
                 </LinearLayout>
@@ -137,7 +137,7 @@
                     android:text="Never miss a memory!"
                     android:fontFamily="@font/nunito_light"
                     android:textSize="@dimen/_12sdp"
-                    android:textColor="@color/colorWhite"/>
+                    android:textColor="@color/textPrimary"/>
             </LinearLayout>
 
 
@@ -149,7 +149,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/noDataLogoLayout"
             android:text="Explore the app to fill up this space."
-            android:textColor="@color/colorWhite"
+            android:textColor="@color/textPrimary"
             android:textSize="@dimen/_14ssp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -167,7 +167,7 @@
         android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/colorQuickActionsBackground"
+        android:backgroundTint="@color/colorSheetBackground"
         android:alpha="0.95"
         android:layout_gravity="bottom"
         android:gravity="center_vertical"

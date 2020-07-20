@@ -15,6 +15,11 @@
             android:title="Archives"/>
 
         <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="Settings"/>
+
+        <item
             android:id="@+id/nav_about"
             android:icon="@drawable/ic_info"
             android:title="About"/>

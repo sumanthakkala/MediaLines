@@ -3,15 +3,17 @@
 <!--    <color name="colorPrimary">#6200EE</color>-->
 <!--    <color name="colorPrimaryDark">#3700B3</color>-->
 <!--    <color name="colorAccent">#03DAC5</color>-->
-    <color name="colorPrimary">#292929</color>
-    <color name="colorPrimaryDark">#292929</color>
+
+
+    <color name="colorPrimary">#F8F8F8</color>
+    <color name="colorPrimaryDark">#FFFFFF</color>
     <color name="colorAccent">#FDBE38</color>
     <color name="colorFabBackground">#FDBE38</color>
     <color name="colorWhite">#FFFFFF</color>
-    <color name="colorSearchIcon">#DBDBDB</color>
-    <color name="colorTextHint">#7B7B7B</color>
-    <color name="colorQuickActionsBackground">#2F2D2E</color>
-    <color name="colorIcons">#A4A4A4</color>
+    <color name="colorSearchIcon">#333333</color>
+    <color name="colorTextHint">#9F9F9F</color>
+    <color name="colorQuickActionsBackground">#8C8C8C</color>
+    <color name="colorIcons">#232323</color>
     <color name="colorDefaultNoteColor">#333333</color>
     <color name="colorTextSubtitle">#CECECE</color>
     <color name="colorNoteSubtitleText">#FAFAFA</color>
@@ -21,8 +23,14 @@
     <color name="colorNoteColor4">#3A52FC</color>
     <color name="colorNoteColor5">#000000</color>
     <color name="colorDelete">#FF4842</color>
-    <color name="colorSearchBackground">#333333</color>
+    <color name="colorSearchBackground">#E6E6E6</color>
 
+    <color name="textPrimary">#000000</color>
+    <color name="textSecondary">#494949</color>
+    <color name="colorSheetBackground">#D8D8D8</color>
+    <color name="colorSelectedNavItem">#A5A5A5</color>
+    <color name="colorNavDrawer">#D8D8D8</color>
+    <color name="colorModalButtons">#232323</color>
 
 
 

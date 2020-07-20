@@ -20,7 +20,7 @@
         android:layout_marginTop="@dimen/_8sdp"
         android:fontFamily="@font/nunito_bold"
         android:text="View Image"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/textPrimary"
         android:textSize="@dimen/_14ssp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -35,7 +35,7 @@
         android:layout_marginEnd="@dimen/_8sdp"
         android:fontFamily="@font/nunito_bold"
         android:text="1/22"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/textPrimary"
         android:textSize="@dimen/_14ssp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -57,7 +57,7 @@
         android:layout_marginBottom="@dimen/_8sdp"
         android:layout_marginRight="@dimen/_8sdp"
         android:text="Close"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorModalButtons"
         android:fontFamily="@font/nunito_semibold"
         android:textSize="@dimen/_13ssp"
         app:layout_constraintTop_toBottomOf="@id/selectedImageViewInModal"

@@ -4,7 +4,7 @@
     <shape android:shape="rectangle">
         <stroke
             android:width="@dimen/_20sdp"
-            android:color="#000000" />
+            android:color="@color/colorNavDrawer" />
     </shape>
 </item>
 
@@ -14,7 +14,7 @@
     android:top="@dimen/_2sdp"
     android:right="@dimen/_10sdp">
     <shape android:shape="rectangle">
-        <solid android:color="@color/colorPrimaryDark" />
+        <solid android:color="@color/colorSelectedNavItem" />
         <corners android:radius="@dimen/_10sdp" />
     </shape>
 </item>

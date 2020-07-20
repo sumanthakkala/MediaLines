@@ -31,6 +31,7 @@
             android:text="Media Lines"
             android:fontFamily="@font/nunito_bold"
             android:textSize="@dimen/_18sdp"
+            android:textColor="@color/textPrimary"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
         <TextView
@@ -38,6 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Never miss a memory!"
+            android:textColor="@color/textPrimary"
             android:fontFamily="@font/nunito_light"
             android:textSize="@dimen/_9sdp"/>
     </LinearLayout>

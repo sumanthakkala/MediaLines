@@ -57,6 +57,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -954,6 +955,8 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        ImageView searchViewIcon = (ImageView)searchView.findViewById(R.id.search_close_btn);
+        searchViewIcon.setVisibility(View.GONE);
         notesAdapter.getFilter().filter(newText);
         bookmarkedNotesAdapter.getFilter().filter(newText);
         return false;
