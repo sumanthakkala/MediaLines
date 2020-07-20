@@ -4,11 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.exifinterface.media.ExifInterface;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -18,6 +20,7 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -32,6 +35,7 @@ import android.location.Location;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
@@ -195,6 +199,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_note);
+        setSystemControlDecorsByCurrentTheme();
         moreOptionsLayout = findViewById(R.id.moreOptionsLayout);
         initMoreOptions();
 
@@ -322,6 +327,24 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         setupLocationRequest();
         getCurrentLocation();
+    }
+
+    private void setSystemControlDecorsByCurrentTheme(){
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M) {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            boolean isLightMode = sharedPreferences.getBoolean("theme", false);
+            if(isLightMode){
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            }
+            else {
+                getWindow().getDecorView().setSystemUiVisibility(0);
+            }
+        }
+        else {
+            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+            }
+        }
     }
 
     private void setupLocationRequest() {

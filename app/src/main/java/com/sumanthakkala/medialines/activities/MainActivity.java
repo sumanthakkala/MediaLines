@@ -2,8 +2,11 @@ package com.sumanthakkala.medialines.activities;
 
 import android.app.ActionBar;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.Menu;
@@ -17,8 +20,10 @@ import com.sumanthakkala.medialines.ui.home.HomeFragment;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.navigation.NavController;
@@ -29,6 +34,7 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setSystemControlDecorsByCurrentTheme();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -83,6 +90,24 @@ public class MainActivity extends AppCompatActivity {
         intent.setData(Uri.parse(url));
 
         startActivity(intent);
+    }
+
+    private void setSystemControlDecorsByCurrentTheme(){
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M) {
+            final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            boolean isLightMode = sharedPreferences.getBoolean("theme", false);
+            if(isLightMode){
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+            }
+            else {
+                getWindow().getDecorView().setSystemUiVisibility(0);
+            }
+        }
+        else {
+            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
+                getWindow().setStatusBarColor(Color.parseColor("#000000"));
+            }
+        }
     }
 
 //    @Override

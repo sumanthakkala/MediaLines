@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="fontFamily">@font/nunito_semibold</item>
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -31,14 +31,6 @@
         <item name="android:textColorHint">@color/colorTextHint</item>
     </style>
 
-    <style name="DarkThemeTriggerStyles" parent="Theme.MaterialComponents.Light.DarkActionBar" >
-        <item name="android:windowLightStatusBar">false</item>
-    </style>
-
-    <style name="LightThemeTriggerStyles" parent="Theme.MaterialComponents.Light.DarkActionBar" >
-        <item name="android:windowLightStatusBar">true</item>
-    </style>
-
     <style name="SettingsFragmentStyle">
         <item name="android:textColorSecondary">@color/colorTextHint</item>
         <item name="android:textColor">@color/textPrimary</item>
@@ -49,7 +41,5 @@
         <item name="android:windowBackground">@drawable/splash_background</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
-        <item name="android:windowFullscreen">false</item>
-        <item name="android:windowContentOverlay">@null</item>
     </style>
 </resources>
