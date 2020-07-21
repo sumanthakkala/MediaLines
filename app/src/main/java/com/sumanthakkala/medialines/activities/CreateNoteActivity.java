@@ -980,7 +980,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             @Override
             public void onClick(View view) {
                 //selectedNoteColor = getResources().getString(R.color.colorNoteColor5);
-                new ColorPickerDialog.Builder(CreateNoteActivity.this)
+                final AlertDialog colorPickerDialog = new ColorPickerDialog.Builder(CreateNoteActivity.this)
                         .setTitle("Color Picker")
                         .setPreferenceName("MyColorPickerDialog")
                         .setPositiveButton("SELECT",
@@ -1008,8 +1008,15 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                         .attachAlphaSlideBar(false) // default is true. If false, do not show the AlphaSlideBar.
                         .attachBrightnessSlideBar(true)  // default is true. If false, do not show the BrightnessSlideBar.
                         .setBottomSpace(12) // set bottom space between the last slidebar and buttons.
-                        .show();
-
+                        .create();
+                colorPickerDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+                        colorPickerDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.textPrimary));
+                        colorPickerDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.textPrimary));
+                    }
+                });
+                colorPickerDialog.show();
             }
         });
 
