@@ -714,9 +714,11 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         exitDialog.show();
     }
     private void saveNote() {
-        if (noteTitle.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Title cannot be empty", Toast.LENGTH_SHORT).show();
-            return;
+        if (!isExistingNote) {
+            if(noteText.getText().toString().trim().isEmpty() && noteTitle.getText().toString().trim().isEmpty()){
+                Toast.makeText(this, "Note cannot be empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         if(noteAudiosAdapter.isPlaying){

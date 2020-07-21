@@ -207,12 +207,19 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         }
 
         void setNote(NoteWithData noteWithData){
-            titleTV.setText(noteWithData.note.getTitle());
+            if(noteWithData.note.getTitle().trim().isEmpty()){
+                titleTV.setVisibility(View.GONE);
+            }
+            else {
+                titleTV.setText(noteWithData.note.getTitle());
+                titleTV.setVisibility(View.VISIBLE);
+            }
             if(noteWithData.note.getNoteText().trim().isEmpty()){
                 noteDescriptionTV.setVisibility(View.GONE);
             }
             else {
                 noteDescriptionTV.setText(noteWithData.note.getNoteText());
+                noteDescriptionTV.setVisibility(View.VISIBLE);
             }
             dateTimeTV.setText(noteWithData.note.getDateTime());
 
