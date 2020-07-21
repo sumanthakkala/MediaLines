@@ -123,27 +123,21 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     private String currentSortMode = SORT_BY_DATE;
     private String bookmarkHandlerIVTag = "";
     private String bookmarkMode;
+    private OnBackPressedCallback onBackPressedInMultiSelectModeCallback;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         final View root = inflater.inflate(R.layout.fragment_home, container, false);
         setHasOptionsMenu(true);
-        getActivity().getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+        onBackPressedInMultiSelectModeCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if(shouldInterceptBackPress()){
-                    // in here you can do logic when backPress is clicked
-                    cancelMultiSelectIV.performClick();
-                }
-                else {
-                    setEnabled(false);
-                    remove();
-                    NavController navController = Navigation.findNavController(root);
-                    navController.popBackStack(R.id.nav_home, false);
-                }
+                cancelMultiSelectIV.performClick();
             }
-        });
+        };
+        getActivity().getOnBackPressedDispatcher().addCallback(onBackPressedInMultiSelectModeCallback);
+        onBackPressedInMultiSelectModeCallback.setEnabled(false);
         NavigationView navigationView = getActivity().findViewById(R.id.nav_view);
         MenuItem selectedMenuItem = navigationView.getCheckedItem();
         if(selectedMenuItem.getItemId() == R.id.nav_home){
@@ -558,6 +552,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     @Override
     public void onMultiSelectBegin() {
         isInMultiSelectMode = true;
+        onBackPressedInMultiSelectModeCallback.setEnabled(true);
         quickActionsLayout.setVisibility(View.GONE);
         fab.hide();
         multiSelectActionsLayout.setVisibility(View.VISIBLE);
@@ -570,6 +565,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
 
         if(selectedNotes.size() == 0){
             isInMultiSelectMode = false;
+            onBackPressedInMultiSelectModeCallback.setEnabled(false);
             quickActionsLayout.setVisibility(View.VISIBLE);
             multiSelectActionsLayout.setVisibility(View.GONE);
             if(notesType == Constants.IS_ACTIVE){

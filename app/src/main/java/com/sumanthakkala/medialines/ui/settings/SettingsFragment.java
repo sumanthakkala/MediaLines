@@ -13,24 +13,16 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import com.sumanthakkala.medialines.R;
 
+import java.util.Objects;
+
 public class SettingsFragment extends PreferenceFragmentCompat {
 
     private SwitchPreferenceCompat themePreference;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        setHasOptionsMenu(true);
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
         getActivity().setTheme(R.style.SettingsFragmentStyle);
-        getActivity().getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                setEnabled(false);
-                remove();
-                NavController navController = Navigation.findNavController(getView());
-                navController.popBackStack(R.id.nav_home, false);
-            }
-        });
         themePreference = findPreference("theme");
         themePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -45,10 +37,4 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
     }
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.search_view).setVisible(false);
-    }
-
 }

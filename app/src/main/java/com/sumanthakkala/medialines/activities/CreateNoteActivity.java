@@ -699,6 +699,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                         File attachmentFile = new File(getApplicationContext().getExternalFilesDir(null),attachment.audioUniqueFileName);
                         attachmentFile.delete();
                     }
+                    exitDialog.dismiss();
                     finish();
                 }
             });
