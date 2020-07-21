@@ -265,7 +265,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         );
 
         //Default note color
-        selectedNoteColor = "#333333";
+        selectedNoteColor = "#ff333333";
         selectedImages = new ArrayList<>();
         totalImages = new ArrayList<>();
         noteImagesAdapter = new NoteImagesAdapter(totalImages, this);
@@ -592,6 +592,9 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         }
         if(existingNoteWithData != null && existingNoteWithData.note.getColor() != null && !existingNoteWithData.note.getColor().trim().toString().isEmpty()){
             switch (existingNoteWithData.note.getColor()){
+                case "#ff333333":
+                    moreOptionsLayout.findViewById(R.id.viewColor1).performClick();
+                    break;
                 case "#fffdbe38":
                     moreOptionsLayout.findViewById(R.id.viewColor2).performClick();
                     break;
