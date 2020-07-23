@@ -896,7 +896,9 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
 
         if(requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION && grantResults.length > 0){
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                exportNoteToPdf();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    exportNoteToPdf();
+                }
             }
             else {
                 Toast.makeText(this,"Permission Denied!", Toast.LENGTH_SHORT).show();
@@ -1077,7 +1079,12 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 break;
             case R.id.exportPdfLayout:
-                exportNoteToPdf();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    exportNoteToPdf();
+                }
+                else {
+                    Toast.makeText(this, "Sorry, this feature is only available in Android versions above KITKAT. We regret for this drawback. Thank you.", Toast.LENGTH_LONG).show();
+                }
                 break;
             default:
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
