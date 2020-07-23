@@ -2,6 +2,7 @@ package com.sumanthakkala.medialines.activities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -29,8 +30,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.pdf.PdfDocument;
 import android.location.Location;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -42,6 +46,10 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
+import android.util.Log;
 import android.util.Patterns;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -71,12 +79,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.skydoves.colorpickerview.ColorEnvelope;
 import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 import com.skydoves.colorpickerview.listeners.ColorListener;
 import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
+import com.sumanthakkala.medialines.adapters.MoreOptionsAdapter;
 import com.sumanthakkala.medialines.adapters.NoteAudiosAdapter;
 import com.sumanthakkala.medialines.adapters.NoteImagesAdapter;
 import com.sumanthakkala.medialines.constants.Constants;
@@ -85,6 +96,7 @@ import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.EditedLocations;
 import com.sumanthakkala.medialines.entities.Note;
 import com.sumanthakkala.medialines.entities.NoteWithData;
+import com.sumanthakkala.medialines.listeners.MoreOptionsListener;
 import com.sumanthakkala.medialines.listeners.NoteAudiosListener;
 import com.sumanthakkala.medialines.listeners.NoteImagesListener;
 import com.sumanthakkala.medialines.viewmodels.NoteAudioViewModel;
@@ -108,12 +120,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class CreateNoteActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener, OnMapReadyCallback {
+import static android.os.Environment.getExternalStorageDirectory;
+
+public class CreateNoteActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener, MoreOptionsListener, OnMapReadyCallback {
 
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private static final int REQUEST_CODE_RECORD_AUDIO_PERMISSION = 2;
     private static final int REQUEST_CODE_CAMERA_PERMISSION = 3;
     private static final int REQUEST_CODE_READ_EXTERNAL_STORAGE_PERMISSION = 4;
+    private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 9;
     private static final int REQUEST_CODE_SELECT_IMAGE = 5;
     private static final int REQUEST_CODE_SPEECH_INPUT = 6;
     private static final int REQUEST_CODE_CAPTURE_IMAGE = 7;
@@ -175,6 +190,8 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private TextView imagesCountTV;
     private TextView audiosCountTV;
 
+    private ViewPager2 moreOptionsPager;
+    TabLayout tabLayout;
     private LocationRequest locationRequest;
 
 
@@ -327,6 +344,13 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         setupLocationRequest();
         getCurrentLocation();
+    }
+
+    @Override
+    protected void onResume() {
+        TabLayout.Tab tab = tabLayout.getTabAt(0);
+        tab.select();
+        super.onResume();
     }
 
     private void setSystemControlDecorsByCurrentTheme(){
@@ -559,20 +583,6 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     }
 
     private void setExistingNoteData(){
-
-        if(isExistingNote){
-            findViewById(R.id.infoNoteOptionLayout).setVisibility(View.VISIBLE);
-            findViewById(R.id.infoNoteOptionLayout).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                    infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                }
-            });
-        }
-        else {
-            findViewById(R.id.infoNoteOptionLayout).setVisibility(View.GONE);
-        }
 
         if(existingNoteWithData.note.getIsActive() == Constants.IS_ARCHIVE){
             imageDone.setVisibility(View.GONE);
@@ -883,9 +893,29 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 Toast.makeText(this,"Permission Denied!", Toast.LENGTH_SHORT).show();
             }
         }
+
+        if(requestCode == REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION && grantResults.length > 0){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                exportNoteToPdf();
+            }
+            else {
+                Toast.makeText(this,"Permission Denied!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void initMoreOptions(){
+        if (getIntent().getBooleanExtra("isViewOrUpdate", false)) {
+            isExistingNote = true;
+        }
+        moreOptionsPager = findViewById(R.id.moreOptionsPager);
+        moreOptionsPager.setAdapter(new MoreOptionsAdapter(this, isExistingNote, this));
+        tabLayout = (TabLayout) findViewById(R.id.tabDots);
+        new TabLayoutMediator(tabLayout, moreOptionsPager,
+                new TabLayoutMediator.TabConfigurationStrategy() {
+                    @Override public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                    }
+                }).attach();
         bottomSheetBehavior = BottomSheetBehavior.from(moreOptionsLayout);
         moreOptionsLayout.findViewById(R.id.textMoreOptions).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1020,48 +1050,38 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             }
         });
 
-        moreOptionsLayout.findViewById(R.id.addImageLayout).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+    }
+
+    @Override
+    public void onOptionCLicked(int layoutId) {
+
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        switch (layoutId){
+            case R.id.addImageLayout:
                 selectImageHandler();
-            }
-        });
-
-        moreOptionsLayout.findViewById(R.id.takePhotoLayout).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                break;
+            case R.id.takePhotoLayout:
                 takePhotoHandler();
-            }
-        });
-
-        moreOptionsLayout.findViewById(R.id.addUrlLayout).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                break;
+            case R.id.addUrlLayout:
                 showAddUrlDialig();
-            }
-        });
-
-        moreOptionsLayout.findViewById(R.id.transcribeAudioLayout).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                break;
+            case R.id.transcribeAudioLayout:
                 showTranscribeAudioUI();
-            }
-        });
-
-        moreOptionsLayout.findViewById(R.id.recordAudioLayout).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                break;
+            case R.id.recordAudioLayout:
                 showRecordAudioDialog();
-            }
-        });
-
-
-
+                break;
+            case R.id.infoNoteOptionLayout:
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                break;
+            case R.id.exportPdfLayout:
+                exportNoteToPdf();
+                break;
+            default:
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
     }
 
     private void initInfoSheet(){
@@ -1167,6 +1187,196 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         GradientDrawable gradientDrawable = (GradientDrawable) noteColorIndicator.getBackground();
         gradientDrawable.setColor(Color.parseColor(selectedNoteColor));
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void exportNoteToPdf(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            exportProcessHandler();
+            return;
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+        }
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void exportProcessHandler(){
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date());
+        String pdfFileName = "PDF_" + existingNoteWithData.note.getTitle() + "_" + timeStamp + ".pdf";
+        File fileDir = new File(getExternalStorageDirectory(), "MediaLines/Exports");
+        if (!fileDir.exists()) {
+            fileDir.mkdirs();
+        }
+        File storageDir = fileDir;
+        int pageCount = 1;
+        try {
+            final File file = new File(storageDir, pdfFileName);
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+
+
+            PdfDocument document = new PdfDocument();
+            PdfDocument.PageInfo pageInfo = new
+                    PdfDocument.PageInfo.Builder(595, 842, 1).create();
+            PdfDocument.Page page = document.startPage(pageInfo);
+            Canvas canvas = page.getCanvas();
+            Paint brandingPaint = new Paint();
+            brandingPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+            brandingPaint.setTextSize(18);
+            canvas.drawText("Inked by Media Lines!", 20, (canvas.getHeight() - 20), brandingPaint);
+
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo_hq);
+            Paint bitmapAlphaPaint = new Paint();
+            bitmapAlphaPaint.setAlpha(80);
+            canvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+            canvas.translate(40, 40);
+            TextPaint textPaint = new TextPaint();
+            StaticLayout mEntireTextLayout = new StaticLayout(noteText.getText().toString(), textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+
+            if(mEntireTextLayout.getLineCount() >= 52){
+                String pageOneText = mEntireTextLayout.getText().subSequence(mEntireTextLayout.getLineStart(0), mEntireTextLayout.getLineEnd(52)).toString();
+                StaticLayout pageOneTextLayout = new StaticLayout(pageOneText, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+                pageOneTextLayout.draw(canvas);
+                document.finishPage(page);
+                for(int i = 52; i < mEntireTextLayout.getLineCount(); i+=52){
+                    pageCount += 1;
+                    PdfDocument.PageInfo newPageInfo = new
+                            PdfDocument.PageInfo.Builder(595, 842, pageCount).create();
+                    PdfDocument.Page newPage = document.startPage(newPageInfo);
+                    Canvas newCanvas = newPage.getCanvas();
+                    Paint newBrandingPaint = new Paint();
+                    newBrandingPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                    newBrandingPaint.setTextSize(18);
+                    newCanvas.drawText("Inked by Media Lines!", 20, (newCanvas.getHeight() - 20), newBrandingPaint);
+                    newCanvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+                    newCanvas.translate(40, 40);
+                    TextPaint newTextPaint = new TextPaint();
+
+
+                    if((i + 52) < mEntireTextLayout.getLineCount()){
+                        String newPageText = mEntireTextLayout.getText().subSequence(mEntireTextLayout.getLineStart(i+1), mEntireTextLayout.getLineEnd(i+53)).toString();
+                        StaticLayout newPageTextLayout = new StaticLayout(newPageText, newTextPaint, (newCanvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+                        newPageTextLayout.draw(newCanvas);
+                        document.finishPage(newPage);
+                    }
+                    else {
+                        String newPageText = mEntireTextLayout.getText().subSequence(mEntireTextLayout.getLineStart(i+1), mEntireTextLayout.getLineEnd(mEntireTextLayout.getLineCount() - 1)).toString();
+                        StaticLayout newPageTextLayout = new StaticLayout(newPageText, newTextPaint, (newCanvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+                        newPageTextLayout.draw(newCanvas);
+                        document.finishPage(newPage);
+                    }
+                }
+            }
+            else {
+                StaticLayout pageOneTextLayout = new StaticLayout(noteText.getText().toString(), textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+                canvas.drawText("Inked by Media Lines!", 20, (canvas.getHeight() - 20), brandingPaint);
+                pageOneTextLayout.draw(canvas);
+                document.finishPage(page);
+            }
+
+            if(totalImages.size() > 0){
+                for(NoteImageViewModel imageViewModel: totalImages){
+                    pageCount += 1;
+                    PdfDocument.PageInfo newPageInfo = new
+                            PdfDocument.PageInfo.Builder(595, 842, pageCount).create();
+                    PdfDocument.Page newPage = document.startPage(newPageInfo);
+                    Canvas newCanvas = newPage.getCanvas();
+                    Paint newBrandingPaint = new Paint();
+                    newBrandingPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                    newBrandingPaint.setTextSize(18);
+                    newCanvas.drawText("Inked by Media Lines!", 20, (newCanvas.getHeight() - 20), newBrandingPaint);
+                    newCanvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+                    newCanvas.translate(40, 40);
+
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inScaled = false;
+                    options.inDither = false;
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                    Bitmap noteImageBitmap = BitmapFactory.decodeFile(getExternalFilesDir(null) + "/" + imageViewModel.imageUniqueFileName, options);
+                    noteImageBitmap = resizeBitmap(noteImageBitmap, 515, 762);
+                    //Bitmap noteImageBitmap = resizedBitmapByPath(getExternalFilesDir(null) + "/" + imageViewModel.imageUniqueFileName, 515, 762);
+                    newCanvas.drawBitmap(noteImageBitmap, 0, 0, null);
+                    document.finishPage(newPage);
+                }
+            }
+
+
+            // only 52 lines per page
+
+
+            document.writeTo(fOut);
+            document.close();
+
+            Toast.makeText(this, "PDF exported to " + fileDir, Toast.LENGTH_LONG).show();
+
+            File fileToShare = new File(fileDir, pdfFileName);
+            Uri uri = FileProvider.getUriForFile(this,
+                    getPackageName() + ".fileprovider",
+                    fileToShare);
+            String mime = getContentResolver().getType(uri);
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, mime);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+
+        }catch (IOException e){
+            Log.i("error",e.getLocalizedMessage());
+        }
+    }
+
+    public Bitmap resizeBitmap(Bitmap bmp, int maxWidth, int maxHeight) {
+        float maxRatio = (float) maxWidth / maxHeight;
+
+        int originalWidth = bmp.getWidth();
+        int originalHeight = bmp.getHeight();
+        int newWidth = Math.round(originalWidth * maxRatio);
+        int newHeight = Math.round(originalHeight * maxRatio);
+        Bitmap bitmap = Bitmap.createScaledBitmap(bmp, newWidth, newHeight, true);
+        if(newWidth > maxWidth || newHeight > maxHeight){
+            return resizeBitmap(bitmap, maxWidth, maxHeight);
+        }
+        else {
+            return bitmap;
+        }
+    }
+
+//    public Bitmap resizedBitmapByPath(String STRING_PATH_TO_FILE, int maxWidth, int maxHeight){
+//        BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inJustDecodeBounds = true;
+//        BitmapFactory.decodeFile(STRING_PATH_TO_FILE, options);
+//        // Calculate the correct inSampleSize/scale value. This helps reduce memory use. It should be a power of 2
+//// from: https://stackoverflow.com/questions/4231817/quality-problems-when-resizing-an-image-at-runtime
+//        int originalWidth = options.outWidth;
+//        int originalHeight = options.outHeight;
+//        int srcWidth = options.outWidth;
+//        int srcHeight = options.outHeight;
+//        int inSampleSize = 1;
+//        while((srcWidth / 2 > maxWidth) || (srcHeight / 2 > maxHeight)){
+//            srcWidth /= 2;
+//            srcHeight /= 2;
+//            inSampleSize *= 2;
+//        }
+//
+//        float desiredScale = (float) maxWidth / srcWidth;
+//        float desiredScale1 = (float) maxHeight / srcHeight;
+//
+//// Decode with inSampleSize
+//        options.inJustDecodeBounds = false;
+//        options.inDither = false;
+//        options.inSampleSize = inSampleSize;
+//        options.inScaled = false;
+//        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//        Bitmap sampledSrcBitmap = BitmapFactory.decodeFile(STRING_PATH_TO_FILE, options);
+//
+//// Resize
+//        Matrix matrix = new Matrix();
+//        matrix.postScale(desiredScale, desiredScale1, desiredScale, desiredScale1);
+//        Bitmap scaledBitmap = Bitmap.createBitmap(sampledSrcBitmap, 0, 0, sampledSrcBitmap.getWidth(), sampledSrcBitmap.getHeight(), matrix, true);
+//        sampledSrcBitmap = null;
+//        return scaledBitmap;
+//    }
+
 
     private void selectImageHandler(){
         if(isReadExternalStoragePermissionGranted()){

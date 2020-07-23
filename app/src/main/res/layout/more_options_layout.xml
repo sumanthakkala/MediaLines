@@ -158,216 +158,22 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/takePhotoLayout"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/moreOptionsPager"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginLeft="@dimen/_5sdp"
-        android:layout_marginTop="@dimen/_3sdp"
-        android:layout_marginRight="@dimen/_5sdp"
-        android:layout_marginBottom="@dimen/_3sdp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables"
-        android:background="@drawable/background_button">
+        android:layout_height="wrap_content" />
 
-        <ImageView
-            android:layout_width="@dimen/_22sdp"
-            android:layout_height="@dimen/_22sdp"
-            android:contentDescription="@string/app_name"
-            android:layout_marginLeft="@dimen/_5sdp"
-            android:src="@drawable/ic_camera"
-            android:tint="@color/colorIcons" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginLeft="@dimen/_10sdp"
-            android:fontFamily="@font/nunito_semibold"
-            android:includeFontPadding="false"
-            android:text="Take Photo"
-            android:textColor="@color/colorIcons"
-            android:textSize="@dimen/_12ssp"/>
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/addImageLayout"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabDots"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginLeft="@dimen/_5sdp"
-        android:layout_marginTop="@dimen/_3sdp"
-        android:layout_marginRight="@dimen/_5sdp"
-        android:layout_marginBottom="@dimen/_3sdp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables"
-        android:background="@drawable/background_button">
-
-        <ImageView
-            android:layout_width="@dimen/_22sdp"
-            android:layout_height="@dimen/_22sdp"
-            android:contentDescription="@string/app_name"
-            android:layout_marginLeft="@dimen/_5sdp"
-            android:src="@drawable/ic_image"
-            android:tint="@color/colorIcons" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginLeft="@dimen/_10sdp"
-            android:fontFamily="@font/nunito_semibold"
-            android:includeFontPadding="false"
-            android:text="Add Image"
-            android:textColor="@color/colorIcons"
-            android:textSize="@dimen/_12ssp"/>
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/addUrlLayout"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginLeft="@dimen/_5sdp"
-        android:layout_marginTop="@dimen/_3sdp"
-        android:layout_marginRight="@dimen/_5sdp"
-        android:layout_marginBottom="@dimen/_3sdp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables"
-        android:background="@drawable/background_button">
-
-        <ImageView
-            android:layout_width="@dimen/_22sdp"
-            android:layout_height="@dimen/_22sdp"
-            android:contentDescription="@string/app_name"
-            android:layout_marginLeft="@dimen/_5sdp"
-            android:src="@drawable/ic_web_link"
-            android:tint="@color/colorIcons" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginLeft="@dimen/_10sdp"
-            android:fontFamily="@font/nunito_semibold"
-            android:includeFontPadding="false"
-            android:text="Add URL"
-            android:textColor="@color/colorIcons"
-            android:textSize="@dimen/_12ssp"/>
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/transcribeAudioLayout"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginLeft="@dimen/_5sdp"
-        android:layout_marginTop="@dimen/_3sdp"
-        android:layout_marginRight="@dimen/_5sdp"
-        android:layout_marginBottom="@dimen/_3sdp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables"
-        android:background="@drawable/background_button">
-
-        <ImageView
-            android:layout_width="@dimen/_22sdp"
-            android:layout_height="@dimen/_22sdp"
-            android:contentDescription="@string/app_name"
-            android:layout_marginLeft="@dimen/_5sdp"
-            android:src="@drawable/ic_transcribe_speach"
-            android:tint="@color/colorIcons" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginLeft="@dimen/_10sdp"
-            android:fontFamily="@font/nunito_semibold"
-            android:includeFontPadding="false"
-            android:text="Transcribe Speech"
-            android:textColor="@color/colorIcons"
-            android:textSize="@dimen/_12ssp"/>
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/recordAudioLayout"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginLeft="@dimen/_5sdp"
-        android:layout_marginTop="@dimen/_3sdp"
-        android:layout_marginRight="@dimen/_5sdp"
-        android:layout_marginBottom="@dimen/_3sdp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables"
-        android:background="@drawable/background_button">
-
-        <ImageView
-            android:layout_width="@dimen/_22sdp"
-            android:layout_height="@dimen/_22sdp"
-            android:contentDescription="@string/app_name"
-            android:layout_marginLeft="@dimen/_5sdp"
-            android:src="@drawable/ic_mic"
-            android:tint="@color/colorIcons" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginLeft="@dimen/_10sdp"
-            android:fontFamily="@font/nunito_semibold"
-            android:includeFontPadding="false"
-            android:text="Record Audio"
-            android:textColor="@color/colorIcons"
-            android:textSize="@dimen/_12ssp"/>
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/infoNoteOptionLayout"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginLeft="@dimen/_5sdp"
-        android:layout_marginTop="@dimen/_3sdp"
-        android:layout_marginRight="@dimen/_5sdp"
-        android:layout_marginBottom="@dimen/_3sdp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables"
-        android:visibility="gone"
-        android:background="@drawable/background_button">
-
-        <ImageView
-            android:layout_width="@dimen/_22sdp"
-            android:layout_height="@dimen/_22sdp"
-            android:contentDescription="@string/app_name"
-            android:layout_marginLeft="@dimen/_5sdp"
-            android:src="@drawable/ic_info"
-            android:tint="@color/colorIcons" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginLeft="@dimen/_10sdp"
-            android:fontFamily="@font/nunito_semibold"
-            android:includeFontPadding="false"
-            android:text="Info"
-            android:textColor="@color/colorIcons"
-            android:textSize="@dimen/_12ssp"/>
-
-
-    </LinearLayout>
+        android:layout_height="15dp"
+        app:tabBackground="@drawable/tab_selector"
+        app:tabGravity="center"
+        app:tabPaddingEnd="6dp"
+        app:tabPaddingStart="6dp"
+        app:tabIndicator="@null"
+        android:backgroundTint="@color/colorSheetBackground"
+        android:layout_marginBottom="10dp"/>
 
 
 </LinearLayout>
