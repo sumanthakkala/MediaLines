@@ -1209,7 +1209,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void exportProcessHandler(){
         String timeStamp = new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date());
-        String pdfFileName = "PDF_" + existingNoteWithData.note.getTitle() + "_" + timeStamp + ".pdf";
+        String pdfFileName = "PDF_" + noteTitle.getText().toString() + "_" + timeStamp + ".pdf";
         File fileDir = new File(getExternalStorageDirectory(), "MediaLines/Exports");
         if (!fileDir.exists()) {
             fileDir.mkdirs();
