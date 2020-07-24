@@ -1,7 +1,11 @@
 package com.sumanthakkala.medialines.ui.settings;
 import android.annotation.SuppressLint;
+import android.app.KeyguardManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
+import android.hardware.biometrics.BiometricManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +29,9 @@ import com.sumanthakkala.medialines.viewmodels.NoteAudioViewModel;
 import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
 
 import java.io.File;
+import java.util.Objects;
+
+import static android.content.Context.KEYGUARD_SERVICE;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
@@ -137,10 +144,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         switch (requestCode){
             case REQUEST_CODE_SETUP_PIN:
                 if(resultCode == -1){
-                    checkAndEnableSecurityCategoryPrefs();
-
                     securityStatus.setChecked(true);
                     fingerprintAuthSwitch.setChecked(true);
+                    checkAndEnableSecurityCategoryPrefs();
                 }
                 break;
         }
@@ -186,6 +192,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             securityStatus.setEnabled(true);
         }
 
+        if(!checkForBiometrics()){
+            fingerprintAuthSwitch.setChecked(false);
+            fingerprintAuthSwitch.setEnabled(false);
+            fingerprintAuthSwitch.setShouldDisableView(true);
+        }
     }
 
     private void showRemovePinDialog(){
@@ -221,5 +232,30 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             });
         }
         removePinDialog.show();
+    }
+
+
+    private boolean checkForBiometrics(){
+        boolean canAuthenticate = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT < 29) {
+                KeyguardManager keyguardManager  = (KeyguardManager) requireContext().getSystemService(KEYGUARD_SERVICE);
+                PackageManager packageManager   = requireContext().getPackageManager();
+                if(!packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)) {
+                    canAuthenticate = false;
+                }
+                if (!keyguardManager.isKeyguardSecure()) {
+                    canAuthenticate = false;
+                }
+            } else {
+                BiometricManager biometricManager = getActivity().getSystemService(BiometricManager.class);
+                if(biometricManager.canAuthenticate() != BiometricManager.BIOMETRIC_SUCCESS){
+                    canAuthenticate = false;
+                }
+            }
+        }else{
+            canAuthenticate = false;
+        }
+        return canAuthenticate;
     }
 }
