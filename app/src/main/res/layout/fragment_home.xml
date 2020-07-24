@@ -99,6 +99,7 @@
                 android:layout_width="@dimen/_80sdp"
                 android:layout_height="wrap_content"
                 android:src="@drawable/logo_hq"
+                android:tint="@null"
                 android:adjustViewBounds="true"
                 android:padding="@dimen/_10sdp"/>
 

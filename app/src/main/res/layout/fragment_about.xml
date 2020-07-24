@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/logo_hq"
             android:adjustViewBounds="true"
+            android:tint="@null"
             android:padding="@dimen/_10sdp"/>
 
         <LinearLayout
