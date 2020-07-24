@@ -23,6 +23,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private SwitchPreferenceCompat securityStatus;
     private SwitchPreferenceCompat fingerprintAuthSwitch;
     private Preference setupPin;
+    private Preference securityQuestion;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -56,6 +57,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
+        securityQuestion = findPreference("security_question");
+
         fingerprintAuthSwitch = findPreference("fingerprint_switch");
         fingerprintAuthSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -77,23 +80,60 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 if((boolean) newValue){
                     lockManager.enableAppLock(getActivity().getApplicationContext(), SecurityPinActivity.class);
                     lockManager.getAppLock().setTimeout(100);
+                    checkAndEnableSecurityCategoryPrefs();
                 }
                 else {
                     LockManager<SecurityPinActivity> lockManager = LockManager.getInstance();
                     lockManager.disableAppLock();
+
+                    setupPin.setShouldDisableView(true);
+                    securityQuestion.setShouldDisableView(true);
+                    fingerprintAuthSwitch.setShouldDisableView(true);
+
+                    setupPin.setEnabled(false);
+                    securityQuestion.setEnabled(false);
+                    fingerprintAuthSwitch.setEnabled(false);
                 }
                 return true;
             }
         });
+        checkAndEnableSecurityCategoryPrefs();
+
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode){
             case REQUEST_CODE_SETUP_PIN:
+                checkAndEnableSecurityCategoryPrefs();
+
                 securityStatus.setChecked(true);
                 fingerprintAuthSwitch.setChecked(true);
                 break;
+        }
+    }
+
+    private void checkAndEnableSecurityCategoryPrefs(){
+        if(lockManager.getAppLock() != null){
+            if(lockManager.getAppLock().isPasscodeSet()){
+                setupPin.setShouldDisableView(false);
+                securityQuestion.setShouldDisableView(false);
+                securityStatus.setShouldDisableView(false);
+                fingerprintAuthSwitch.setShouldDisableView(false);
+
+                setupPin.setEnabled(true);
+                securityQuestion.setEnabled(true);
+                securityStatus.setEnabled(true);
+                fingerprintAuthSwitch.setEnabled(true);
+            }
+            else {
+                setupPin.setShouldDisableView(false);
+                setupPin.setEnabled(true);
+            }
+        }
+        if(!lockManager.isAppLockEnabled()){
+            securityStatus.setShouldDisableView(false);
+            securityStatus.setEnabled(true);
         }
     }
 }

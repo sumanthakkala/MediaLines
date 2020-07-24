@@ -21,7 +21,7 @@ import com.sumanthakkala.medialines.R;
 public class SplashActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE_UNLOCK_PIN = 1;
-
+    LockManager<SecurityPinActivity> lockManager;
     private Handler handler = new Handler();
     private SharedPreferences sharedPreferences;
 
@@ -29,6 +29,9 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        lockManager = LockManager.getInstance();
+
         boolean isLightMode = sharedPreferences.getBoolean("theme", false);
         if(isLightMode){
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -55,11 +58,16 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        boolean isAuthEnabled = sharedPreferences.getBoolean("security_status", false);
-        if(isAuthEnabled){
-            Intent intent = new Intent(getApplicationContext(), SecurityPinActivity.class);
-            intent.putExtra(AppLock.EXTRA_TYPE, AppLock.UNLOCK_PIN);
-            startActivityForResult(intent, REQUEST_CODE_UNLOCK_PIN);
+        boolean isLockEnabled = (sharedPreferences.getBoolean("security_status", false) && lockManager.getAppLock() != null);
+        if(isLockEnabled){
+            if(lockManager.getAppLock().isPasscodeSet()){
+                Intent intent = new Intent(getApplicationContext(), SecurityPinActivity.class);
+                intent.putExtra(AppLock.EXTRA_TYPE, AppLock.UNLOCK_PIN);
+                startActivityForResult(intent, REQUEST_CODE_UNLOCK_PIN);
+            }
+            else {
+                handler.postDelayed(runnable, 1000); //This will display splash screen for real loading time + 1 seconds
+            }
         }
         else {
             handler.postDelayed(runnable, 1000); //This will display splash screen for real loading time + 1 seconds

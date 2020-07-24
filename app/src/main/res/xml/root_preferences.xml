@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory app:title="General">
         <SwitchPreferenceCompat
@@ -15,21 +16,28 @@
 
         <Preference
             app:key="setupPin"
+            android:enabled="false"
+            android:shouldDisableView="true"
             app:icon="@drawable/ic_lock"
             app:summary="Enter your secure 4-digit PIN code"
             app:title="Setup PIN" />
 
         <Preference
+            app:key="security_question"
             app:icon="@drawable/ic_security"
+            android:enabled="false"
+            android:shouldDisableView="true"
             app:summary="This will help you recover PIN in case you forget"
             app:title="Security Question" />
 
         <SwitchPreferenceCompat
             app:key="fingerprint_switch"
+            android:enabled="false"
+            android:shouldDisableView="true"
             app:summaryOff="Disabled"
             app:summaryOn="Enabled"
             app:title="Fingerprint Unlock"
-            app:icon="@drawable/ic_color_lens"/>
+            app:icon="@drawable/ic_fingerprint"/>
 
         <SwitchPreferenceCompat
             app:key="security_status"

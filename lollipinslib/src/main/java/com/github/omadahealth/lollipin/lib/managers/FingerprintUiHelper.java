@@ -220,7 +220,7 @@ public class FingerprintUiHelper extends FingerprintManager.AuthenticationCallba
      * @throws SecurityException If the hardware is not available, or the permission are not set
      */
     public boolean isFingerprintAuthAvailable() throws SecurityException {
-        return mFingerprintManager.isHardwareDetected()
+        return mFingerprintManager != null && mFingerprintManager.isHardwareDetected()
                 && mFingerprintManager.hasEnrolledFingerprints()
                 && ((KeyguardManager) mIcon.getContext().getSystemService(Context.KEYGUARD_SERVICE)).isDeviceSecure();
     }
