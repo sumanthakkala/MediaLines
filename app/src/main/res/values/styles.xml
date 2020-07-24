@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
@@ -33,7 +33,9 @@
 
     <style name="SettingsFragmentStyle">
         <item name="android:textColorSecondary">@color/colorTextHint</item>
-        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textColorPrimary">@drawable/preference_text_color</item>
+        <item name="android:textColorPrimaryInverse">@drawable/preference_text_color</item>
+        <item name="android:tint">@drawable/preference_icon_tint</item>
 <!--        <item name="colorControlActivated">@color/colorIcons</item>-->
     </style>
 

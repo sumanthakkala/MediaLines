@@ -58,9 +58,11 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        boolean isLockEnabled = (sharedPreferences.getBoolean("security_status", false) && lockManager.getAppLock() != null);
+        boolean isLockEnabled = (sharedPreferences.getBoolean("security_status", false));
         if(isLockEnabled){
-            if(lockManager.getAppLock().isPasscodeSet()){
+            lockManager.enableAppLock(getApplicationContext(), SecurityPinActivity.class);
+            lockManager.getAppLock().setTimeout(100);
+            if(lockManager.getAppLock() != null && lockManager.getAppLock().isPasscodeSet()){
                 Intent intent = new Intent(getApplicationContext(), SecurityPinActivity.class);
                 intent.putExtra(AppLock.EXTRA_TYPE, AppLock.UNLOCK_PIN);
                 startActivityForResult(intent, REQUEST_CODE_UNLOCK_PIN);

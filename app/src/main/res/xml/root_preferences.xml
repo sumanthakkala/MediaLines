@@ -46,6 +46,14 @@
             app:title="Status"
             app:icon="@drawable/ic_info"/>
 
+        <Preference
+            app:key="remove_pin"
+            app:icon="@drawable/ic_lock_open"
+            android:enabled="false"
+            android:shouldDisableView="true"
+            app:summary="This will permanently remove your existing pin\nProceed at your own risk"
+            app:title="Remove PIN" />
+
     </PreferenceCategory>
 
 
