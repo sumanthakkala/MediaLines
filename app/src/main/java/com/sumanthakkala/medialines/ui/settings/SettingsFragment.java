@@ -1,28 +1,34 @@
 package com.sumanthakkala.medialines.ui.settings;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreferenceCompat;
 
+import com.github.omadahealth.lollipin.lib.managers.AppLock;
+import com.github.omadahealth.lollipin.lib.managers.LockManager;
 import com.sumanthakkala.medialines.R;
-
-import java.util.Objects;
+import com.sumanthakkala.medialines.activities.MainActivity;
+import com.sumanthakkala.medialines.activities.SecurityPinActivity;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
+    public static final int REQUEST_CODE_SETUP_PIN = 1;
+
+    LockManager<SecurityPinActivity> lockManager;
     private SwitchPreferenceCompat themePreference;
+    private SwitchPreferenceCompat securityStatus;
+    private SwitchPreferenceCompat fingerprintAuthSwitch;
+    private Preference setupPin;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
         getActivity().setTheme(R.style.SettingsFragmentStyle);
+        lockManager = LockManager.getInstance();
         themePreference = findPreference("theme");
         themePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -36,5 +42,58 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+
+        setupPin = findPreference("setupPin");
+        setupPin.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(getActivity().getApplicationContext(), SecurityPinActivity.class);
+                intent.putExtra(AppLock.EXTRA_TYPE, AppLock.ENABLE_PINLOCK);
+                intent.putExtra("isChangePin", true);
+//                lockManager.getAppLock().setLastActiveMillis();
+                startActivityForResult(intent, REQUEST_CODE_SETUP_PIN);
+                return true;
+            }
+        });
+
+        fingerprintAuthSwitch = findPreference("fingerprint_switch");
+        fingerprintAuthSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                if((boolean) newValue){
+                    lockManager.getAppLock().setFingerprintAuthEnabled(true);
+                }
+                else {
+                    lockManager.getAppLock().setFingerprintAuthEnabled(false);
+                }
+                return true;
+            }
+        });
+
+        securityStatus = findPreference("security_status");
+        securityStatus.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                if((boolean) newValue){
+                    lockManager.enableAppLock(getActivity().getApplicationContext(), SecurityPinActivity.class);
+                    lockManager.getAppLock().setTimeout(100);
+                }
+                else {
+                    LockManager<SecurityPinActivity> lockManager = LockManager.getInstance();
+                    lockManager.disableAppLock();
+                }
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode){
+            case REQUEST_CODE_SETUP_PIN:
+                securityStatus.setChecked(true);
+                fingerprintAuthSwitch.setChecked(true);
+                break;
+        }
     }
 }

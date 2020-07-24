@@ -1,5 +1,6 @@
 package com.sumanthakkala.medialines.activities;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
@@ -12,17 +13,22 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 
+import com.github.omadahealth.lollipin.lib.PinActivity;
+import com.github.omadahealth.lollipin.lib.managers.AppLock;
+import com.github.omadahealth.lollipin.lib.managers.LockManager;
 import com.sumanthakkala.medialines.R;
 
 public class SplashActivity extends AppCompatActivity {
 
+    public static final int REQUEST_CODE_UNLOCK_PIN = 1;
+
     private Handler handler = new Handler();
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         boolean isLightMode = sharedPreferences.getBoolean("theme", false);
         if(isLightMode){
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -32,6 +38,8 @@ public class SplashActivity extends AppCompatActivity {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
             setSystemControlDecorsByCurrentTheme();
         }
+
+
     }
 
     private Runnable runnable = new Runnable() {
@@ -47,7 +55,15 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        handler.postDelayed(runnable, 1000); //This will display splash screen for real loading time + 1 seconds
+        boolean isAuthEnabled = sharedPreferences.getBoolean("security_status", false);
+        if(isAuthEnabled){
+            Intent intent = new Intent(getApplicationContext(), SecurityPinActivity.class);
+            intent.putExtra(AppLock.EXTRA_TYPE, AppLock.UNLOCK_PIN);
+            startActivityForResult(intent, REQUEST_CODE_UNLOCK_PIN);
+        }
+        else {
+            handler.postDelayed(runnable, 1000); //This will display splash screen for real loading time + 1 seconds
+        }
     }
 
     @Override
@@ -71,6 +87,17 @@ public class SplashActivity extends AppCompatActivity {
             if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
                 getWindow().setStatusBarColor(Color.parseColor("#000000"));
             }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case REQUEST_CODE_UNLOCK_PIN:
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                finish();
+                break;
         }
     }
 }

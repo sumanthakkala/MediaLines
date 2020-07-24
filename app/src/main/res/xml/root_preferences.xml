@@ -1,25 +1,45 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-<!--    <PreferenceCategory app:title="@string/sync_header">-->
+    <PreferenceCategory app:title="General">
+        <SwitchPreferenceCompat
+            app:key="theme"
+            app:summaryOff="Default dark mode"
+            app:summaryOn="Light mode"
+            app:title="Theme"
+            app:icon="@drawable/ic_color_lens"/>
+    </PreferenceCategory>
 
-<!--        <SwitchPreferenceCompat-->
-<!--            app:key="sync"-->
-<!--            app:title="@string/sync_title" />-->
 
-<!--        <SwitchPreferenceCompat-->
-<!--            app:dependency="sync"-->
-<!--            app:key="attachment"-->
-<!--            app:summaryOff="@string/attachment_summary_off"-->
-<!--            app:summaryOn="@string/attachment_summary_on"-->
-<!--            app:title="@string/attachment_title" />-->
 
-<!--    </PreferenceCategory>-->
+    <PreferenceCategory app:title="Security">
 
-    <SwitchPreferenceCompat
-                app:key="theme"
-                app:summaryOff="Default dark mode"
-                app:summaryOn="Light mode"
-                app:title="Theme"
-        app:icon="@drawable/ic_color_lens"/>
+        <Preference
+            app:key="setupPin"
+            app:icon="@drawable/ic_lock"
+            app:summary="Enter your secure 4-digit PIN code"
+            app:title="Setup PIN" />
+
+        <Preference
+            app:icon="@drawable/ic_security"
+            app:summary="This will help you recover PIN in case you forget"
+            app:title="Security Question" />
+
+        <SwitchPreferenceCompat
+            app:key="fingerprint_switch"
+            app:summaryOff="Disabled"
+            app:summaryOn="Enabled"
+            app:title="Fingerprint Unlock"
+            app:icon="@drawable/ic_color_lens"/>
+
+        <SwitchPreferenceCompat
+            app:key="security_status"
+            app:summaryOff="Disabled"
+            app:summaryOn="Enabled"
+            app:title="Status"
+            app:icon="@drawable/ic_info"/>
+
+    </PreferenceCategory>
+
+
 
 </PreferenceScreen>

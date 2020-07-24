@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Toast;
 
+import com.github.omadahealth.lollipin.lib.PinCompatActivity;
 import com.sumanthakkala.medialines.R;
 import com.google.android.material.navigation.NavigationView;
 import com.sumanthakkala.medialines.ui.about.AboutFragment;

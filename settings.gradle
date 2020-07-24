@@ -1,2 +1,3 @@
 rootProject.name='MediaLines'
 include ':app'
+include ':lollipinslib'

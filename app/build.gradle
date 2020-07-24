@@ -67,4 +67,8 @@ dependencies {
 
     // Color picker
     implementation "com.github.skydoves:colorpickerview:2.1.7"
+
+    //Lollipin
+    implementation project(':lollipinslib')
+
 }
