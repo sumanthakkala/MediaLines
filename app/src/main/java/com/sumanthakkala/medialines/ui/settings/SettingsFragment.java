@@ -1,7 +1,7 @@
 package com.sumanthakkala.medialines.ui.settings;
-import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.biometrics.BiometricManager;
@@ -10,6 +10,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -22,16 +27,10 @@ import androidx.preference.SwitchPreferenceCompat;
 import com.github.omadahealth.lollipin.lib.managers.AppLock;
 import com.github.omadahealth.lollipin.lib.managers.LockManager;
 import com.sumanthakkala.medialines.R;
-import com.sumanthakkala.medialines.activities.CreateNoteActivity;
-import com.sumanthakkala.medialines.activities.MainActivity;
 import com.sumanthakkala.medialines.activities.SecurityPinActivity;
-import com.sumanthakkala.medialines.viewmodels.NoteAudioViewModel;
-import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
-
-import java.io.File;
-import java.util.Objects;
 
 import static android.content.Context.KEYGUARD_SERVICE;
+import static android.content.Context.MODE_PRIVATE;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
@@ -44,15 +43,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private Preference setupPin;
     private Preference securityQuestion;
     private Preference removePin;
+    SharedPreferences securitySharedPref;
 
     private boolean isLockEnabled;
-
+    String selectedQuestion = "";
     private AlertDialog removePinDialog;
+    private AlertDialog securityQuestionsDialog;
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
         getActivity().setTheme(R.style.SettingsFragmentStyle);
         isLockEnabled = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("security_status", false);
+        securitySharedPref = requireContext().getSharedPreferences("Security_Prefs", MODE_PRIVATE);
         lockManager = LockManager.getInstance();
         lockManager.enableAppLock(getActivity().getApplicationContext(), SecurityPinActivity.class);
         lockManager.getAppLock().setTimeout(100);
@@ -76,14 +78,19 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             public boolean onPreferenceClick(Preference preference) {
                 Intent intent = new Intent(getActivity().getApplicationContext(), SecurityPinActivity.class);
                 intent.putExtra(AppLock.EXTRA_TYPE, AppLock.ENABLE_PINLOCK);
-                intent.putExtra("isChangePin", true);
-//                lockManager.getAppLock().setLastActiveMillis();
                 startActivityForResult(intent, REQUEST_CODE_SETUP_PIN);
                 return true;
             }
         });
 
         securityQuestion = findPreference("security_question");
+        securityQuestion.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                showSecurityQuestionsDialog(false);
+                return true;
+            }
+        });
 
         fingerprintAuthSwitch = findPreference("fingerprint_switch");
         fingerprintAuthSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -147,6 +154,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     securityStatus.setChecked(true);
                     fingerprintAuthSwitch.setChecked(true);
                     checkAndEnableSecurityCategoryPrefs();
+
+                    if(!securitySharedPref.contains(getString(R.string.security_question_key_in_prefs)) || !securitySharedPref.contains(getString(R.string.security_answer_key_in_prefs))){
+                        showSecurityQuestionsDialog(true);
+                    }
+                    else {
+                        Toast.makeText(getContext(), "PIN changed successfully!", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 break;
         }
@@ -204,7 +218,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             View view = LayoutInflater.from(getActivity()).inflate(
                     R.layout.on_remove_pin,
-                    (ViewGroup) getView().findViewById(R.id.onBackPressedDialogContainer)
+                    (ViewGroup) getView().findViewById(R.id.onRemovePinDialogContainer)
             );
             builder.setView(view);
             removePinDialog = builder.create();
@@ -220,6 +234,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     fingerprintAuthSwitch.setChecked(false);
                     isLockEnabled = false;
                     checkAndEnableSecurityCategoryPrefs();
+                    securitySharedPref.edit().clear().commit();
                     removePinDialog.dismiss();
                 }
             });
@@ -232,6 +247,84 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             });
         }
         removePinDialog.show();
+    }
+
+    private void showSecurityQuestionsDialog(final boolean isMandatory){
+        if(securityQuestionsDialog == null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            View view = LayoutInflater.from(getActivity()).inflate(
+                    R.layout.security_questions_setup_dialog,
+                    (ViewGroup) getView().findViewById(R.id.securityQuestionsSetupDialogContainer)
+            );
+            builder.setView(view);
+            securityQuestionsDialog = builder.create();
+            securityQuestionsDialog.setCancelable(false);
+            securityQuestionsDialog.setCanceledOnTouchOutside(false);
+            if(securityQuestionsDialog.getWindow() != null){
+                securityQuestionsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }
+
+            //Spinner
+            Spinner questionsSpinner = view.findViewById(R.id.questions_spinner);
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
+                    R.array.security_questions_array, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            questionsSpinner.setAdapter(adapter);
+            questionsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    selectedQuestion = adapterView.getItemAtPosition(i).toString();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
+
+                }
+            });
+
+            //Answer
+            final EditText answer = view.findViewById(R.id.answer_edittext);
+
+            view.findViewById(R.id.saveAnswerTV).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    if(answer.getText().toString().isEmpty()){
+                        Toast.makeText(getContext(), "Answer cannot be empty.", Toast.LENGTH_LONG).show();
+                    }
+                    else {
+                        SharedPreferences.Editor editor = securitySharedPref.edit();
+                        editor.putString(getString(R.string.security_question_key_in_prefs), selectedQuestion);
+                        editor.putString(getString(R.string.security_answer_key_in_prefs), answer.getText().toString());
+                        editor.apply();
+                        if(isMandatory){
+                            Toast.makeText(getContext(), "PIN created successfully!", Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            Toast.makeText(getContext(), "Security question updated successfully.", Toast.LENGTH_LONG).show();
+                        }
+                        securityQuestionsDialog.dismiss();
+                        securityQuestionsDialog = null;
+                    }
+                }
+            });
+
+            if(isMandatory){
+                view.findViewById(R.id.cancelGoBackTV).setVisibility(View.GONE);
+            } else {
+                view.findViewById(R.id.cancelGoBackTV).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        answer.setText("");
+                        securityQuestionsDialog.dismiss();
+                        securityQuestionsDialog = null;
+                    }
+                });
+            }
+
+
+        }
+        securityQuestionsDialog.show();
     }
 
 

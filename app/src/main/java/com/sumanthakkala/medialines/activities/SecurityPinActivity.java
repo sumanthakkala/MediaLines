@@ -1,44 +1,42 @@
 package com.sumanthakkala.medialines.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Context;
-import android.hardware.fingerprint.FingerprintManager;
-import android.os.Build;
+import androidx.appcompat.app.AlertDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageView;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.omadahealth.lollipin.lib.managers.AppLock;
 import com.github.omadahealth.lollipin.lib.managers.AppLockActivity;
-import com.github.omadahealth.lollipin.lib.managers.FingerprintUiHelper;
 import com.github.omadahealth.lollipin.lib.managers.LockManager;
 import com.sumanthakkala.medialines.R;
-import com.sumanthakkala.medialines.constants.Constants;
-import com.sumanthakkala.medialines.entities.NoteWithData;
 
 public class SecurityPinActivity extends AppLockActivity {
 
-    private boolean isChangePin = false;
+    public static final int REQUEST_CODE_RESET_PIN = 9;
+
+    private AlertDialog securityQuestionsDialog;
+    LockManager<SecurityPinActivity> lockManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LockManager<SecurityPinActivity> lockManager = LockManager.getInstance();
+        lockManager = LockManager.getInstance();
         lockManager.getAppLock().setLogoId(R.drawable.logo_hq);
         lockManager.getAppLock().setTimeout(100);
-//        setContentView(R.layout.activity_security_pin);
-
-        if (getIntent().getBooleanExtra("isChangePin", false)) {
-            isChangePin = true;
-        }
 
     }
 
     @Override
     public void showForgotDialog() {
-
+        showSecurityQuestionsDialog();
     }
 
     @Override
@@ -53,11 +51,72 @@ public class SecurityPinActivity extends AppLockActivity {
 
     @Override
     public void onBackPressed() {
-        if(isChangePin){
-            finish();
+        this.finishAffinity();
+    }
+
+    private void showSecurityQuestionsDialog(){
+        if(securityQuestionsDialog == null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppTheme_NoActionBar));
+            View view = LayoutInflater.from(getApplicationContext()).inflate(
+                    R.layout.forgot_pin_dialog,
+                    (ViewGroup) this.findViewById(R.id.forgotPinDialogContainer)
+            );
+            builder.setView(view);
+            securityQuestionsDialog = builder.create();
+
+            if(securityQuestionsDialog.getWindow() != null){
+                securityQuestionsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }
+
+            TextView savedQuestionTV = view.findViewById(R.id.savedSecurityQuestionTV);
+
+            SharedPreferences sharedPref = getSharedPreferences("Security_Prefs", MODE_PRIVATE);
+            String savedQuestionStr = sharedPref.getString(getString(R.string.security_question_key_in_prefs), "NA");
+            final String savedAnswerStr = sharedPref.getString(getString(R.string.security_answer_key_in_prefs), "NA");
+
+            //Answer
+            final EditText answer = view.findViewById(R.id.answer_edittext);
+
+            TextView validateTV = view.findViewById(R.id.validateSecurityAnswerTV);
+
+
+            if(savedQuestionStr.equals("NA") || savedAnswerStr.equals("NA")){
+                savedQuestionTV.setText("Pin recovery setup is not configured. Cannot reset PIN in this situation.");
+                validateTV.setText("OK");
+                answer.setVisibility(View.GONE);
+                validateTV.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        securityQuestionsDialog.dismiss();
+                    }
+                });
+            }
+            else {
+                savedQuestionTV.setText(savedQuestionStr);
+                validateTV.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if(answer.getText().toString().isEmpty()){
+                            Toast.makeText(getApplicationContext(), "Answer cannot be empty.", Toast.LENGTH_LONG).show();
+                        }
+                        else {
+                            if(answer.getText().toString().equals(savedAnswerStr)){
+                                lockManager.getAppLock().disableAndRemoveConfiguration();
+                                Intent intent = new Intent(getApplicationContext(), SecurityPinActivity.class);
+                                intent.putExtra(AppLock.EXTRA_TYPE, AppLock.ENABLE_PINLOCK);
+                                startActivityForResult(intent, REQUEST_CODE_RESET_PIN);
+                                Toast.makeText(getApplicationContext(), "For security reasons, please restart your app after resetting PIN.", Toast.LENGTH_LONG).show();
+                                securityQuestionsDialog.dismiss();
+                                finish();
+                            }
+                            else {
+                                Toast.makeText(getApplicationContext(), "Answer incorrect. Please try again.", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                });
+            }
         }
-        else {
-            this.finishAffinity();
-        }
+        securityQuestionsDialog.show();
     }
 }

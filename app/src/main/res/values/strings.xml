@@ -32,4 +32,6 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="security_question_key_in_prefs">security_question</string>
+    <string name="security_answer_key_in_prefs">security_answer</string>
 </resources>

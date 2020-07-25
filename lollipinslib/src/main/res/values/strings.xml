@@ -20,7 +20,7 @@
     <string name="button9_small_text" translatable="false">WXYZ</string>
     <string name="button11_large_text" translatable="false">0</string>
 
-    <string name="pin_code_forgot_text">Forgot?</string>
+    <string name="pin_code_forgot_text">Forgot Pin?</string>
     <string name="pin_code_step_disable">Disable %d-digit Pincode</string>
     <string name="pin_code_step_create">Create a %d-digit Pincode</string>
     <string name="pin_code_step_change">Enter your current %d-digit Pincode</string>

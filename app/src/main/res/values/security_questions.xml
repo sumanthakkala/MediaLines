@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="security_questions_array">
+        <item>What was your childhood nickname?</item>
+        <item>In what city or town was your first job?</item>
+        <item>What is the name of your favorite childhood friend?</item>
+        <item>In what city or town you were born?</item>
+        <item>What is your mother\'s middle name?</item>
+        <item>To what city did you go on your honeymoon?</item>
+        <item>What is the name of the company of your first job?</item>
+        <item>What school did you attend for sixth grade?</item>
+    </string-array>
+</resources>

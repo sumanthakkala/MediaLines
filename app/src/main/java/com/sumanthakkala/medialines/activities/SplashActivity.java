@@ -12,8 +12,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.Toast;
 
-import com.github.omadahealth.lollipin.lib.PinActivity;
 import com.github.omadahealth.lollipin.lib.managers.AppLock;
 import com.github.omadahealth.lollipin.lib.managers.LockManager;
 import com.sumanthakkala.medialines.R;
@@ -24,12 +24,13 @@ public class SplashActivity extends AppCompatActivity {
     LockManager<SecurityPinActivity> lockManager;
     private Handler handler = new Handler();
     private SharedPreferences sharedPreferences;
+    SharedPreferences securitySharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
+        securitySharedPref = getSharedPreferences("Security_Prefs", MODE_PRIVATE);
         lockManager = LockManager.getInstance();
 
         boolean isLightMode = sharedPreferences.getBoolean("theme", false);
@@ -105,8 +106,16 @@ public class SplashActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_CODE_UNLOCK_PIN:
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                finish();
+//                if(resultCode == 0){
+//                    this.finishAffinity();
+//                }
+//                else {
+                    if(!securitySharedPref.contains(getString(R.string.security_question_key_in_prefs)) || !securitySharedPref.contains(getString(R.string.security_answer_key_in_prefs))){
+                        Toast.makeText(this, "PIN recovery setup is not configured. Please complete it by adding a security question in settings.", Toast.LENGTH_LONG).show();
+                    }
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                    finish();
+//                }
                 break;
         }
     }
