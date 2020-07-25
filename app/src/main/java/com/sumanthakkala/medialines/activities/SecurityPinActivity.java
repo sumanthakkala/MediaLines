@@ -81,7 +81,7 @@ public class SecurityPinActivity extends AppLockActivity {
 
 
             if(savedQuestionStr.equals("NA") || savedAnswerStr.equals("NA")){
-                savedQuestionTV.setText("Pin recovery setup is not configured. Cannot reset PIN in this situation.");
+                savedQuestionTV.setText("PIN recovery is not configured. Cannot reset in this situation.");
                 validateTV.setText("OK");
                 answer.setVisibility(View.GONE);
                 validateTV.setOnClickListener(new View.OnClickListener() {

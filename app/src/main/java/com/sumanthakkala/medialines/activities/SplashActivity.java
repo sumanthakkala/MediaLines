@@ -111,7 +111,7 @@ public class SplashActivity extends AppCompatActivity {
 //                }
 //                else {
                     if(!securitySharedPref.contains(getString(R.string.security_question_key_in_prefs)) || !securitySharedPref.contains(getString(R.string.security_answer_key_in_prefs))){
-                        Toast.makeText(this, "PIN recovery setup is not configured. Please complete it by adding a security question in settings.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "PIN recovery is not configured. Please complete it by adding a security question in settings.", Toast.LENGTH_LONG).show();
                     }
                     startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     finish();
