@@ -28,7 +28,6 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         securitySharedPref = getSharedPreferences("Security_Prefs", MODE_PRIVATE);
         lockManager = LockManager.getInstance();
@@ -36,12 +35,14 @@ public class SplashActivity extends AppCompatActivity {
         boolean isLightMode = sharedPreferences.getBoolean("theme", false);
         if(isLightMode){
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            setSystemControlDecorsByCurrentTheme();
         }
         else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            setSystemControlDecorsByCurrentTheme();
         }
+
+        // Theme should be set before calling super.onCreate because, it is inflating activity two times and pin auth is asking for multiple times at application startup
+        super.onCreate(savedInstanceState);
+        setSystemControlDecorsByCurrentTheme();
 
 
     }
