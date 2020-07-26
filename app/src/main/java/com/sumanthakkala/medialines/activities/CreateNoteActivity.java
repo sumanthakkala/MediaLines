@@ -18,6 +18,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -582,12 +583,16 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         noteAudiosAdapter.notifyItemRangeChanged(removedImageIndex, totalAudios.size());
     }
 
+    float convertDpToPixels(Context context, float dp) {
+        return dp * context.getResources().getDisplayMetrics().density;
+    }
+
     private void setExistingNoteData(){
 
         if(existingNoteWithData.note.getIsActive() == Constants.IS_ARCHIVE){
             imageDone.setVisibility(View.GONE);
             bottomSheetBehavior.setPeekHeight(0);
-            infoSheetBehavior.setPeekHeight((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+            infoSheetBehavior.setPeekHeight((int) convertDpToPixels(this, 50.00f));
             imageDone.setVisibility(View.GONE);
             imageUnArchive.setVisibility(View.VISIBLE);
         }
