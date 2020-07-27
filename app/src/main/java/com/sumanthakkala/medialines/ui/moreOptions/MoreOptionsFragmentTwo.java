@@ -53,6 +53,12 @@ public class MoreOptionsFragmentTwo extends Fragment {
             }
         });
 
+        root.findViewById(R.id.checkboxesOptionLayout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                moreOptionsListener.onOptionCLicked(R.id.checkboxesOptionLayout);
+            }
+        });
 
         if(isExistingNote){
             root.findViewById(R.id.infoNoteOptionLayout).setVisibility(View.VISIBLE);

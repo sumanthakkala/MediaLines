@@ -88,6 +88,7 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 import com.skydoves.colorpickerview.listeners.ColorListener;
 import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
+import com.sumanthakkala.medialines.adapters.CheckboxesAdapter;
 import com.sumanthakkala.medialines.adapters.MoreOptionsAdapter;
 import com.sumanthakkala.medialines.adapters.NoteAudiosAdapter;
 import com.sumanthakkala.medialines.adapters.NoteImagesAdapter;
@@ -97,6 +98,7 @@ import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.EditedLocations;
 import com.sumanthakkala.medialines.entities.Note;
 import com.sumanthakkala.medialines.entities.NoteWithData;
+import com.sumanthakkala.medialines.listeners.CheckboxesListener;
 import com.sumanthakkala.medialines.listeners.MoreOptionsListener;
 import com.sumanthakkala.medialines.listeners.NoteAudiosListener;
 import com.sumanthakkala.medialines.listeners.NoteImagesListener;
@@ -123,7 +125,7 @@ import java.util.UUID;
 
 import static android.os.Environment.getExternalStorageDirectory;
 
-public class CreateNoteActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener, MoreOptionsListener, OnMapReadyCallback {
+public class CreateNoteActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback, NoteImagesListener, NoteAudiosListener, MoreOptionsListener, OnMapReadyCallback, CheckboxesListener {
 
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private static final int REQUEST_CODE_RECORD_AUDIO_PERMISSION = 2;
@@ -144,6 +146,8 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private View noteColorIndicator;
     private ViewPager2 imagesViewPager;
     private RecyclerView audiosRecyclerView;
+    private RecyclerView checkboxesRecyclerView;
+    private CheckboxesAdapter checkboxesAdapter;
     private TextView imagePositionIndicator;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private TextView webUrlTV;
@@ -178,6 +182,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private List<NoteAudioViewModel> audiosToDeleteFromDB = new ArrayList<>();
     private List<NoteAudioViewModel> existingAudiosInAudioViewModel = new ArrayList<>();
 
+    private List<String> totalCheckboxes = new ArrayList<>();
 
     private List<Attachments> existingImageAttachments = new ArrayList<>();
     private List<Attachments> existingAudioAttachments = new ArrayList<>();
@@ -272,6 +277,14 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         imagesViewPager = findViewById(R.id.imagesViewPager);
         audiosRecyclerView = findViewById(R.id.audiosRecyclerView);
         audiosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+
+        checkboxesRecyclerView = findViewById(R.id.checkboxesRecyclerView);
+        checkboxesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        checkboxesAdapter = new CheckboxesAdapter(totalCheckboxes, this);
+        checkboxesRecyclerView.setAdapter(checkboxesAdapter);
+
+
         webUrlTV = findViewById(R.id.webUrlText);
         webUrlLayout = findViewById(R.id.webUrlLayout);
         imagePositionIndicator = findViewById(R.id.positionIndicatorInViewPager);
@@ -1091,9 +1104,46 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                     Toast.makeText(this, "Sorry, this feature is only available in Android versions above KITKAT. We regret for this drawback. Thank you.", Toast.LENGTH_LONG).show();
                 }
                 break;
+            case R.id.checkboxesOptionLayout:
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                addCheckboxesHandler();
             default:
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
+    }
+
+    public void addCheckboxesHandler(){
+        checkboxesRecyclerView.setVisibility(View.VISIBLE);
+        totalCheckboxes.add("");
+        checkboxesAdapter.notifyDataSetChanged();
+//        checkboxesAdapter.notifyItemInserted(totalCheckboxes.size() - 1);
+
+    }
+
+    @Override
+    public void onCheckboxEnterPressed(int position) {
+        totalCheckboxes.add(position+1, "");
+        checkboxesAdapter.setRequestFocusPosition(position + 1);
+        checkboxesAdapter.notifyItemInserted(position + 1);
+        checkboxesAdapter.notifyItemRangeChanged(position, totalCheckboxes.size());
+//        if(position != totalCheckboxes.size() - 2){
+//            CheckboxesAdapter.CheckboxItemViewHolder holder = (CheckboxesAdapter.CheckboxItemViewHolder) checkboxesRecyclerView.findViewHolderForAdapterPosition(position + 1);
+//            holder.checkboxText.requestFocus();
+//        }
+
+    }
+
+    @Override
+    public void onDeleteCheckbox(int position) {
+        totalCheckboxes.remove(position);
+        checkboxesAdapter.notifyItemRemoved(position);
+        checkboxesAdapter.notifyItemRangeChanged(position, totalCheckboxes.size());
+    }
+
+    @Override
+    public void onCheckboxTextChanged(String str, int position) {
+        totalCheckboxes.remove(position);
+        totalCheckboxes.add(position, str);
     }
 
     private void initInfoSheet(){
