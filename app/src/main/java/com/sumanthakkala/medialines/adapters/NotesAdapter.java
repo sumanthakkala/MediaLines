@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
+import com.sumanthakkala.medialines.constants.Constants;
 import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.makeramen.roundedimageview.RoundedImageView;
@@ -214,11 +215,36 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                 titleTV.setText(noteWithData.note.getTitle());
                 titleTV.setVisibility(View.VISIBLE);
             }
-            if(noteWithData.note.getNoteText().trim().isEmpty()){
+            String noteText = noteWithData.note.getNoteText();
+            String regex = "\\Q" + Constants.CHECKBOXES_SEPERATOR + "\\E";
+            if(noteText.trim().isEmpty()){
                 noteDescriptionTV.setVisibility(View.GONE);
             }
             else {
-                noteDescriptionTV.setText(noteWithData.note.getNoteText());
+                if(noteText.contains(Constants.CHECKBOXES_SEPERATOR)){
+                    String[] list = noteText.split(regex);
+                    noteText = list[0];
+                    String[] bookmarks = list[1].split("\n");
+                    for(int i = 0; i< bookmarks.length; i++){
+                        if(i == 0){
+                            if(!noteText.isEmpty()){
+                                noteText += "\n";
+                            }
+                            continue;
+                        }
+                        if(bookmarks[i].contains(Constants.CHECKBOX_VALUE_CHECKED.substring(2))){
+                            bookmarks[i] = bookmarks[i].replace(Constants.CHECKBOX_VALUE_CHECKED.substring(1), Constants.CHECKBOX_DISPLAY_CHARACTER_CHECKED);
+                        }
+                        else {
+                            bookmarks[i] = bookmarks[i].replace(Constants.CHECKBOX_VALUE_UNCHECKED.substring(1), Constants.CHECKBOX_DISPLAY_CHARACTER_UNCHECKED);
+                        }
+                        noteText += bookmarks[i];
+                        noteDescriptionTV.setText(noteText);
+                    }
+                }
+                else {
+                    noteDescriptionTV.setText(noteText);
+                }
                 noteDescriptionTV.setVisibility(View.VISIBLE);
             }
             dateTimeTV.setText(noteWithData.note.getDateTime());

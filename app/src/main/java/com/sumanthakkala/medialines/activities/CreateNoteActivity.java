@@ -114,6 +114,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -1333,10 +1334,41 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         }
     }
 
+    private String getNoteExportableStr(){
+        String string = "";
+        if(totalCheckboxesInDBSavableFormat.size() > 0){
+            String noteActualText = noteText.getText().toString();
+            String[] checkBoxes = Arrays.copyOf(totalCheckboxesInDBSavableFormat.toArray(), totalCheckboxesInDBSavableFormat.size(), String[].class);
+            for(int i = 0; i< checkBoxes.length; i++){
+                if(i == 0){
+                    //Tasks in bold 𝗧𝗮𝘀𝗸𝘀 -- is the below unicode
+                    if(!noteActualText.isEmpty()){
+                        noteActualText += "\n\n\n\uD835\uDDE7\uD835\uDDEE\uD835\uDE00\uD835\uDDF8\uD835\uDE00\n";
+                    }
+                    else {
+                        noteActualText += "\uD835\uDDE7\uD835\uDDEE\uD835\uDE00\uD835\uDDF8\uD835\uDE00\n";
+                    }
+                }
+                if(checkBoxes[i].contains(Constants.CHECKBOX_VALUE_CHECKED)){
+                    checkBoxes[i] = checkBoxes[i].replace(Constants.CHECKBOX_VALUE_CHECKED, Constants.CHECKBOX_DISPLAY_CHARACTER_CHECKED);
+                }
+                else {
+                    checkBoxes[i] = checkBoxes[i].replace(Constants.CHECKBOX_VALUE_UNCHECKED, Constants.CHECKBOX_DISPLAY_CHARACTER_UNCHECKED);
+                }
+                noteActualText += checkBoxes[i];
+            }
+            string = noteActualText;
+        }
+        else {
+            string = noteText.getText().toString();
+        }
+        return string;
+    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void exportProcessHandler(){
-        saveNote();
+//        saveNote();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date());
         String pdfFileName = "PDF_" + noteTitle.getText().toString() + "_" + timeStamp + ".pdf";
         File fileDir = new File(getExternalStorageDirectory(), "MediaLines/Exports");
@@ -1346,6 +1378,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         File storageDir = fileDir;
         int pageCount = 1;
         try {
+            String textToExport = getNoteExportableStr();
             final File file = new File(storageDir, pdfFileName);
             file.createNewFile();
             FileOutputStream fOut = new FileOutputStream(file);
@@ -1367,7 +1400,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             canvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
             canvas.translate(40, 40);
             TextPaint textPaint = new TextPaint();
-            StaticLayout mEntireTextLayout = new StaticLayout(noteTextStrToSave, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+            StaticLayout mEntireTextLayout = new StaticLayout(textToExport, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
 
             if(mEntireTextLayout.getLineCount() >= 52){
                 String pageOneText = mEntireTextLayout.getText().subSequence(mEntireTextLayout.getLineStart(0), mEntireTextLayout.getLineEnd(52)).toString();
@@ -1404,7 +1437,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 }
             }
             else {
-                StaticLayout pageOneTextLayout = new StaticLayout(noteTextStrToSave, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+                StaticLayout pageOneTextLayout = new StaticLayout(textToExport, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
                 canvas.drawText("Inked by Media Lines!", 20, (canvas.getHeight() - 20), brandingPaint);
                 pageOneTextLayout.draw(canvas);
                 document.finishPage(page);

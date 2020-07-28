@@ -9,4 +9,6 @@ public class Constants {
     public static final String CHECKBOXES_SEPERATOR = "\n\n *****CHECKBOXES***** \n";
     public static final String CHECKBOX_VALUE_UNCHECKED = "\n--[]--";
     public static final String CHECKBOX_VALUE_CHECKED = "\n--[*]--";
+    public static final String CHECKBOX_DISPLAY_CHARACTER_UNCHECKED = "\n▢ ";
+    public static final String CHECKBOX_DISPLAY_CHARACTER_CHECKED = "\n✓ ";
 }
