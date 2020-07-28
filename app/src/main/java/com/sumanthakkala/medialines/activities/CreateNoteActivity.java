@@ -60,6 +60,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.divyanshu.draw.activity.DrawingActivity;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -133,6 +134,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private static final int REQUEST_CODE_SPEECH_INPUT = 6;
     private static final int REQUEST_CODE_CAPTURE_IMAGE = 7;
     private static final int REQUEST_CODE_LOCATION_RESOLUTION = 8;
+    private static final int REQUEST_CODE_SKETCH_ACTIVITY = 9;
 
     private EditText noteTitle, noteText;
     private ImageView imageDone;
@@ -1143,9 +1145,17 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             case R.id.checkboxesOptionLayout:
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 addCheckboxesHandler();
+            case R.id.sketchOptionLayout:
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                sketchBookHandler();
             default:
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
+    }
+
+    public void sketchBookHandler(){
+        Intent intent = new Intent(this, DrawingActivity.class);
+        startActivityForResult(intent, REQUEST_CODE_SKETCH_ACTIVITY);
     }
 
     public void addCheckboxesHandler(){
@@ -1668,6 +1678,23 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
 
         if(requestCode == REQUEST_CODE_LOCATION_RESOLUTION && resultCode == RESULT_OK){
             checkSettingsAndStartLocationUpdates();
+        }
+
+        if(requestCode == REQUEST_CODE_SKETCH_ACTIVITY && resultCode == RESULT_OK && data != null){
+            byte[] result= data.getByteArrayExtra("bitmap");
+            Bitmap bitmap = BitmapFactory.decodeByteArray(result, 0, result.length);
+            try {
+                File tempImageFile = createTempImageFile();
+                if (tempImageFile != null) {
+                    FileOutputStream out = new FileOutputStream(tempImageFile);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    out.flush();
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            compressImageAndUpdateViewPager(currentTempPhotoPath);
         }
     }
 

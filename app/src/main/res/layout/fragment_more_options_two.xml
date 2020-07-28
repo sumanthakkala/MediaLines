@@ -78,6 +78,41 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/sketchOptionLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_30sdp"
+        android:layout_marginLeft="@dimen/_5sdp"
+        android:layout_marginTop="@dimen/_3sdp"
+        android:layout_marginRight="@dimen/_5sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        tools:ignore="UseCompoundDrawables"
+        android:background="@drawable/background_button">
+
+        <ImageView
+            android:layout_width="@dimen/_22sdp"
+            android:layout_height="@dimen/_22sdp"
+            android:contentDescription="@string/app_name"
+            android:layout_marginLeft="@dimen/_5sdp"
+            android:src="@drawable/ic_brush"
+            android:tint="@color/colorIcons" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginLeft="@dimen/_10sdp"
+            android:fontFamily="@font/nunito_semibold"
+            android:includeFontPadding="false"
+            android:text="Add Sketch"
+            android:textColor="@color/colorIcons"
+            android:textSize="@dimen/_12ssp"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/infoNoteOptionLayout"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_30sdp"

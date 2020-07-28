@@ -72,4 +72,6 @@ dependencies {
     //Lollipin
     implementation project(':lollipinslib')
 
+    //Android Draw
+    implementation project(':androiddrawlib')
 }

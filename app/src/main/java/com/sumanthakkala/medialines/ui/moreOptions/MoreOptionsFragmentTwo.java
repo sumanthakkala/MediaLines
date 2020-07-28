@@ -60,6 +60,13 @@ public class MoreOptionsFragmentTwo extends Fragment {
             }
         });
 
+        root.findViewById(R.id.sketchOptionLayout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                moreOptionsListener.onOptionCLicked(R.id.sketchOptionLayout);
+            }
+        });
+
         if(isExistingNote){
             root.findViewById(R.id.infoNoteOptionLayout).setVisibility(View.VISIBLE);
             root.findViewById(R.id.infoNoteOptionLayout).setOnClickListener(new View.OnClickListener() {
