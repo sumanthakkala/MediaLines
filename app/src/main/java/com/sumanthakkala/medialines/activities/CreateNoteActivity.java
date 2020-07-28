@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
@@ -31,7 +30,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
@@ -52,7 +50,6 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
 import android.util.Patterns;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,7 +82,6 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.skydoves.colorpickerview.ColorEnvelope;
 import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
-import com.skydoves.colorpickerview.listeners.ColorListener;
 import com.squareup.picasso.Picasso;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.adapters.CheckboxesAdapter;
@@ -169,7 +165,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private boolean isRecording = false;
 
     private String currentTempPhotoPath = "";
-
+    private String noteTextStrToSave = "";
 
     private List<NoteImageViewModel> totalImages;
     private List<NoteImageViewModel> selectedImages;
@@ -183,6 +179,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private List<NoteAudioViewModel> existingAudiosInAudioViewModel = new ArrayList<>();
 
     private List<String> totalCheckboxes = new ArrayList<>();
+    private List<String> totalCheckboxesInDBSavableFormat = new ArrayList<>();
 
     private List<Attachments> existingImageAttachments = new ArrayList<>();
     private List<Attachments> existingAudioAttachments = new ArrayList<>();
@@ -277,10 +274,12 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         imagesViewPager = findViewById(R.id.imagesViewPager);
         audiosRecyclerView = findViewById(R.id.audiosRecyclerView);
         audiosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        audiosRecyclerView.setNestedScrollingEnabled(false);
 
 
         checkboxesRecyclerView = findViewById(R.id.checkboxesRecyclerView);
         checkboxesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        checkboxesRecyclerView.setNestedScrollingEnabled(false);
         checkboxesAdapter = new CheckboxesAdapter(totalCheckboxes, this);
         checkboxesRecyclerView.setAdapter(checkboxesAdapter);
 
@@ -611,9 +610,31 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         }
         imageShareNote.setVisibility(View.VISIBLE);
 
+        String existingNoteText = existingNoteWithData.note.getNoteText();
+        String regex = "\\Q" + Constants.CHECKBOXES_SEPERATOR + "\\E";
+        if(existingNoteText.contains(Constants.CHECKBOXES_SEPERATOR)){
+            String[] list = existingNoteText.split(regex);
+            existingNoteText = list[0];
+            String[] bookmarks = list[1].split("\n");
+            for(int i = 0; i< bookmarks.length; i++){
+                if(i == 0){
+                    continue;
+                }
+                if(bookmarks[i].contains(Constants.CHECKBOX_VALUE_CHECKED.substring(2))){
+                    totalCheckboxes.add(bookmarks[i].substring(7));
+                }
+                else {
+                    totalCheckboxes.add(bookmarks[i].substring(6));
+                }
+                totalCheckboxesInDBSavableFormat.add(bookmarks[i]);
+            }
+            checkboxesAdapter.setRawCheckboxStrs(totalCheckboxesInDBSavableFormat);
+            checkboxesAdapter.notifyDataSetChanged();
+        }
+
         noteTitle.setText(existingNoteWithData.note.getTitle());
         textDateTime.setText(existingNoteWithData.note.getDateTime());
-        noteText.setText(existingNoteWithData.note.getNoteText());
+        noteText.setText(existingNoteText);
         if(existingNoteWithData.note.getWebLink() != null && !existingNoteWithData.note.getWebLink().trim().isEmpty()){
             webUrlTV.setText(existingNoteWithData.note.getWebLink());
             webUrlLayout.setVisibility(View.VISIBLE);
@@ -756,9 +777,23 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             noteAudiosAdapter.stopAudioPlayback();
         }
 
+        noteTextStrToSave = noteText.getText().toString();
+        if(totalCheckboxes.size() > 0){
+            String savingFormatForCheckbox = "";
+            for (String checkboxText: totalCheckboxesInDBSavableFormat){
+                savingFormatForCheckbox += checkboxText;
+            }
+            if(noteTextStrToSave.contains(Constants.CHECKBOXES_SEPERATOR)){
+                noteTextStrToSave += savingFormatForCheckbox;
+            }
+            else {
+                noteTextStrToSave += Constants.CHECKBOXES_SEPERATOR + savingFormatForCheckbox;
+            }
+        }
+
         final Note note = new Note();
         note.setTitle(noteTitle.getText().toString());
-        note.setNoteText(noteText.getText().toString());
+        note.setNoteText(noteTextStrToSave);
         note.setDateTime(textDateTime.getText().toString());
         note.setCreatedLocation(currentLocationLatLong);
         note.setIsActive(Constants.IS_ACTIVE);
@@ -1115,6 +1150,9 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     public void addCheckboxesHandler(){
         checkboxesRecyclerView.setVisibility(View.VISIBLE);
         totalCheckboxes.add("");
+        totalCheckboxesInDBSavableFormat.add("");
+        checkboxesAdapter.setRawCheckboxStrs(totalCheckboxesInDBSavableFormat);
+        checkboxesAdapter.setRequestFocusPosition(totalCheckboxes.size() - 1);
         checkboxesAdapter.notifyDataSetChanged();
 //        checkboxesAdapter.notifyItemInserted(totalCheckboxes.size() - 1);
 
@@ -1123,7 +1161,9 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     @Override
     public void onCheckboxEnterPressed(int position) {
         totalCheckboxes.add(position+1, "");
+        totalCheckboxesInDBSavableFormat.add(position+1, "");
         checkboxesAdapter.setRequestFocusPosition(position + 1);
+        checkboxesAdapter.setRawCheckboxStrs(totalCheckboxesInDBSavableFormat);
         checkboxesAdapter.notifyItemInserted(position + 1);
         checkboxesAdapter.notifyItemRangeChanged(position, totalCheckboxes.size());
 //        if(position != totalCheckboxes.size() - 2){
@@ -1136,14 +1176,47 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     @Override
     public void onDeleteCheckbox(int position) {
         totalCheckboxes.remove(position);
+        totalCheckboxesInDBSavableFormat.remove(position);
+        checkboxesAdapter.setRawCheckboxStrs(totalCheckboxesInDBSavableFormat);
         checkboxesAdapter.notifyItemRemoved(position);
         checkboxesAdapter.notifyItemRangeChanged(position, totalCheckboxes.size());
     }
 
     @Override
-    public void onCheckboxTextChanged(String str, int position) {
+    public void onCheckboxTextChanged(String str, int position, boolean checkBoxVal) {
         totalCheckboxes.remove(position);
         totalCheckboxes.add(position, str);
+        if(totalCheckboxesInDBSavableFormat.get(position).equals("")){
+            totalCheckboxesInDBSavableFormat.remove(position);
+            totalCheckboxesInDBSavableFormat.add(position, Constants.CHECKBOX_VALUE_UNCHECKED + str);
+        }
+        else {
+            totalCheckboxesInDBSavableFormat.remove(position);
+            if(checkBoxVal){
+                totalCheckboxesInDBSavableFormat.add(position, Constants.CHECKBOX_VALUE_CHECKED + str);
+            }
+            else {
+                totalCheckboxesInDBSavableFormat.add(position, Constants.CHECKBOX_VALUE_UNCHECKED + str);
+            }
+        }
+
+    }
+
+    @Override
+    public void onCheckboxValueChanged(boolean val, int position) {
+        String str = totalCheckboxesInDBSavableFormat.get(position);
+        if(val){
+            if(str.contains(Constants.CHECKBOX_VALUE_UNCHECKED.substring(2))){
+                str = str.replace(Constants.CHECKBOX_VALUE_UNCHECKED, Constants.CHECKBOX_VALUE_CHECKED);
+            }
+        }
+        else {
+            if(str.contains(Constants.CHECKBOX_VALUE_CHECKED.substring(2))){
+                str = str.replace(Constants.CHECKBOX_VALUE_CHECKED, Constants.CHECKBOX_VALUE_UNCHECKED);
+            }
+        }
+        totalCheckboxesInDBSavableFormat.remove(position);
+        totalCheckboxesInDBSavableFormat.add(position, str);
     }
 
     private void initInfoSheet(){
@@ -1263,6 +1336,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void exportProcessHandler(){
+        saveNote();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_hhmmss").format(new Date());
         String pdfFileName = "PDF_" + noteTitle.getText().toString() + "_" + timeStamp + ".pdf";
         File fileDir = new File(getExternalStorageDirectory(), "MediaLines/Exports");
@@ -1293,7 +1367,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             canvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
             canvas.translate(40, 40);
             TextPaint textPaint = new TextPaint();
-            StaticLayout mEntireTextLayout = new StaticLayout(noteText.getText().toString(), textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+            StaticLayout mEntireTextLayout = new StaticLayout(noteTextStrToSave, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
 
             if(mEntireTextLayout.getLineCount() >= 52){
                 String pageOneText = mEntireTextLayout.getText().subSequence(mEntireTextLayout.getLineStart(0), mEntireTextLayout.getLineEnd(52)).toString();
@@ -1330,7 +1404,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 }
             }
             else {
-                StaticLayout pageOneTextLayout = new StaticLayout(noteText.getText().toString(), textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+                StaticLayout pageOneTextLayout = new StaticLayout(noteTextStrToSave, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
                 canvas.drawText("Inked by Media Lines!", 20, (canvas.getHeight() - 20), brandingPaint);
                 pageOneTextLayout.draw(canvas);
                 document.finishPage(page);

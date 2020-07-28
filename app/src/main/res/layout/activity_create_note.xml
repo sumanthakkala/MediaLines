@@ -7,7 +7,7 @@
     android:background="@color/colorPrimary"
     tools:context=".activities.CreateNoteActivity">
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="@dimen/_35sdp"
@@ -237,7 +237,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/_12sdp"
-                android:layout_marginTop="@dimen/_15sdp"
+                android:layout_marginTop="@dimen/_8sdp"
                 android:layout_marginEnd="@dimen/_12sdp"
                 android:layout_marginBottom="@dimen/_15sdp"
                 android:paddingTop="6dp"
@@ -256,7 +256,7 @@
                 app:layout_constraintTop_toBottomOf="@id/checkboxesRecyclerView"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <include layout="@layout/more_options_layout" />
     <include layout="@layout/info_sheet_layout" />
