@@ -1114,6 +1114,8 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     public void onOptionCLicked(int layoutId) {
 
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        TabLayout.Tab tab = tabLayout.getTabAt(0);
+        tab.select();
         switch (layoutId){
             case R.id.addImageLayout:
                 selectImageHandler();
@@ -1131,7 +1133,6 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 showRecordAudioDialog();
                 break;
             case R.id.infoNoteOptionLayout:
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 infoSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 break;
             case R.id.exportPdfLayout:
@@ -1143,11 +1144,11 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 }
                 break;
             case R.id.checkboxesOptionLayout:
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 addCheckboxesHandler();
+                break;
             case R.id.sketchOptionLayout:
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 sketchBookHandler();
+                break;
             default:
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
