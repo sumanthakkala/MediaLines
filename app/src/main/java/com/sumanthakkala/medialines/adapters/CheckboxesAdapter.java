@@ -148,6 +148,9 @@ public class CheckboxesAdapter extends RecyclerView.Adapter<CheckboxesAdapter.Ch
                     checkBox.setChecked(false);
                 }
             }
+            else {
+                checkBox.setChecked(false);
+            }
             if(!text.isEmpty()){
                 checkboxText.setText(text);
             }
