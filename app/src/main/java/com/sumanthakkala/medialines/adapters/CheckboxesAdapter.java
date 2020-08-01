@@ -68,7 +68,7 @@ public class CheckboxesAdapter extends RecyclerView.Adapter<CheckboxesAdapter.Ch
         holder.checkboxText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if((keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) || i == EditorInfo.IME_ACTION_NEXT){
+                if((keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) || i == EditorInfo.IME_ACTION_NEXT || textView.getImeActionLabel().equals("—>|")){
                     checkboxesListener.onCheckboxEnterPressed(position);
                 }
                 return true;

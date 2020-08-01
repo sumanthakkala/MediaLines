@@ -18,7 +18,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:imeOptions="actionNext"
-        android:imeActionLabel="⏎"
+        android:imeActionLabel="—>|"
         android:background="@null"
         android:fontFamily="@font/nunito_regular"
         android:gravity="center_vertical"
