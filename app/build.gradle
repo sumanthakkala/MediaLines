@@ -69,9 +69,13 @@ dependencies {
     // Color picker
     implementation "com.github.skydoves:colorpickerview:2.1.7"
 
+    //ZoomImageView
+    implementation 'com.github.chrisbanes:PhotoView:2.1.4'
+
     //Lollipin
     implementation project(':lollipinslib')
 
     //Android Draw
     implementation project(':androiddrawlib')
+
 }
