@@ -1561,6 +1561,9 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private void selectImageHandler(){
         if(isReadExternalStoragePermissionGranted()){
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            }
             if(intent.resolveActivity(getPackageManager()) != null){
                 startActivityForResult(intent, REQUEST_CODE_SELECT_IMAGE);
             }
@@ -1647,8 +1650,20 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 try {
                     if(isExternalStorageWritable()){
                         if(requestCode == REQUEST_CODE_SELECT_IMAGE){
-                            Uri imageUri = data.getData();
-                            compressImageAndUpdateViewPager(getRealPathFromURI(imageUri));
+                            if(data.getClipData() != null) {
+                                int count = data.getClipData().getItemCount(); //evaluate the count before the for loop --- otherwise, the count is evaluated every loop.
+                                for(int i = 0; i < count; i++){
+                                    Uri imageUri = data.getClipData().getItemAt(i).getUri();
+                                    compressImageAndUpdateViewPager(getRealPathFromURI(imageUri));
+                                //do something with the image (save it to some directory or whatever you need to do with it here)
+                                }
+                            } else if(data.getData() != null) {
+                                Uri imageUri = data.getData();
+                                compressImageAndUpdateViewPager(getRealPathFromURI(imageUri));
+                                //do something with the image (save it to some directory or whatever you need to do with it here)
+                            }
+//                            Uri imageUri = data.getData();
+//                            compressImageAndUpdateViewPager(getRealPathFromURI(imageUri));
                         }
                         else {
                             compressImageAndUpdateViewPager(currentTempPhotoPath);
