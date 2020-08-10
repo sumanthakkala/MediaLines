@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
@@ -16,7 +17,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -51,13 +59,20 @@ import android.text.TextPaint;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Chronometer;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.divyanshu.draw.activity.DrawingActivity;
@@ -84,6 +99,7 @@ import com.skydoves.colorpickerview.ColorEnvelope;
 import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 import com.squareup.picasso.Picasso;
+import com.sumanthakkala.medialines.BuildConfig;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.adapters.CheckboxesAdapter;
 import com.sumanthakkala.medialines.adapters.MoreOptionsAdapter;
@@ -99,6 +115,7 @@ import com.sumanthakkala.medialines.listeners.CheckboxesListener;
 import com.sumanthakkala.medialines.listeners.MoreOptionsListener;
 import com.sumanthakkala.medialines.listeners.NoteAudiosListener;
 import com.sumanthakkala.medialines.listeners.NoteImagesListener;
+import com.sumanthakkala.medialines.receivers.ReminderBroadcastReceiver;
 import com.sumanthakkala.medialines.viewmodels.NoteAudioViewModel;
 import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -113,9 +130,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -155,6 +174,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private AlertDialog recordAudioDialog;
     private AlertDialog showImageDialog;
     private AlertDialog exitDialog;
+    private AlertDialog remindNoteDialog;
     private String currentLocationLatLong;
     private String currentDateTime;
     private String selectedNoteColor;
@@ -200,6 +220,15 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     TabLayout tabLayout;
     private LocationRequest locationRequest;
 
+    private ImageView imageRemindNote;
+    private TextView dateTextView;
+    private TextView timeTextView;
+    String selectedRepetition = "";
+    private RadioGroup reminderRadioGroup;
+    private ConstraintLayout timeDetailsLayout;
+    private ConstraintLayout placeDetailsLayout;
+    private EditText reminderPlaceEditText;
+
 
     private static final String IMAGE_TYPE = "image";
     private static final String AUDIO_TYPE = "audio";
@@ -225,7 +254,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         setSystemControlDecorsByCurrentTheme();
         moreOptionsLayout = findViewById(R.id.moreOptionsLayout);
         initMoreOptions();
-
+        createNotificationChannel();
         infoSheetLayout = findViewById(R.id.infoSheetLayout);
         imagesCountTV = infoSheetLayout.findViewById(R.id.imageAttachmentsCountTV);
         audiosCountTV = infoSheetLayout.findViewById(R.id.audioAttachmentsCountTV);
@@ -270,6 +299,13 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             }
         });
 
+        imageRemindNote = findViewById(R.id.imageRemindNote);
+        imageRemindNote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                remindNoteHandler();
+            }
+        });
         noteTitle = findViewById(R.id.inputNoteTitle);
         noteText = findViewById(R.id.inputNoteText);
         textDateTime = findViewById(R.id.textDateTime);
@@ -314,9 +350,11 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             existingNotePosition = (int) getIntent().getIntExtra("position", -1);
             if (existingNoteWithData.note.getIsActive() == Constants.IS_ACTIVE) {
                 imageArchive.setVisibility(View.VISIBLE);
+                imageRemindNote.setVisibility(View.VISIBLE);
             } else {
                 imageUnArchive.setVisibility(View.VISIBLE);
                 imageDone.setVisibility(View.GONE);
+                imageRemindNote.setVisibility(View.GONE);
             }
             initInfoSheet();
             setExistingNoteData();
@@ -362,6 +400,209 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         getCurrentLocation();
     }
 
+    private void remindNoteHandler() {
+            if(remindNoteDialog == null){
+                final Calendar selectedDate = Calendar.getInstance();
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(CreateNoteActivity.this);
+                View view = LayoutInflater.from(this).inflate(
+                        R.layout.reminder_dialog,
+                        (ViewGroup) findViewById(R.id.remindNoteDialogLayout)
+                );
+                builder.setView(view);
+                remindNoteDialog = builder.create();
+                remindNoteDialog.setCancelable(false);
+                remindNoteDialog.setCanceledOnTouchOutside(false);
+                if(remindNoteDialog.getWindow() != null){
+                    remindNoteDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+                }
+                dateTextView = view.findViewById(R.id.dateTV);
+                timeTextView = view.findViewById(R.id.timeTV);
+                Spinner repeatSpinner = view.findViewById(R.id.repetition_spinner);
+                view.findViewById(R.id.saveReminderTV).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if(isSelectedDateTimeValid(selectedDate)){
+                            saveNote();
+                            setupReminder(selectedDate);
+                            remindNoteDialog.dismiss();
+                            remindNoteDialog = null;
+                        }
+                        else {
+                            Toast.makeText(CreateNoteActivity.this, "Selected Date/Time has passed.", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                });
+                view.findViewById(R.id.cancelGoBackTV).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        remindNoteDialog.dismiss();
+                        remindNoteDialog = null;
+                    }
+                });
+                timeDetailsLayout = view.findViewById(R.id.timeDetailsLayout);
+                placeDetailsLayout = view.findViewById(R.id.placeDetailsLayout);
+                reminderPlaceEditText = view.findViewById(R.id.reminder_place_edittext);
+//                reminderRadioGroup = view.findViewById(R.id.dateTimeRadioGroup);
+//                reminderRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+//                    @Override
+//                    public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
+//                        switch (checkedId){
+//                            case R.id.radio_time:
+//                                timeDetailsLayout.setVisibility(View.VISIBLE);
+//                                placeDetailsLayout.setVisibility(View.GONE);
+//                                break;
+//                            case R.id.radio_place:
+//                                timeDetailsLayout.setVisibility(View.GONE);
+//                                placeDetailsLayout.setVisibility(View.VISIBLE);
+//                                break;
+//                        }
+//                    }
+//                });
+
+                reminderPlaceEditText.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+                        return true;
+                    }
+                });
+
+                //**** Date Picker ****
+                final DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker view, int yearSelected, int monthOfYear, int dayOfMonth) {
+                        dateTextView.setText("" + dayOfMonth + "/" + monthOfYear + "/" + yearSelected);
+                        selectedDate.set(yearSelected, monthOfYear, dayOfMonth);
+                    }
+                };
+                view.findViewById(R.id.selectDateLayout).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Calendar myCurrentDate = Calendar.getInstance();
+                        int year = myCurrentDate.get(Calendar.YEAR);
+                        int month = myCurrentDate.get(Calendar.MONTH);
+                        int day = myCurrentDate.get(Calendar.DAY_OF_MONTH);
+
+                        DatePickerDialog datePickerDialog = new DatePickerDialog(CreateNoteActivity.this, datePickerListener, year, month, day);
+                        datePickerDialog.show();
+                        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+                        datePickerDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorAccent));
+                        datePickerDialog.getButton(DialogInterface.BUTTON_POSITIVE).setBackground(getResources().getDrawable(R.drawable.background_button));
+                        datePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.textSecondary));
+                        datePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setBackground(getResources().getDrawable(R.drawable.background_button));
+
+                    }
+                });
+
+
+                //**** Time Picker ****
+                final TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        timeTextView.setText( selectedHour + ":" + selectedMinute);
+                        selectedDate.set(selectedDate.get(Calendar.YEAR), selectedDate.get(Calendar.MONTH), selectedDate.get(Calendar.DAY_OF_MONTH), selectedHour, selectedMinute, 0);
+                    }
+                };
+                view.findViewById(R.id.selectTimeLayout).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Calendar myCurrentTime = Calendar.getInstance();
+                        int hour = myCurrentTime.get(Calendar.HOUR_OF_DAY);
+                        int minute = myCurrentTime.get(Calendar.MINUTE);
+                        TimePickerDialog timePickerDialog = new TimePickerDialog(CreateNoteActivity.this, timeSetListener, hour, minute, false);
+                        timePickerDialog.show();
+                        timePickerDialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.colorAccent));
+                        timePickerDialog.getButton(DialogInterface.BUTTON_POSITIVE).setBackground(getResources().getDrawable(R.drawable.background_button));
+                        timePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.textSecondary));
+                        timePickerDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setBackground(getResources().getDrawable(R.drawable.background_button));
+
+                    }
+                });
+
+                //Spinner
+                ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(CreateNoteActivity.this,
+                        R.array.reminder_repetitions_array, android.R.layout.simple_spinner_item);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                repeatSpinner.setAdapter(adapter);
+                repeatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                        selectedRepetition = adapterView.getItemAtPosition(i).toString();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
+            }
+        remindNoteDialog.show();
+    }
+
+//    public void onRadioButtonClicked(View view) {
+//    }
+
+    private boolean isSelectedDateTimeValid(Calendar selectedDateTime){
+        Calendar myCurrentDate = Calendar.getInstance();
+        if(selectedDateTime.after(myCurrentDate)){
+            return true;
+        }
+        else if(selectedDateTime.getTimeInMillis() > myCurrentDate.getTimeInMillis()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    }
+
+    public void setupReminder(Calendar selectedDateTime){
+
+        Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
+        intent.putExtra("data", parseObjectToByteArray(existingNoteWithData));
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP,
+                selectedDateTime.getTimeInMillis(), alarmIntent);
+
+    }
+
+    private void createNotificationChannel(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            CharSequence name = "MediaLinesReminderChanel";
+            String description = "Chanel For Media Lines Reminder";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel notificationChannel = new NotificationChannel("notifyMediaLines", name, importance);
+            notificationChannel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+    }
+
+    private byte[] parseObjectToByteArray(Object o){
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject((NoteWithData) o);
+            out.flush();
+            byte[] yourBytes = bos.toByteArray();
+            return yourBytes;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                bos.close();
+            } catch (IOException ex) {
+                // ignore close exception
+            }
+        }
+        return null;
+    }
     @Override
     protected void onResume() {
         TabLayout.Tab tab = tabLayout.getTabAt(0);

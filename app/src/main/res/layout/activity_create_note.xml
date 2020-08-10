@@ -53,6 +53,25 @@
                 />
 
             <ImageView
+                android:id="@+id/imageRemindNote"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_alarm_add"
+                android:tint="@color/colorIcons"
+                android:layout_marginStart="@dimen/_4sdp"
+                android:layout_marginLeft="@dimen/_4sdp"
+                android:layout_marginEnd="@dimen/_8sdp"
+                android:layout_marginRight="@dimen/_8sdp"
+                app:layout_constraintBottom_toBottomOf="@id/imageBack"
+                app:layout_constraintEnd_toStartOf="@id/imageArchiveNote"
+                app:layout_constraintTop_toTopOf="@id/imageBack"
+                android:background="@drawable/background_button"
+                android:padding="@dimen/_2ssp"
+                android:visibility="visible"
+                />
+
+            <ImageView
                 android:id="@+id/imageArchiveNote"
                 android:layout_width="@dimen/_20sdp"
                 android:layout_height="@dimen/_20sdp"
