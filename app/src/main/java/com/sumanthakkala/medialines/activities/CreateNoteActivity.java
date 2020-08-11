@@ -111,6 +111,7 @@ import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.EditedLocations;
 import com.sumanthakkala.medialines.entities.Note;
 import com.sumanthakkala.medialines.entities.NoteWithData;
+import com.sumanthakkala.medialines.entities.Reminders;
 import com.sumanthakkala.medialines.listeners.CheckboxesListener;
 import com.sumanthakkala.medialines.listeners.MoreOptionsListener;
 import com.sumanthakkala.medialines.listeners.NoteAudiosListener;
@@ -224,6 +225,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     private TextView dateTextView;
     private TextView timeTextView;
     String selectedRepetition = "";
+    Calendar selectedDateTime;
     private RadioGroup reminderRadioGroup;
     private ConstraintLayout timeDetailsLayout;
     private ConstraintLayout placeDetailsLayout;
@@ -418,11 +420,12 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 }
                 dateTextView = view.findViewById(R.id.dateTV);
                 timeTextView = view.findViewById(R.id.timeTV);
-                Spinner repeatSpinner = view.findViewById(R.id.repetition_spinner);
+                final Spinner repeatSpinner = view.findViewById(R.id.repetition_spinner);
                 view.findViewById(R.id.saveReminderTV).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if(isSelectedDateTimeValid(selectedDate)){
+                            selectedDateTime = selectedDate;
                             saveNote();
                             setupReminder(selectedDate);
                             remindNoteDialog.dismiss();
@@ -437,6 +440,8 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 view.findViewById(R.id.cancelGoBackTV).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        selectedDateTime = null;
+                        selectedRepetition = "";
                         remindNoteDialog.dismiss();
                         remindNoteDialog = null;
                     }
@@ -526,10 +531,28 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                         R.array.reminder_repetitions_array, android.R.layout.simple_spinner_item);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 repeatSpinner.setAdapter(adapter);
+                final String[] repetationVals = getResources().getStringArray(R.array.reminder_repetitions_array);
                 repeatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                        selectedRepetition = adapterView.getItemAtPosition(i).toString();
+
+                        switch (adapterView.getItemAtPosition(i).toString()){
+                            case Constants.REMINDER_DOES_NOT_REPEAT_IN_RESOURCES:
+                                selectedRepetition = Constants.REMINDER_DOES_NOT_REPEAT;
+                                break;
+                            case Constants.REMINDER_DAILY_IN_RESOURCES:
+                                selectedRepetition = Constants.REMINDER_DAILY;
+                                break;
+                            case Constants.REMINDER_WEEKLY_IN_RESOURCES:
+                                selectedRepetition = Constants.REMINDER_WEEKLY;
+                                break;
+                            case Constants.REMINDER_MONTHLY_IN_RESOURCES:
+                                selectedRepetition = Constants.REMINDER_MONTHLY;
+                                break;
+                            case Constants.REMINDER_YEARLY_IN_RESOURCES:
+                                selectedRepetition = Constants.REMINDER_YEARLY;
+                                break;
+                        }
                     }
 
                     @Override
@@ -564,10 +587,28 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         intent.putExtra("data", parseObjectToByteArray(existingNoteWithData));
         PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        alarmManager.set(AlarmManager.RTC_WAKEUP,
-                selectedDateTime.getTimeInMillis(), alarmIntent);
+        setAlarm(this, selectedDateTime.getTimeInMillis(), alarmIntent);
+//        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+//        alarmManager.set(AlarmManager.RTC_WAKEUP,
+//                selectedDateTime.getTimeInMillis(), alarmIntent);
 
+    }
+
+    private static void setAlarm(Context context, long time, PendingIntent pendingIntent) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT){
+            alarmManager.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+
+        }
+        else if(Build.VERSION_CODES.KITKAT <= Build.VERSION.SDK_INT && Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+
+        }
+        else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+
+        }
     }
 
     private void createNotificationChannel(){
@@ -1103,6 +1144,17 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 editedLocation.setDateTime(currentDateTime);
                 editedLocation.setLocation(currentLocationLatLong);
                 MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).editedLocationsDao().insertEditedLocation(editedLocation);
+
+                // Saving Reminder
+                if(selectedDateTime != null && !selectedRepetition.isEmpty()){
+                    final Reminders reminder = new Reminders();
+                    reminder.setAssociatedNoteId(note.getNoteId());
+                    reminder.setDateTimeInMillis(selectedDateTime.getTimeInMillis());
+                    reminder.setRepeatType(selectedRepetition);
+                    MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).remindersDao().deleteReminderByNoteId(note.getNoteId());
+                    MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).remindersDao().insertReminder(reminder);
+
+                }
 
                 //Deleting existing images from DB & App storage if any
                 if(imagesToDeleteFromDB.size() > 0){
