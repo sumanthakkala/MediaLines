@@ -427,7 +427,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                         if(isSelectedDateTimeValid(selectedDate)){
                             selectedDateTime = selectedDate;
                             saveNote();
-                            setupReminder(selectedDate);
+                            setupReminder(selectedDate, selectedRepetition);
                             Toast.makeText(CreateNoteActivity.this, "Reminder added successfully.", Toast.LENGTH_SHORT).show();
                             remindNoteDialog.dismiss();
                             remindNoteDialog = null;
@@ -627,33 +627,38 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
 
     }
 
-    public void setupReminder(Calendar selectedDateTime){
-
+    public void setupReminder(Calendar selectedDateTime, String repeatType){
         Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
-        intent.putExtra("data", parseObjectToByteArray(existingNoteWithData));
+        intent.putExtra("noteId", existingNoteWithData.note.getNoteId());
+        intent.putExtra("repeatType", repeatType);
+        intent.putExtra("alarmSetupDateTimeInMillis", selectedDateTime.getTimeInMillis());
         PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        setAlarm(this, selectedDateTime.getTimeInMillis(), alarmIntent);
-//        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-//        alarmManager.set(AlarmManager.RTC_WAKEUP,
-//                selectedDateTime.getTimeInMillis(), alarmIntent);
+        setAlarm(this, selectedDateTime.getTimeInMillis(), alarmIntent, repeatType);
 
     }
 
-    private static void setAlarm(Context context, long time, PendingIntent pendingIntent) {
+    private static void setAlarm(Context context, long time, PendingIntent pendingIntent, String repeatType) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT){
-            alarmManager.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
-
-        }
-        else if(Build.VERSION_CODES.KITKAT <= Build.VERSION.SDK_INT && Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntent);
-
-        }
-        else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pendingIntent);
-
+        switch (repeatType){
+            case Constants.REMINDER_DOES_NOT_REPEAT:
+            case Constants.REMINDER_MONTHLY:
+            case Constants.REMINDER_YEARLY:
+                if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT){
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+                }
+                else if(Build.VERSION_CODES.KITKAT <= Build.VERSION.SDK_INT && Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+                }
+                else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+                }
+                break;
+            case Constants.REMINDER_DAILY:
+                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY, pendingIntent);
+                break;
+            case Constants.REMINDER_WEEKLY:
+                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY * 7, pendingIntent);
+                break;
         }
     }
 
@@ -670,26 +675,26 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         }
     }
 
-    private byte[] parseObjectToByteArray(Object o){
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream out = null;
-        try {
-            out = new ObjectOutputStream(bos);
-            out.writeObject((NoteWithData) o);
-            out.flush();
-            byte[] yourBytes = bos.toByteArray();
-            return yourBytes;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                bos.close();
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-        }
-        return null;
-    }
+//    private byte[] parseObjectToByteArray(Object o){
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        ObjectOutputStream out = null;
+//        try {
+//            out = new ObjectOutputStream(bos);
+//            out.writeObject((NoteWithData) o);
+//            out.flush();
+//            byte[] yourBytes = bos.toByteArray();
+//            return yourBytes;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } finally {
+//            try {
+//                bos.close();
+//            } catch (IOException ex) {
+//                // ignore close exception
+//            }
+//        }
+//        return null;
+//    }
     @Override
     protected void onResume() {
         TabLayout.Tab tab = tabLayout.getTabAt(0);
