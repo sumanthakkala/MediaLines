@@ -38,7 +38,7 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, final Intent intent) {
 
         // Display a notification to view the task details
-        final Long noteId = intent.getLongExtra("noteId", -1);
+        final long noteId = intent.getLongExtra("noteId", -1);
         assert noteId != -1;
         HandlerThread handlerThread =  new HandlerThread("database_helper");
         handlerThread.start();
@@ -58,7 +58,7 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
 
                 PendingIntent operation = TaskStackBuilder.create(context)
                         .addNextIntentWithParentStack(action)
-                        .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+                        .getPendingIntent((int) noteId, 0);
 
                 assert currentNoteWithData != null;
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "notifyMediaLines")
@@ -66,10 +66,11 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
                         .setContentTitle("Media Lines Reminder")
                         .setContentText((currentNoteWithData.note.getNoteText() == null || currentNoteWithData.note.getNoteText() == "") ? currentNoteWithData.note.getTitle() : currentNoteWithData.note.getNoteText())
                         .setContentIntent(operation)
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true);
 
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                notificationManager.notify(200, builder.build());
+                notificationManager.notify((int) noteId, builder.build());
 
 
                 //If alarm is monthly OR yearly, creating next alarm
@@ -82,7 +83,7 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
                     newIntent.putExtra("noteId", currentNoteWithData.note.getNoteId());
                     newIntent.putExtra("repeatType", repeatType);
                     newIntent.putExtra("alarmSetupDateTimeInMillis", alarmSetupDateTimeInMillis);
-                    PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    PendingIntent alarmIntent = PendingIntent.getBroadcast(context, (int) noteId, newIntent, 0);
 
                     AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
                     if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT){
@@ -99,7 +100,7 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
         });
     }
 
-    private long getNextOccuringTimeStamp(Long alarmSetupDateTimeInMillis, String repeatType){
+    private long getNextOccuringTimeStamp(long alarmSetupDateTimeInMillis, String repeatType){
         switch (repeatType){
             case Constants.REMINDER_MONTHLY:
                 return getNextMonthDateTimeInMillis(alarmSetupDateTimeInMillis);
@@ -110,7 +111,7 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
         }
     }
 
-    private long getNextMonthDateTimeInMillis(Long alarmSetupDateTimeInMillis){
+    private long getNextMonthDateTimeInMillis(long alarmSetupDateTimeInMillis){
         // actual alarm setup date time
         Calendar actualAlarmSetupTimeStamp = Calendar.getInstance();
         actualAlarmSetupTimeStamp.setTimeInMillis(alarmSetupDateTimeInMillis);
@@ -135,7 +136,7 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
 
     }
 
-    private long getNextYearDateTimeInMillis(Long alarmSetupDateTimeInMillis){
+    private long getNextYearDateTimeInMillis(long alarmSetupDateTimeInMillis){
         // actual alarm setup date time
         Calendar actualAlarmSetupTimeStamp = Calendar.getInstance();
         actualAlarmSetupTimeStamp.setTimeInMillis(alarmSetupDateTimeInMillis);

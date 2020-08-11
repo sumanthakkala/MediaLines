@@ -632,7 +632,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
         intent.putExtra("noteId", existingNoteWithData.note.getNoteId());
         intent.putExtra("repeatType", repeatType);
         intent.putExtra("alarmSetupDateTimeInMillis", selectedDateTime.getTimeInMillis());
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, (int) existingNoteWithData.note.getNoteId(), intent, 0);
         setAlarm(this, selectedDateTime.getTimeInMillis(), alarmIntent, repeatType);
 
     }
