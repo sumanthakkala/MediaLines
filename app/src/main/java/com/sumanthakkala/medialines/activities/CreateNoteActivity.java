@@ -428,6 +428,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                             selectedDateTime = selectedDate;
                             saveNote();
                             setupReminder(selectedDate);
+                            Toast.makeText(CreateNoteActivity.this, "Reminder added successfully.", Toast.LENGTH_SHORT).show();
                             remindNoteDialog.dismiss();
                             remindNoteDialog = null;
                         }
@@ -442,6 +443,16 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                     public void onClick(View view) {
                         selectedDateTime = null;
                         selectedRepetition = "";
+                        remindNoteDialog.dismiss();
+                        remindNoteDialog = null;
+                    }
+                });
+                view.findViewById(R.id.removeReminderTV).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        selectedDateTime = null;
+                        selectedRepetition = "";
+                        Toast.makeText(CreateNoteActivity.this, "Reminder removed successfully.", Toast.LENGTH_SHORT).show();
                         remindNoteDialog.dismiss();
                         remindNoteDialog = null;
                     }
@@ -560,6 +571,23 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
 
                     }
                 });
+
+                if(existingNoteWithData != null && isExistingNote && existingNoteWithData.reminder.size() > 0){
+                    view.findViewById(R.id.removeReminderTV).setVisibility(View.VISIBLE);
+                    Calendar savedCalender = Calendar.getInstance();
+                    savedCalender.setTimeInMillis(existingNoteWithData.reminder.get(0).getDateTimeInMillis());
+                    selectedDate.setTimeInMillis(existingNoteWithData.reminder.get(0).getDateTimeInMillis());
+                    selectedDateTime = selectedDate;
+                    selectedRepetition = existingNoteWithData.reminder.get(0).getRepeatType();
+                    dateTextView.setText("" + savedCalender.get(Calendar.DAY_OF_MONTH) + "/" + savedCalender.get(Calendar.MONTH) + "/" + savedCalender.get(Calendar.YEAR));
+                    timeTextView.setText( savedCalender.get(Calendar.HOUR) + ":" + savedCalender.get(Calendar.MINUTE));
+                }
+                else {
+                    view.findViewById(R.id.removeReminderTV).setVisibility(View.GONE);
+                    selectedDateTime = null;
+                    selectedRepetition = "";
+                }
+
             }
         remindNoteDialog.show();
     }

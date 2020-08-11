@@ -24,8 +24,11 @@ import com.makeramen.roundedimageview.RoundedImageView;
 import com.sumanthakkala.medialines.listeners.NotesListener;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> implements Filterable {
@@ -193,6 +196,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         RoundedImageView roundedImageView;
         ConstraintLayout roundedImageViewContainer;
         TextView attachmentsCount;
+        TextView reminderTextView;
+        LinearLayout reminderTextLayout;
 
         public NoteViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -204,7 +209,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             roundedImageView = itemView.findViewById(R.id.noteImageRoundedView);
             roundedImageViewContainer = itemView.findViewById(R.id.roundedImageViewContainer);
             attachmentsCount = itemView.findViewById(R.id.attachmentsCountTV);
-
+            reminderTextLayout = itemView.findViewById(R.id.reminderDisplayTextLayout);
+            reminderTextView = itemView.findViewById(R.id.reminderDisplayText);
         }
 
         void setNote(NoteWithData noteWithData){
@@ -278,6 +284,47 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                 else {
                     attachmentsCount.setVisibility(View.GONE);
                 }
+            }
+
+            if(noteWithData.reminder.size() > 0){
+                reminderTextLayout.setVisibility(View.VISIBLE);
+                String reminderText = "";
+                String formattedDate = "";
+                Long reminderDateTimeInMillis = noteWithData.reminder.get(0).getDateTimeInMillis();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(reminderDateTimeInMillis);
+                Date date = calendar.getTime();
+                String repeatType = noteWithData.reminder.get(0).getRepeatType();
+                switch (repeatType){
+                    case Constants.REMINDER_DOES_NOT_REPEAT:
+                        formattedDate = new SimpleDateFormat("EEEE, dd MMMM yyyy hh:mm a").format(date);
+                        reminderText = formattedDate;
+                        reminderTextView.setText(reminderText);
+                        break;
+                    case Constants.REMINDER_DAILY:
+                        formattedDate = new SimpleDateFormat("hh:mm a").format(date);
+                        reminderText = repeatType + " at " +formattedDate;
+                        reminderTextView.setText(reminderText);
+                        break;
+                    case Constants.REMINDER_WEEKLY:
+                        formattedDate = new SimpleDateFormat("EEEE hh:mm a").format(date);
+                        reminderText = repeatType + " on " + formattedDate;
+                        reminderTextView.setText(reminderText);
+                        break;
+                    case Constants.REMINDER_MONTHLY:
+                        formattedDate = new SimpleDateFormat("dd hh:mm a").format(date);
+                        reminderText = repeatType + " on " + formattedDate;
+                        reminderTextView.setText(reminderText);
+                        break;
+                    case Constants.REMINDER_YEARLY:
+                        formattedDate = new SimpleDateFormat("dd-MMM hh:mm a").format(date);
+                        reminderText = repeatType + " on " + formattedDate;
+                        reminderTextView.setText(reminderText);
+                        break;
+                }
+            }
+            else {
+                reminderTextLayout.setVisibility(View.GONE);
             }
         }
     }
