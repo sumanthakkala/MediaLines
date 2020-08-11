@@ -581,6 +581,24 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                     selectedRepetition = existingNoteWithData.reminder.get(0).getRepeatType();
                     dateTextView.setText("" + savedCalender.get(Calendar.DAY_OF_MONTH) + "/" + savedCalender.get(Calendar.MONTH) + "/" + savedCalender.get(Calendar.YEAR));
                     timeTextView.setText( savedCalender.get(Calendar.HOUR) + ":" + savedCalender.get(Calendar.MINUTE));
+
+                    switch (existingNoteWithData.reminder.get(0).getRepeatType()){
+                        case Constants.REMINDER_DOES_NOT_REPEAT:
+                            repeatSpinner.setSelection(0);
+                            break;
+                        case Constants.REMINDER_DAILY:
+                            repeatSpinner.setSelection(1);
+                            break;
+                        case Constants.REMINDER_WEEKLY:
+                            repeatSpinner.setSelection(2);
+                            break;
+                        case Constants.REMINDER_MONTHLY:
+                            repeatSpinner.setSelection(3);
+                            break;
+                        case Constants.REMINDER_YEARLY:
+                            repeatSpinner.setSelection(4);
+                            break;
+                    }
                 }
                 else {
                     view.findViewById(R.id.removeReminderTV).setVisibility(View.GONE);
