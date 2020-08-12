@@ -2,6 +2,7 @@ package com.sumanthakkala.medialines.ui.home;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
@@ -44,6 +45,7 @@ import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.navigation.NavigationView;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.activities.CreateNoteActivity;
+import com.sumanthakkala.medialines.activities.MainActivity;
 import com.sumanthakkala.medialines.adapters.NotesAdapter;
 import com.sumanthakkala.medialines.constants.Constants;
 import com.sumanthakkala.medialines.database.MediaLinesDatabase;
@@ -51,6 +53,8 @@ import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sumanthakkala.medialines.listeners.NotesListener;
+import com.sumanthakkala.medialines.receivers.ReminderBroadcastReceiver;
+import com.sumanthakkala.medialines.services.AlarmManagerService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -677,6 +681,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                     for (NoteWithData note: selectedNotes){
                         noteIds.add(note.note.getNoteId());
                         deleteAttachmentsInAppStorage(note.attachments);
+                        cancelAlarm(note);
                     }
                     MediaLinesDatabase.getMediaLinesDatabase(getContext()).noteDao().deleteNotesWithId(noteIds);
                 }
@@ -705,6 +710,17 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             }
         }
         new DeleteNotesTask().execute();
+    }
+
+    private void cancelAlarm(NoteWithData noteWithData){
+        if(noteWithData.reminder.size() != 0){
+            Intent intent = new Intent(requireContext(), ReminderBroadcastReceiver.class);
+            intent.putExtra("noteId", noteWithData.note.getNoteId());
+            intent.putExtra("repeatType", noteWithData.reminder.get(0).getRepeatType());
+            intent.putExtra("alarmSetupDateTimeInMillis", noteWithData.reminder.get(0).getDateTimeInMillis());
+            PendingIntent alarmIntent = PendingIntent.getBroadcast(requireContext(), (int) noteWithData.note.getNoteId(), intent, 0);
+            AlarmManagerService.cancelAlarm(requireContext(), alarmIntent);
+        }
     }
 
     private void deleteAttachmentsInAppStorage(List<Attachments> attachments){

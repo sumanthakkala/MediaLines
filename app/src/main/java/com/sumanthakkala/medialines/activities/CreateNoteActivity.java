@@ -117,6 +117,7 @@ import com.sumanthakkala.medialines.listeners.MoreOptionsListener;
 import com.sumanthakkala.medialines.listeners.NoteAudiosListener;
 import com.sumanthakkala.medialines.listeners.NoteImagesListener;
 import com.sumanthakkala.medialines.receivers.ReminderBroadcastReceiver;
+import com.sumanthakkala.medialines.services.AlarmManagerService;
 import com.sumanthakkala.medialines.viewmodels.NoteAudioViewModel;
 import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -425,6 +426,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                     @Override
                     public void onClick(View view) {
                         if(isSelectedDateTimeValid(selectedDate)){
+                            cancelAlarm();
                             selectedDateTime = selectedDate;
                             saveNote();
                             setupReminder(selectedDate, selectedRepetition);
@@ -450,11 +452,29 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                 view.findViewById(R.id.removeReminderTV).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        selectedDateTime = null;
-                        selectedRepetition = "";
-                        Toast.makeText(CreateNoteActivity.this, "Reminder removed successfully.", Toast.LENGTH_SHORT).show();
-                        remindNoteDialog.dismiss();
-                        remindNoteDialog = null;
+
+                        @SuppressLint("StaticFieldLeak")
+                        class RemoveReminderFromDbTask extends AsyncTask<Void, Void, Void> {
+                            @Override
+                            protected Void doInBackground(Void... voids) {
+                                MediaLinesDatabase.getMediaLinesDatabase(getApplicationContext()).remindersDao().deleteReminderByNoteId(existingNoteWithData.note.getNoteId());
+                                return null;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Void aVoid) {
+                                super.onPostExecute(aVoid);
+                                selectedDateTime = null;
+                                selectedRepetition = "";
+                                cancelAlarm();
+                                Toast.makeText(CreateNoteActivity.this, "Reminder removed successfully.", Toast.LENGTH_SHORT).show();
+                                remindNoteDialog.dismiss();
+                                remindNoteDialog = null;
+                                saveNote();
+                            }
+                        }
+                        new RemoveReminderFromDbTask().execute();
+
                     }
                 });
                 timeDetailsLayout = view.findViewById(R.id.timeDetailsLayout);
@@ -542,7 +562,6 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                         R.array.reminder_repetitions_array, android.R.layout.simple_spinner_item);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 repeatSpinner.setAdapter(adapter);
-                final String[] repetationVals = getResources().getStringArray(R.array.reminder_repetitions_array);
                 repeatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -638,27 +657,29 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     }
 
     private static void setAlarm(Context context, long time, PendingIntent pendingIntent, String repeatType) {
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         switch (repeatType){
             case Constants.REMINDER_DOES_NOT_REPEAT:
             case Constants.REMINDER_MONTHLY:
             case Constants.REMINDER_YEARLY:
-                if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT){
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
-                }
-                else if(Build.VERSION_CODES.KITKAT <= Build.VERSION.SDK_INT && Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
-                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntent);
-                }
-                else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, pendingIntent);
-                }
+                AlarmManagerService.setAlarm(context, time, pendingIntent);
                 break;
             case Constants.REMINDER_DAILY:
-                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY, pendingIntent);
+                AlarmManagerService.setRepeatAlarm(context, time, AlarmManager.INTERVAL_DAY, pendingIntent);
                 break;
             case Constants.REMINDER_WEEKLY:
-                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY * 7, pendingIntent);
+                AlarmManagerService.setRepeatAlarm(context, time, AlarmManager.INTERVAL_DAY * 7, pendingIntent);
                 break;
+        }
+    }
+
+    private void cancelAlarm(){
+        if(existingNoteWithData.reminder.size() != 0){
+            Intent intent = new Intent(CreateNoteActivity.this, ReminderBroadcastReceiver.class);
+            intent.putExtra("noteId", existingNoteWithData.note.getNoteId());
+            intent.putExtra("repeatType", existingNoteWithData.reminder.get(0).getRepeatType());
+            intent.putExtra("alarmSetupDateTimeInMillis", existingNoteWithData.reminder.get(0).getDateTimeInMillis());
+            PendingIntent alarmIntent = PendingIntent.getBroadcast(CreateNoteActivity.this, (int) existingNoteWithData.note.getNoteId(), intent, 0);
+            AlarmManagerService.cancelAlarm(CreateNoteActivity.this, alarmIntent);
         }
     }
 

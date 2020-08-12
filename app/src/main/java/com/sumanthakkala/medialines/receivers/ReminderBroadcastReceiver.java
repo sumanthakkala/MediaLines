@@ -23,6 +23,7 @@ import com.sumanthakkala.medialines.activities.CreateNoteActivity;
 import com.sumanthakkala.medialines.constants.Constants;
 import com.sumanthakkala.medialines.database.MediaLinesDatabase;
 import com.sumanthakkala.medialines.entities.NoteWithData;
+import com.sumanthakkala.medialines.services.AlarmManagerService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -85,16 +86,7 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
                     newIntent.putExtra("alarmSetupDateTimeInMillis", alarmSetupDateTimeInMillis);
                     PendingIntent alarmIntent = PendingIntent.getBroadcast(context, (int) noteId, newIntent, 0);
 
-                    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-                    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT){
-                        alarmManager.set(AlarmManager.RTC_WAKEUP, nextMontTimeStamp, alarmIntent);
-                    }
-                    else if(Build.VERSION_CODES.KITKAT <= Build.VERSION.SDK_INT && Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
-                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, nextMontTimeStamp, alarmIntent);
-                    }
-                    else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextMontTimeStamp, alarmIntent);
-                    }
+                    AlarmManagerService.setAlarm(context, nextMontTimeStamp, alarmIntent);
                 }
             }
         });
