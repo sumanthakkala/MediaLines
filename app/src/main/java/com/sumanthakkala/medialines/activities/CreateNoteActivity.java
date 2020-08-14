@@ -53,9 +53,11 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
+import android.text.Html;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
@@ -449,6 +451,12 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                         remindNoteDialog = null;
                     }
                 });
+
+                String text = "Reminders may not work as expected in some devices due to battery optimisations by the OS. Please check <a href='https://dontkillmyapp.com/'>this</a> website and follow the instructions provided if your device is listed to avoid misbehaviour. We are constantly trying to fix this issue. We regret the inconvenience caused.";
+                TextView hint = view.findViewById(R.id.reminderHintTV);
+                hint.setClickable(true);
+                hint.setMovementMethod(LinkMovementMethod.getInstance());
+                hint.setText(Html.fromHtml(text));
                 view.findViewById(R.id.removeReminderTV).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -647,6 +655,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     }
 
     public void setupReminder(Calendar selectedDateTime, String repeatType){
+        selectedDateTime.set(Calendar.SECOND, 0);
         Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
         intent.putExtra("noteId", existingNoteWithData.note.getNoteId());
         intent.putExtra("repeatType", repeatType);
@@ -657,19 +666,20 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
     }
 
     private static void setAlarm(Context context, long time, PendingIntent pendingIntent, String repeatType) {
-        switch (repeatType){
-            case Constants.REMINDER_DOES_NOT_REPEAT:
-            case Constants.REMINDER_MONTHLY:
-            case Constants.REMINDER_YEARLY:
-                AlarmManagerService.setAlarm(context, time, pendingIntent);
-                break;
-            case Constants.REMINDER_DAILY:
-                AlarmManagerService.setRepeatAlarm(context, time, AlarmManager.INTERVAL_DAY, pendingIntent);
-                break;
-            case Constants.REMINDER_WEEKLY:
-                AlarmManagerService.setRepeatAlarm(context, time, AlarmManager.INTERVAL_DAY * 7, pendingIntent);
-                break;
-        }
+//        switch (repeatType){
+//            case Constants.REMINDER_DOES_NOT_REPEAT:
+//            case Constants.REMINDER_MONTHLY:
+//            case Constants.REMINDER_YEARLY:
+//                AlarmManagerService.setAlarm(context, time, pendingIntent);
+//                break;
+//            case Constants.REMINDER_DAILY:
+//                AlarmManagerService.setRepeatAlarm(context, time, AlarmManager.INTERVAL_DAY, pendingIntent);
+//                break;
+//            case Constants.REMINDER_WEEKLY:
+//                AlarmManagerService.setRepeatAlarm(context, time, AlarmManager.INTERVAL_DAY * 7, pendingIntent);
+//                break;
+//        }
+        AlarmManagerService.setAlarm(context, time, pendingIntent);
     }
 
     private void cancelAlarm(){

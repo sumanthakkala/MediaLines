@@ -23,7 +23,7 @@ public class AlarmManagerService {
 
     public static void setRepeatAlarm(Context context, long alarmTime, long interval, PendingIntent pendingIntent) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, alarmTime, interval, pendingIntent);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, alarmTime, interval, pendingIntent);
 
     }
 

@@ -2,6 +2,7 @@ package com.sumanthakkala.medialines.adapters;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -300,6 +301,9 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                         formattedDate = new SimpleDateFormat("EEEE, dd MMMM yyyy hh:mm a").format(date);
                         reminderText = formattedDate;
                         reminderTextView.setText(reminderText);
+                        if(isTimePassed(calendar)){
+                            reminderTextView.setPaintFlags(reminderTextView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                        }
                         break;
                     case Constants.REMINDER_DAILY:
                         formattedDate = new SimpleDateFormat("hh:mm a").format(date);
@@ -326,6 +330,19 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             else {
                 reminderTextLayout.setVisibility(View.GONE);
             }
+        }
+        private boolean isTimePassed(Calendar selectedDateTime){
+            Calendar myCurrentDate = Calendar.getInstance();
+            if(selectedDateTime.after(myCurrentDate)){
+                return false;
+            }
+            else if(selectedDateTime.getTimeInMillis() > myCurrentDate.getTimeInMillis()) {
+                return false;
+            }
+            else {
+                return true;
+            }
+
         }
     }
 }

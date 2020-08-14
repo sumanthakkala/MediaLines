@@ -61,11 +61,13 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
                         .addNextIntentWithParentStack(action)
                         .getPendingIntent((int) noteId, 0);
 
+                String notificationText = (currentNoteWithData.note.getNoteText() == null || currentNoteWithData.note.getNoteText().isEmpty()) ? currentNoteWithData.note.getTitle() : currentNoteWithData.note.getNoteText();
                 assert currentNoteWithData != null;
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "notifyMediaLines")
                         .setSmallIcon(R.drawable.logo)
                         .setContentTitle("Media Lines Reminder")
-                        .setContentText((currentNoteWithData.note.getNoteText() == null || currentNoteWithData.note.getNoteText() == "") ? currentNoteWithData.note.getTitle() : currentNoteWithData.note.getNoteText())
+                        .setContentText(notificationText)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationText))
                         .setContentIntent(operation)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true);
@@ -74,10 +76,10 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
                 notificationManager.notify((int) noteId, builder.build());
 
 
-                //If alarm is monthly OR yearly, creating next alarm
+                //If alarm is repeating, creating next alarm
                 String repeatType = intent.getStringExtra("repeatType");
                 Long alarmSetupDateTimeInMillis = intent.getLongExtra("alarmSetupDateTimeInMillis", -1);
-                if(repeatType.equals(Constants.REMINDER_MONTHLY) || repeatType.equals(Constants.REMINDER_YEARLY)){
+                if(!repeatType.equals(Constants.REMINDER_DOES_NOT_REPEAT)){
                     Long nextMontTimeStamp = getNextOccuringTimeStamp(alarmSetupDateTimeInMillis, repeatType);
 
                     Intent newIntent = new Intent(context, ReminderBroadcastReceiver.class);
@@ -98,6 +100,24 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
                 return getNextMonthDateTimeInMillis(alarmSetupDateTimeInMillis);
             case Constants.REMINDER_YEARLY:
                 return getNextYearDateTimeInMillis(alarmSetupDateTimeInMillis);
+            case Constants.REMINDER_DAILY:
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(alarmSetupDateTimeInMillis);
+                Calendar currentStamp = Calendar.getInstance();
+                cal.set(Calendar.DAY_OF_MONTH, currentStamp.get(Calendar.DAY_OF_MONTH));
+                cal.set(Calendar.MONTH, currentStamp.get(Calendar.MONTH));
+                cal.set(Calendar.YEAR, currentStamp.get(Calendar.YEAR));
+                cal.add(Calendar.DAY_OF_MONTH, 1);
+                return cal.getTimeInMillis();
+            case Constants.REMINDER_WEEKLY:
+                Calendar cal1 = Calendar.getInstance();
+                cal1.setTimeInMillis(alarmSetupDateTimeInMillis);
+                Calendar currentStamp1 = Calendar.getInstance();
+                cal1.set(Calendar.DAY_OF_MONTH, currentStamp1.get(Calendar.DAY_OF_MONTH));
+                cal1.set(Calendar.MONTH, currentStamp1.get(Calendar.MONTH));
+                cal1.set(Calendar.YEAR, currentStamp1.get(Calendar.YEAR));
+                cal1.add(Calendar.DAY_OF_MONTH, 7);
+                return cal1.getTimeInMillis();
             default:
                 return -1;
         }
@@ -109,7 +129,11 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
         actualAlarmSetupTimeStamp.setTimeInMillis(alarmSetupDateTimeInMillis);
         // get todays date
         Calendar cal = Calendar.getInstance();
-
+        cal.setTimeInMillis(alarmSetupDateTimeInMillis);
+        Calendar currentStamp = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, currentStamp.get(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.MONTH, currentStamp.get(Calendar.MONTH));
+        cal.set(Calendar.YEAR, currentStamp.get(Calendar.YEAR));
         // reset calendar to next month -- This will increment year as well
         cal.add(Calendar.MONTH, 1);
         // get the maximum possible days in this month
@@ -134,7 +158,12 @@ SO, WE CREATED A NEW THREAD TO FETCH NOTE DATA AND THEN DISPLAYING NOTIFICATION 
         actualAlarmSetupTimeStamp.setTimeInMillis(alarmSetupDateTimeInMillis);
         // get todays date
         Calendar cal = Calendar.getInstance();
-
+        cal.setTimeInMillis(alarmSetupDateTimeInMillis);
+        Calendar currentStamp = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, currentStamp.get(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.MONTH, currentStamp.get(Calendar.MONTH));
+        cal.set(Calendar.YEAR, currentStamp.get(Calendar.YEAR));
+        // reset calendar to next year -- This will increment year as well
         cal.add(Calendar.YEAR, 1);
         int maximumDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
 

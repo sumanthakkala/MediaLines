@@ -54,10 +54,17 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <receiver android:name=".receivers.ReminderBroadcastReceiver">
+        <receiver android:name=".receivers.ReminderBroadcastReceiver" android:priority="999"/>
+
+        <receiver android:name=".receivers.BootCompletedBroadcastReceiver" android:priority="999" android:enabled="true" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".receivers.PackageUpdateBroadcastReceiver" android:priority="999" android:enabled="true" android:exported="true">
+            <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
@@ -71,5 +78,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
 </manifest>

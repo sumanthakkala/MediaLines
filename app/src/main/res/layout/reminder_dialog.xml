@@ -55,9 +55,9 @@
         android:id="@+id/timeDetailsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/dateTimeRadioGroup"
-        app:layout_constraintStart_toStartOf="@id/dateTimeRadioGroup"
-        app:layout_constraintBottom_toTopOf="@id/saveReminderTV">
+        app:layout_constraintTop_toBottomOf="@id/titleTV"
+        app:layout_constraintStart_toStartOf="@id/titleTV"
+        app:layout_constraintBottom_toTopOf="@id/reminderHintTV">
 
         <LinearLayout
             android:id="@+id/selectDateLayout"
@@ -166,6 +166,21 @@
             app:layout_constraintStart_toStartOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <TextView
+        android:id="@+id/reminderHintTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_8sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/timeDetailsLayout"
+        app:layout_constraintBottom_toTopOf="@id/removeReminderTV"
+        app:layout_constraintEnd_toEndOf="@id/saveReminderTV"
+        android:ellipsize="none"
+        android:textSize="@dimen/_10sdp"
+        android:padding="@dimen/_5sdp"
+        android:text="Reminders may not work as expected in some devices due to battery optimisations by the OS. Please check this website and follow the instructions provided if your device is listed to avoid misbehaviour. We are constantly trying to fix this issue. We regret the inconvenience caused."
+        android:textColor="@color/color_red"
+        android:layout_marginLeft="@dimen/_8sdp" />
 
     <TextView
         android:id="@+id/removeReminderTV"
