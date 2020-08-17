@@ -25,11 +25,13 @@ public class SplashActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private SharedPreferences sharedPreferences;
     SharedPreferences securitySharedPref;
+    SharedPreferences appInstallSharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         securitySharedPref = getSharedPreferences("Security_Prefs", MODE_PRIVATE);
+        appInstallSharedPref = getSharedPreferences("App_Install_Prefs", MODE_PRIVATE);
         lockManager = LockManager.getInstance();
 
         boolean isLightMode = sharedPreferences.getBoolean("theme", false);
@@ -51,8 +53,14 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         public void run() {
             if(!isFinishing()){
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                finish();
+                if(appInstallSharedPref.getBoolean(getString(R.string.is_first_ever_start_after_install), true)){
+                    startActivity(new Intent(getApplicationContext(), OnboardingActivity.class));
+                    finish();
+                }
+                else {
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                    finish();
+                }
             }
         }
     };

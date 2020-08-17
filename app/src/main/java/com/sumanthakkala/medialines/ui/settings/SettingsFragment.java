@@ -45,7 +45,7 @@ import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.activities.SecurityPinActivity;
 import com.sumanthakkala.medialines.activities.SplashActivity;
 import com.sumanthakkala.medialines.services.BackupRestoreService;
-import com.sumanthakkala.medialines.workers.AutoBackupWorker; 
+import com.sumanthakkala.medialines.workers.AutoBackupWorker;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

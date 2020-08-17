@@ -11,10 +11,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:targetApi="q"
-        tools:replace="android:allowBackup">
-        <activity android:name=".activities.SecurityPinActivity"/>
-
+        tools:replace="android:allowBackup"
+        tools:targetApi="q">
+        <activity android:name=".activities.OnboardingActivity"></activity>
+        <activity android:name=".activities.SecurityPinActivity" />
         <activity
             android:name=".activities.SplashActivity"
             android:theme="@style/Splash">
@@ -24,7 +24,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activities.CreateNoteActivity"
             android:screenOrientation="portrait"
@@ -36,10 +35,10 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/map_key" />
-
         <meta-data
             android:name="com.google.android.actions"
             android:resource="@xml/file_paths" />
@@ -54,13 +53,13 @@
                 android:resource="@xml/file_paths" />
         </provider>
     </application>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
 </manifest>
