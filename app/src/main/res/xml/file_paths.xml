@@ -5,4 +5,7 @@
     <external-path
         name="Exports"
         path="MediaLines/" />
+    <external-path
+        name="Backups"
+        path="MediaLines/" />
 </paths>

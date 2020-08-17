@@ -34,4 +34,7 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="security_question_key_in_prefs">security_question</string>
     <string name="security_answer_key_in_prefs">security_answer</string>
+    <string name="latest_backup_timestamp_key_in_prefs">latest_backup_timestamp</string>
+    <string name="is_auto_backup_enabled_key_in_prefs">is_auto_backup_enabled</string>
+
 </resources>

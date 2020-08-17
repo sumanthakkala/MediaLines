@@ -18,6 +18,7 @@ import com.sumanthakkala.medialines.R;
 import com.google.android.material.navigation.NavigationView;
 import com.sumanthakkala.medialines.ui.about.AboutFragment;
 import com.sumanthakkala.medialines.ui.home.HomeFragment;
+import com.sumanthakkala.medialines.workers.AutoBackupWorker;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,12 +37,21 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
+
+import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     private Menu actionBarMenu;
     private DrawerLayout drawer;
+    SharedPreferences backupSharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        performBackupJobs();
     }
 
     @Override
@@ -77,6 +89,53 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    private void performBackupJobs(){
+        backupSharedPref = getSharedPreferences("Backup_Prefs", MODE_PRIVATE);
+        boolean isAutoBackupEnabled = backupSharedPref.getBoolean(getString(R.string.is_auto_backup_enabled_key_in_prefs), false);
+        if(isAutoBackupEnabled){
+            long latestBackupTimeInMillis = backupSharedPref.getLong(getString(R.string.latest_backup_timestamp_key_in_prefs), -1);
+            if(latestBackupTimeInMillis != -1){
+                Calendar lastBackupTimeStamp = Calendar.getInstance();
+                lastBackupTimeStamp.setTimeInMillis(latestBackupTimeInMillis);
+
+                Calendar pastDueTimeStamp = Calendar.getInstance();
+                pastDueTimeStamp.set(Calendar.HOUR, 2);
+                pastDueTimeStamp.set(Calendar.MINUTE, 0);
+                pastDueTimeStamp.set(Calendar.SECOND, 0);
+                pastDueTimeStamp.set(Calendar.MILLISECOND, 0);
+                if(lastBackupTimeStamp.before(pastDueTimeStamp)){
+                    //immedeiatly perform backup & reschedule job
+                    WorkRequest immediateBackupRequest =
+                            new OneTimeWorkRequest.Builder(AutoBackupWorker.class)
+                                    .build();
+                    WorkManager
+                            .getInstance(this)
+                            .enqueue(immediateBackupRequest);
+                }
+            }
+
+            //Scheduling backups at 2AM daily
+            Calendar currentTimeStamp = Calendar.getInstance();
+            Calendar dueTimeStamp = Calendar.getInstance();
+            dueTimeStamp.set(Calendar.HOUR, 2);
+            dueTimeStamp.set(Calendar.MINUTE, 0);
+            dueTimeStamp.set(Calendar.SECOND, 0);
+            dueTimeStamp.set(Calendar.MILLISECOND, 0);
+            if(dueTimeStamp.before(currentTimeStamp)){
+                dueTimeStamp.add(Calendar.HOUR, 24);
+            }
+            long timeDiff = dueTimeStamp.getTimeInMillis() - currentTimeStamp.getTimeInMillis();
+            PeriodicWorkRequest periodicAutoBackupWorkRequest = new PeriodicWorkRequest.Builder(
+                    AutoBackupWorker.class,
+                    24,
+                    TimeUnit.HOURS
+            ).addTag("medialines_auto_backup")
+                    .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+                    .build();
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork("medialines_auto_backup", ExistingPeriodicWorkPolicy.KEEP, periodicAutoBackupWorkRequest);
+        }
     }
 
     public void openBrowser(View view){
