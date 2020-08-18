@@ -407,10 +407,22 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Activi
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(requestCode == REQUEST_STORAGE_PERMISSIONS_FOR_BACKUP && grantResults.length > 0){
-            initBackup();
+            if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                initBackup();
+            }
+            else {
+                Toast.makeText(requireContext(), "Permission Denied.", Toast.LENGTH_SHORT).show();
+            }
         }
+
+
         if(requestCode == REQUEST_STORAGE_PERMISSIONS_FOR_RESTORE && grantResults.length > 0){
-            initRestore();
+            if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                initRestore();
+            }
+            else {
+                Toast.makeText(requireContext(), "Permission Denied.", Toast.LENGTH_SHORT).show();
+            }
         }
 
     }
