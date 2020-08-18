@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -86,7 +87,8 @@ public class BackupRestoreService {
         try {
             String fileZip = fileUri.getPath();
             File backupFilesDir = new File(getExternalStorageDirectory(), "MediaLines/Backups");
-            File zipFile = new File(backupFilesDir, fileUri.getPath().split(":")[1].split("/")[2]);
+            String[] arr = fileUri.getPath().split("/");
+            File zipFile = new File(backupFilesDir, arr[arr.length - 1]);
             File destDir = new File(context.getExternalCacheDir().getAbsolutePath() + "/Restore");
             if(!destDir.exists()){
                 destDir.mkdirs();
@@ -130,8 +132,8 @@ public class BackupRestoreService {
                 return (int) (Math.max(object1.lastModified(), object2.lastModified()));
             }
         });
-        if(files.size() > 7){
-            for(File deleteFile: files.subList(7, files.size() - 1)){
+        if(files.size() > 6){
+            for(File deleteFile: files.subList(6, files.size())){
                 deleteFile.delete();
             }
         }

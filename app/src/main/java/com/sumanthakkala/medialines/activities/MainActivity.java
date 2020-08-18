@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 pastDueTimeStamp.set(Calendar.MINUTE, 0);
                 pastDueTimeStamp.set(Calendar.SECOND, 0);
                 pastDueTimeStamp.set(Calendar.MILLISECOND, 0);
+                pastDueTimeStamp.set(Calendar.AM_PM, Calendar.AM);
                 if(lastBackupTimeStamp.before(pastDueTimeStamp)){
                     //immedeiatly perform backup & reschedule job
                     WorkRequest immediateBackupRequest =
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
             dueTimeStamp.set(Calendar.MINUTE, 0);
             dueTimeStamp.set(Calendar.SECOND, 0);
             dueTimeStamp.set(Calendar.MILLISECOND, 0);
+            dueTimeStamp.set(Calendar.AM_PM, Calendar.AM);
             if(dueTimeStamp.before(currentTimeStamp)){
                 dueTimeStamp.add(Calendar.HOUR, 24);
             }

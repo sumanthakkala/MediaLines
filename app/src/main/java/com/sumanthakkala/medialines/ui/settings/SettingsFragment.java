@@ -300,6 +300,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Activi
         dueTimeStamp.set(Calendar.MINUTE, 0);
         dueTimeStamp.set(Calendar.SECOND, 0);
         dueTimeStamp.set(Calendar.MILLISECOND, 0);
+        dueTimeStamp.set(Calendar.AM_PM, Calendar.AM);
         if(dueTimeStamp.before(currentTimeStamp)){
             dueTimeStamp.add(Calendar.HOUR, 24);
         }
@@ -313,11 +314,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Activi
                 .build();
         WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork("medialines_auto_backup", ExistingPeriodicWorkPolicy.KEEP, periodicAutoBackupWorkRequest);
 
+        SharedPreferences.Editor editor = backupSharedPref.edit();
+        editor.putBoolean(requireContext().getString(R.string.is_auto_backup_enabled_key_in_prefs), true);
+        editor.apply();
+
         Toast.makeText(requireContext(), "Auto backups are scheduled daily at 2 AM.", Toast.LENGTH_SHORT).show();
     }
 
     private void disableAutoBackup(){
         WorkManager.getInstance(requireContext()).cancelUniqueWork("medialines_auto_backup");
+        SharedPreferences.Editor editor = backupSharedPref.edit();
+        editor.putBoolean(requireContext().getString(R.string.is_auto_backup_enabled_key_in_prefs), false);
+        editor.apply();
         Toast.makeText(requireContext(), "Auto backups are disabled.", Toast.LENGTH_SHORT).show();
     }
 

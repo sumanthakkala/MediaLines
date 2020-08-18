@@ -59,6 +59,8 @@
     <PreferenceCategory
         app:key="backup_restore"
         app:title="Backup"
+        android:persistent="false"
+        android:singleLineTitle="false"
         app:summary="Latest backup: NA">
         <SwitchPreferenceCompat
             app:key="auto_backup_switch"
@@ -81,6 +83,12 @@
             android:shouldDisableView="false"
             app:summary="Restore your notes and media."
             app:title="Restore Now" />
+
+        <Preference
+            app:icon="@drawable/ic_file"
+            app:title="Path"
+            android:enabled="false"
+            app:summary="Storage/MediaLines/Backups" />
 
     </PreferenceCategory>
 
