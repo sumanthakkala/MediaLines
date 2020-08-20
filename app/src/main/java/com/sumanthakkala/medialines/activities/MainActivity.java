@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewParent;
 import android.widget.Toast;
 
 import com.github.omadahealth.lollipin.lib.PinCompatActivity;
@@ -62,17 +63,49 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        final NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_archive, R.id.nav_settings, R.id.nav_about)
+                R.id.nav_home, R.id.nav_archive, R.id.nav_settings, R.id.nav_share, R.id.nav_about)
                 .setDrawerLayout(drawer)
                 .build();
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                drawer.closeDrawer(GravityCompat.START);
+                // You need this line to handle the navigation
+                boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+                if (!handled) {
+
+                    switch (item.getItemId()){
+                        case R.id.nav_share:
+                            Intent shareIntent = new Intent();
+                            shareIntent.putExtra(Intent.EXTRA_TEXT, "Hey, Is your notes app not up to the modern standards? \uD835\uDDE0\uD835\uDDF2\uD835\uDDF1\uD835\uDDF6\uD835\uDDEE \uD835\uDDDF\uD835\uDDF6\uD835\uDDFB\uD835\uDDF2\uD835\uDE00 got you covered! \nI am using this app and I would love to recommend this to you. \nDownload here \uD83D\uDC47 \nhttps://play.google.com/store/apps/details?id=com.sumanthakkala.medialines");
+                            shareIntent.setType("text/plain");
+                            shareIntent.setAction(Intent.ACTION_SEND);
+                            startActivity(Intent.createChooser(shareIntent, "Share app to.."));
+                            break;
+                        case R.id.nav_review:
+                            final String appPackageName = getPackageName(); // getPackageName() from Context or Activity object
+                            try {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                            } catch (android.content.ActivityNotFoundException anfe) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                            }
+                            break;
+                    }
+                }
+
+                return handled;
+
+
+            }
+        });
         performBackupJobs();
     }
 
