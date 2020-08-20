@@ -73,7 +73,7 @@
             app:icon="@drawable/ic_backup"
             android:enabled="true"
             android:shouldDisableView="false"
-            app:summary="Backup your notes and media to your local storage. You can restore them when you reinstall Media Lines."
+            app:summary="Backup your notes and media to your local storage. You can restore them when you reinstall Media Lines"
             app:title="Backup Now" />
 
         <Preference
@@ -81,7 +81,7 @@
             app:icon="@drawable/ic_restore"
             android:enabled="true"
             android:shouldDisableView="false"
-            app:summary="Restore your notes and media."
+            app:summary="Restore your notes and media"
             app:title="Restore Now" />
 
         <Preference
