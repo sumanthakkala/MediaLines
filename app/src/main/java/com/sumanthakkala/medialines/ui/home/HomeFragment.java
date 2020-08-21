@@ -17,9 +17,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -40,6 +43,15 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdLoader;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAdView;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.navigation.NavigationView;
 import com.sumanthakkala.medialines.R;
@@ -80,7 +92,8 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
     public static final String SORT_BY_TITLE = "title";
 
 
-
+    private UnifiedNativeAd nativeAd;
+    private CardView adCardView;
     private ConstraintLayout noDataScreen;
     private RecyclerView notesRecyclerView;
     private RecyclerView bookmarkedNotesRecyclerView;
@@ -497,6 +510,56 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             public boolean onMenuItemActionExpand(MenuItem menuItem) {
                 //bottomAppBar.setVisibility(View.GONE);
                 fab.hide();
+
+                @SuppressLint("StaticFieldLeak")
+                class LoadAdsTask extends AsyncTask<Void, Void, Void> {
+                    @Override
+                    protected Void doInBackground(Void... voids) {
+                        MobileAds.initialize(getContext(), new OnInitializationCompleteListener() {
+                            @Override
+                            public void onInitializationComplete(InitializationStatus initializationStatus) {
+
+                            }
+                        });
+
+                        AdLoader.Builder builder = new AdLoader.Builder(getContext(), "ca-app-pub-3940256099942544/2247696110");
+                        builder.forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
+                            @Override
+                            public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
+                                if(unifiedNativeAd != null){
+                                    nativeAd = unifiedNativeAd;
+                                }
+                                adCardView = getView().findViewById(R.id.home_ad_container);
+                                UnifiedNativeAdView adView = (UnifiedNativeAdView) getLayoutInflater().inflate(R.layout.custom_banner_ad_view, null);
+                                populateAd(unifiedNativeAd, adView);
+                                adCardView.addView(adView);
+                            }
+                        });
+
+                        AdLoader adLoader = builder.withAdListener(new AdListener(){
+                            @Override
+                            public void onAdFailedToLoad(LoadAdError loadAdError) {
+                                super.onAdFailedToLoad(loadAdError);
+                            }
+
+                            @Override
+                            public void onAdClosed() {
+                                super.onAdClosed();
+
+                            }
+                        }).build();
+
+                        adLoader.loadAd(new AdRequest.Builder().build());
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        super.onPostExecute(aVoid);
+
+                    }
+                }
+                new LoadAdsTask().execute();
                 return true;
             }
 
@@ -506,6 +569,10 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
                 notesAdapter.setMultiSelectMode(false);
                 bookmarkedNotesAdapter.setMultiSelectMode(false);
                 cancelMultiSelectIV.performClick();
+                if(nativeAd != null && adCardView != null){
+                    nativeAd.destroy();
+                    adCardView.removeAllViews();
+                }
                 if(notesType == Constants.IS_ACTIVE){
                     fab.show();
                 }
@@ -1084,5 +1151,61 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
         else {
             noDataScreen.setVisibility(View.GONE);
         }
+    }
+
+    private void populateAd(UnifiedNativeAd nativeAd, UnifiedNativeAdView adView){
+
+        adView.setHeadlineView(adView.findViewById(R.id.primary));
+        adView.setCallToActionView(adView.findViewById(R.id.cta));
+        adView.setStarRatingView(adView.findViewById(R.id.rating_bar));
+        adView.setIconView(adView.findViewById(R.id.icon));
+        adView.setAdvertiserView(adView.findViewById(R.id.secondary));
+
+        //Headline
+        if(nativeAd.getHeadline() != null){
+            ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+            adView.getHeadlineView().setVisibility(View.VISIBLE);
+        }
+        else {
+            adView.getHeadlineView().setVisibility(View.INVISIBLE);
+        }
+
+        //secondary
+        if(nativeAd.getAdvertiser() != null){
+            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
+            adView.getAdvertiserView().setVisibility(View.VISIBLE);
+        }
+        else {
+            adView.getAdvertiserView().setVisibility(View.INVISIBLE);
+        }
+
+        //icon
+        if(nativeAd.getIcon() != null){
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
+        }
+        else {
+            adView.getBodyView().setVisibility(View.INVISIBLE);
+        }
+
+        //rating
+        if(nativeAd.getStarRating() != null){
+            ((RatingBar) adView.getStarRatingView()).setRating(nativeAd.getStarRating().floatValue());
+            adView.getStarRatingView().setVisibility(View.VISIBLE);
+        }
+        else {
+            adView.getStarRatingView().setVisibility(View.GONE);
+        }
+
+        //cta
+        if(nativeAd.getHeadline() != null){
+            ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+            adView.getCallToActionView().setVisibility(View.VISIBLE);
+        }
+        else {
+            adView.getCallToActionView().setVisibility(View.INVISIBLE);
+        }
+
+        adView.setNativeAd(nativeAd);
     }
 }

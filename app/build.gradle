@@ -11,7 +11,7 @@ android {
         targetSdkVersion 29
         versionCode 9
         versionName "1.5.1"
-
+        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -82,5 +82,7 @@ dependencies {
 
     //WorkManager
     implementation "androidx.work:work-runtime:2.4.0"
+
+    implementation 'com.google.android.gms:play-services-ads:19.3.0'
 
 }
