@@ -9,8 +9,8 @@ android {
         applicationId "com.sumanthakkala.medialines"
         minSdkVersion 16
         targetSdkVersion 29
-        versionCode 9
-        versionName "1.5.1"
+        versionCode 10
+        versionName "1.5.1_IT"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -85,4 +85,5 @@ dependencies {
 
     implementation 'com.google.android.gms:play-services-ads:19.3.0'
 
+    implementation 'com.android.billingclient:billing:3.0.0'
 }

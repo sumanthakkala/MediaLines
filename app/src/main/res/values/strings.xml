@@ -38,4 +38,5 @@
     <string name="is_auto_backup_enabled_key_in_prefs">is_auto_backup_enabled</string>
 
     <string name="is_first_ever_start_after_install">is_first_ever_start_after_install</string>
+    <string name="is_pro_purchased">is_pro_purchased</string>
 </resources>

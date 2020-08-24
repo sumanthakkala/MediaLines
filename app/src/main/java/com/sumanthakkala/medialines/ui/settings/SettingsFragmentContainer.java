@@ -1,6 +1,7 @@
 package com.sumanthakkala.medialines.ui.settings;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.database.MediaLinesDatabase;
 import com.sumanthakkala.medialines.entities.NoteWithData;
+import com.sumanthakkala.medialines.services.BillingService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,7 @@ import java.util.List;
 
 public class SettingsFragmentContainer extends Fragment {
     private UnifiedNativeAd nativeAd;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -109,7 +112,9 @@ public class SettingsFragmentContainer extends Fragment {
 
             }
         }
-        new LoadAdsTask().execute();
+        if(!new BillingService(requireContext()).isPurchased()){
+            new LoadAdsTask().execute();
+        }
 
         return root;
     }
@@ -152,7 +157,7 @@ public class SettingsFragmentContainer extends Fragment {
             adView.getIconView().setVisibility(View.VISIBLE);
         }
         else {
-            adView.getBodyView().setVisibility(View.INVISIBLE);
+            adView.getIconView().setVisibility(View.INVISIBLE);
         }
 
         //rating

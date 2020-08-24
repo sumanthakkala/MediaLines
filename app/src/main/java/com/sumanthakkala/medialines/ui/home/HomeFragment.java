@@ -63,6 +63,7 @@ import com.sumanthakkala.medialines.entities.Attachments;
 import com.sumanthakkala.medialines.entities.NoteWithData;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.sumanthakkala.medialines.listeners.NotesListener;
+import com.sumanthakkala.medialines.services.BillingService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -559,7 +560,9 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
 
                     }
                 }
-                new LoadAdsTask().execute();
+                if(!new BillingService(requireContext()).isPurchased()){
+                    new LoadAdsTask().execute();
+                }
                 return true;
             }
 
@@ -1185,7 +1188,7 @@ public class HomeFragment extends Fragment implements NotesListener, SearchView.
             adView.getIconView().setVisibility(View.VISIBLE);
         }
         else {
-            adView.getBodyView().setVisibility(View.INVISIBLE);
+            adView.getIconView().setVisibility(View.INVISIBLE);
         }
 
         //rating

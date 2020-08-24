@@ -112,6 +112,7 @@ import com.sumanthakkala.medialines.listeners.CheckboxesListener;
 import com.sumanthakkala.medialines.listeners.MoreOptionsListener;
 import com.sumanthakkala.medialines.listeners.NoteAudiosListener;
 import com.sumanthakkala.medialines.listeners.NoteImagesListener;
+import com.sumanthakkala.medialines.services.BillingService;
 import com.sumanthakkala.medialines.viewmodels.NoteAudioViewModel;
 import com.sumanthakkala.medialines.viewmodels.NoteImageViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -1180,7 +1181,9 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                         super.onPostExecute(aVoid);
                     }
                 }
-                new LoadAdsTask().execute();
+                if(!new BillingService(this).isPurchased()){
+                    new LoadAdsTask().execute();
+                }
 
                 //Initiate export pdf
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -1450,12 +1453,16 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             Paint brandingPaint = new Paint();
             brandingPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
             brandingPaint.setTextSize(18);
-            canvas.drawText("Inked by Media Lines!", 20, (canvas.getHeight() - 20), brandingPaint);
 
             Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo_hq);
             Paint bitmapAlphaPaint = new Paint();
             bitmapAlphaPaint.setAlpha(80);
-            canvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+
+            if(!new BillingService(this).isPurchased()){
+                canvas.drawText("Inked by Media Lines!", 20, (canvas.getHeight() - 20), brandingPaint);
+                canvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+            }
+
             canvas.translate(40, 40);
             TextPaint textPaint = new TextPaint();
             StaticLayout mEntireTextLayout = new StaticLayout(textToExport, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
@@ -1474,8 +1481,11 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                     Paint newBrandingPaint = new Paint();
                     newBrandingPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
                     newBrandingPaint.setTextSize(18);
-                    newCanvas.drawText("Inked by Media Lines!", 20, (newCanvas.getHeight() - 20), newBrandingPaint);
-                    newCanvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+                    if(!new BillingService(this).isPurchased()){
+                        newCanvas.drawText("Inked by Media Lines!", 20, (newCanvas.getHeight() - 20), newBrandingPaint);
+                        newCanvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+                    }
+
                     newCanvas.translate(40, 40);
                     TextPaint newTextPaint = new TextPaint();
 
@@ -1496,7 +1506,10 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             }
             else {
                 StaticLayout pageOneTextLayout = new StaticLayout(textToExport, textPaint, (canvas.getWidth() - 80), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
-                canvas.drawText("Inked by Media Lines!", 20, (canvas.getHeight() - 20), brandingPaint);
+                if(!new BillingService(this).isPurchased()){
+                    canvas.drawText("Inked by Media Lines!", 20, (canvas.getHeight() - 20), brandingPaint);
+                }
+
                 pageOneTextLayout.draw(canvas);
                 document.finishPage(page);
             }
@@ -1511,8 +1524,11 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
                     Paint newBrandingPaint = new Paint();
                     newBrandingPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
                     newBrandingPaint.setTextSize(18);
-                    newCanvas.drawText("Inked by Media Lines!", 20, (newCanvas.getHeight() - 20), newBrandingPaint);
-                    newCanvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+                    if(!new BillingService(this).isPurchased()){
+                        newCanvas.drawText("Inked by Media Lines!", 20, (newCanvas.getHeight() - 20), newBrandingPaint);
+                        newCanvas.drawBitmap(bitmap, 180, 304, bitmapAlphaPaint);
+                    }
+
                     newCanvas.translate(40, 40);
 
                     BitmapFactory.Options options = new BitmapFactory.Options();
@@ -2026,7 +2042,9 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
 
                 }
             }
-            new LoadAdsTask().execute();
+            if(!new BillingService(this).isPurchased()){
+                new LoadAdsTask().execute();
+            }
         }
         showImageDialog.show();
     }
@@ -2063,7 +2081,7 @@ public class CreateNoteActivity extends AppCompatActivity implements OnRequestPe
             adView.getIconView().setVisibility(View.VISIBLE);
         }
         else {
-            adView.getBodyView().setVisibility(View.INVISIBLE);
+            adView.getIconView().setVisibility(View.INVISIBLE);
         }
 
         //rating

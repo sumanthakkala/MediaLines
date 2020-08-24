@@ -26,6 +26,7 @@ import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.sumanthakkala.medialines.R;
 import com.sumanthakkala.medialines.listeners.MoreOptionsListener;
+import com.sumanthakkala.medialines.services.BillingService;
 
 public class MoreOptionsFragmentTwo extends Fragment {
     Boolean isExistingNote;
@@ -139,7 +140,9 @@ public class MoreOptionsFragmentTwo extends Fragment {
 
             }
         }
-        new LoadAdsTask().execute();
+        if(!new BillingService(requireContext()).isPurchased()){
+            new LoadAdsTask().execute();
+        }
 
         return root;
     }
@@ -176,7 +179,7 @@ public class MoreOptionsFragmentTwo extends Fragment {
             adView.getIconView().setVisibility(View.VISIBLE);
         }
         else {
-            adView.getBodyView().setVisibility(View.INVISIBLE);
+            adView.getIconView().setVisibility(View.INVISIBLE);
         }
 
         //rating

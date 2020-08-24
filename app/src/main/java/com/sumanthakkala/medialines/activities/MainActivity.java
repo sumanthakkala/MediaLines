@@ -1,6 +1,7 @@
 package com.sumanthakkala.medialines.activities;
 
 import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -14,9 +15,23 @@ import android.view.View;
 import android.view.ViewParent;
 import android.widget.Toast;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchaseHistoryRecord;
+import com.android.billingclient.api.PurchaseHistoryResponseListener;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.github.omadahealth.lollipin.lib.PinCompatActivity;
 import com.sumanthakkala.medialines.R;
 import com.google.android.material.navigation.NavigationView;
+import com.sumanthakkala.medialines.services.BillingService;
 import com.sumanthakkala.medialines.ui.about.AboutFragment;
 import com.sumanthakkala.medialines.ui.home.HomeFragment;
 import com.sumanthakkala.medialines.workers.AutoBackupWorker;
@@ -44,7 +59,9 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -53,10 +70,13 @@ public class MainActivity extends AppCompatActivity {
     private Menu actionBarMenu;
     private DrawerLayout drawer;
     SharedPreferences backupSharedPref;
+    SharedPreferences purchasePrefs;
+    private BillingClient billingClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        purchasePrefs = getSharedPreferences("Purchase_Prefs", MODE_PRIVATE);
         setContentView(R.layout.activity_main);
         setSystemControlDecorsByCurrentTheme();
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -67,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_archive, R.id.nav_settings, R.id.nav_share, R.id.nav_about)
+                R.id.nav_home, R.id.nav_archive, R.id.nav_settings, R.id.nav_buy_pro, R.id.nav_restore_purchase, R.id.nav_share, R.id.nav_about)
                 .setDrawerLayout(drawer)
                 .build();
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -83,6 +103,12 @@ public class MainActivity extends AppCompatActivity {
                 if (!handled) {
 
                     switch (item.getItemId()){
+                        case R.id.nav_buy_pro:
+                            initiatePurchase();
+                            break;
+                        case R.id.nav_restore_purchase:
+                            restorePurchase();
+                            break;
                         case R.id.nav_share:
                             Intent shareIntent = new Intent();
                             shareIntent.putExtra(Intent.EXTRA_TEXT, "Hey, Is your notes app not up to the modern standards? \uD835\uDDE0\uD835\uDDF2\uD835\uDDF1\uD835\uDDF6\uD835\uDDEE \uD835\uDDDF\uD835\uDDF6\uD835\uDDFB\uD835\uDDF2\uD835\uDE00 got you covered! \nI am using this app and I would love to recommend this to you. \nDownload here \uD83D\uDC47 \nhttps://play.google.com/store/apps/details?id=com.sumanthakkala.medialines");
@@ -106,6 +132,57 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        //checking if user owns pro
+        billingClient = BillingClient.newBuilder(this)
+                .setListener(new PurchasesUpdatedListener() {
+                    @Override
+                    public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> list) {
+                        if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK){
+                            handlePurchase(list.get(0));
+                        }
+                    }
+                })
+                .enablePendingPurchases()
+                .build();
+
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(BillingResult billingResult) {
+                if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
+                    // The BillingClient is ready. You can query purchases here.
+                    billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.INAPP, new PurchaseHistoryResponseListener() {
+                        @Override
+                        public void onPurchaseHistoryResponse(@NonNull BillingResult billingResult, @Nullable List<PurchaseHistoryRecord> list) {
+                            navigationView.getMenu().setGroupVisible(R.id.nav_purchase_group, false);
+                        }
+                    });
+                    Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
+                    List<Purchase> purchaseList = purchasesResult.getPurchasesList();
+                    if(purchaseList != null && purchaseList.size() != 0 && purchaseList.get(0).getPurchaseState() == Purchase.PurchaseState.PURCHASED){
+                        SharedPreferences.Editor editor = purchasePrefs.edit();
+                        editor.putBoolean(getString(R.string.is_pro_purchased), true);
+                        editor.apply();
+                        navigationView.getMenu().setGroupVisible(R.id.nav_purchase_group, false);
+                    }
+                    else {
+                        SharedPreferences.Editor editor = purchasePrefs.edit();
+                        editor.putBoolean(getString(R.string.is_pro_purchased), false);
+                        editor.apply();
+                    }
+                }
+                else {
+                    SharedPreferences.Editor editor = purchasePrefs.edit();
+                    editor.putBoolean(getString(R.string.is_pro_purchased), false);
+                    editor.apply();
+                }
+            }
+            @Override
+            public void onBillingServiceDisconnected() {
+                // Try to restart the connection on the next request to
+                // Google Play by calling the startConnection() method.
+            }
+        });
         performBackupJobs();
     }
 
@@ -122,6 +199,133 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    private void initiatePurchase(){
+        billingClient = BillingClient.newBuilder(this)
+                .setListener(new PurchasesUpdatedListener() {
+                    @Override
+                    public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> list) {
+                        if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK){
+                            handlePurchase(list.get(0));
+                        }
+                    }
+                })
+                .enablePendingPurchases()
+                .build();
+
+        //Start connection to billing client
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(BillingResult billingResult) {
+                if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
+                    // The BillingClient is ready. You can query purchases here.
+                    //init available products
+                    List<String> skuList = new ArrayList<>();
+                    skuList.add("purchase_pro");
+                    SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+                    params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+                    billingClient.querySkuDetailsAsync(params.build(),
+                            new SkuDetailsResponseListener() {
+                                @Override
+                                public void onSkuDetailsResponse(BillingResult billingResult,
+                                                                 List<SkuDetails> skuDetailsList) {
+                                    // Process the result.
+                                    if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK){
+                                        BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                                                .setSkuDetails(skuDetailsList.get(0))
+                                                .build();
+                                        int responseCode = billingClient.launchBillingFlow(MainActivity.this, billingFlowParams).getResponseCode();
+                                    }
+                                }
+                            });
+                }
+                if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.BILLING_UNAVAILABLE || billingResult.getResponseCode() == BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE){
+                    Toast.makeText(getApplicationContext(), "Billing service unavailable", Toast.LENGTH_LONG).show();
+                }
+            }
+            @Override
+            public void onBillingServiceDisconnected() {
+                // Try to restart the connection on the next request to
+                // Google Play by calling the startConnection() method.
+            }
+        });
+
+    }
+
+    private void handlePurchase(Purchase purchase) {
+        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+            if (!purchase.isAcknowledged()) {
+                AcknowledgePurchaseParams acknowledgePurchaseParams =
+                        AcknowledgePurchaseParams.newBuilder()
+                                .setPurchaseToken(purchase.getPurchaseToken())
+                                .build();
+                billingClient.acknowledgePurchase(acknowledgePurchaseParams, new AcknowledgePurchaseResponseListener() {
+                    @Override
+                    public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
+                        if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK){
+
+                        }
+                    }
+                });
+                SharedPreferences.Editor editor = purchasePrefs.edit();
+                editor.putBoolean(getString(R.string.is_pro_purchased), true);
+                editor.apply();
+                Toast.makeText(getApplicationContext(), "Thank you for purchasing Media Lines Pro.", Toast.LENGTH_LONG).show();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                finish();
+            }
+
+        }
+    }
+
+    private void restorePurchase(){
+        billingClient = BillingClient.newBuilder(this)
+                .setListener(new PurchasesUpdatedListener() {
+                    @Override
+                    public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> list) {
+                        if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK){
+                            handlePurchase(list.get(0));
+                        }
+                    }
+                })
+                .enablePendingPurchases()
+                .build();
+
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(BillingResult billingResult) {
+                if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
+                    // The BillingClient is ready. You can query purchases here.
+                    Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
+                    List<Purchase> purchaseList = purchasesResult.getPurchasesList();
+                    if(purchaseList != null && purchaseList.size() != 0 && purchaseList.get(0).getPurchaseState() == Purchase.PurchaseState.PURCHASED){
+                        SharedPreferences.Editor editor = purchasePrefs.edit();
+                        editor.putBoolean(getString(R.string.is_pro_purchased), true);
+                        editor.apply();
+                        Toast.makeText(getApplicationContext(), "Purchase restored successfully.", Toast.LENGTH_LONG).show();
+                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                        finish();
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(), "You have't purchased the product yet.", Toast.LENGTH_LONG).show();
+                        SharedPreferences.Editor editor = purchasePrefs.edit();
+                        editor.putBoolean(getString(R.string.is_pro_purchased), false);
+                        editor.apply();
+                    }
+                }
+                if(billingResult.getResponseCode() == BillingClient.BillingResponseCode.BILLING_UNAVAILABLE || billingResult.getResponseCode() == BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE){
+                    Toast.makeText(getApplicationContext(), "Billing service unavailable", Toast.LENGTH_LONG).show();
+                }
+            }
+            @Override
+            public void onBillingServiceDisconnected() {
+                // Try to restart the connection on the next request to
+                // Google Play by calling the startConnection() method.
+            }
+        });
+
+
     }
 
     private void performBackupJobs(){

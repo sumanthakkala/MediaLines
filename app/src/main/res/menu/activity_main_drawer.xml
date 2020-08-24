@@ -22,6 +22,19 @@
 
     </group>
 
+    <group android:id="@+id/nav_purchase_group"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_buy_pro"
+            android:icon="@drawable/ic_payment"
+            android:title="Buy Media Lines Pro"/>
+
+        <item
+            android:id="@+id/nav_restore_purchase"
+            android:icon="@drawable/ic_restore"
+            android:title="Restore Purchase"/>
+    </group>
+
     <group android:id="@+id/nav_about_group"
         android:checkableBehavior="single">
         <item
