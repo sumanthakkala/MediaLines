@@ -21,4 +21,10 @@ public class NoteWithData implements Serializable {
             entityColumn = "associated_note_id"
     )
     public List<Attachments> attachments;
+
+    @Relation(
+            parentColumn = "noteId",
+            entityColumn = "associated_note_id"
+    )
+    public List<Reminders> reminder;
 }

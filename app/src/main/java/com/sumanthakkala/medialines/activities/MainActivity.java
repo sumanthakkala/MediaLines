@@ -2,6 +2,7 @@ package com.sumanthakkala.medialines.activities;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Person;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -35,6 +36,7 @@ import com.sumanthakkala.medialines.services.BillingService;
 import com.sumanthakkala.medialines.ui.about.AboutFragment;
 import com.sumanthakkala.medialines.ui.home.HomeFragment;
 import com.sumanthakkala.medialines.workers.AutoBackupWorker;
+import com.sumanthakkala.medialines.workers.ResetAlarmsWorker;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,6 +64,9 @@ import androidx.work.WorkRequest;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -151,12 +156,12 @@ public class MainActivity extends AppCompatActivity {
             public void onBillingSetupFinished(BillingResult billingResult) {
                 if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
                     // The BillingClient is ready. You can query purchases here.
-                    billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.INAPP, new PurchaseHistoryResponseListener() {
-                        @Override
-                        public void onPurchaseHistoryResponse(@NonNull BillingResult billingResult, @Nullable List<PurchaseHistoryRecord> list) {
-                            navigationView.getMenu().setGroupVisible(R.id.nav_purchase_group, false);
-                        }
-                    });
+//                    billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.INAPP, new PurchaseHistoryResponseListener() {
+//                        @Override
+//                        public void onPurchaseHistoryResponse(@NonNull BillingResult billingResult, @Nullable List<PurchaseHistoryRecord> list) {
+//                            navigationView.getMenu().setGroupVisible(R.id.nav_purchase_group, false);
+//                        }
+//                    });
                     Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
                     List<Purchase> purchaseList = purchasesResult.getPurchasesList();
                     if(purchaseList != null && purchaseList.size() != 0 && purchaseList.get(0).getPurchaseState() == Purchase.PurchaseState.PURCHASED){
@@ -184,6 +189,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         performBackupJobs();
+
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(
+                ResetAlarmsWorker.class,
+                15,
+                TimeUnit.MINUTES
+        ).addTag("medialines_reset_alarms").build();
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("medialines_reset_alarms", ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
     }
 
     @Override

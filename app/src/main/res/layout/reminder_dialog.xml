@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/remindNoteDialogLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/_10sdp"
+    android:background="@drawable/background_dialog"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/titleTV"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_35sdp"
+        android:layout_marginStart="@dimen/_8sdp"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:background="@null"
+        android:fontFamily="@font/nunito_regular"
+        android:gravity="center_vertical"
+        android:text="Add Reminder"
+        android:textColor="@color/textPrimary"
+        android:importantForAutofill="no"
+        android:textColorHint="@color/colorTextHint"
+        android:textSize="@dimen/_13ssp"
+        android:paddingStart="@dimen/_8sdp"
+        android:paddingEnd="@dimen/_8sdp"
+        android:includeFontPadding="false"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <RadioGroup
+        android:id="@+id/dateTimeRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/titleTV"
+        android:layout_marginStart="@dimen/_8sdp"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:visibility="gone">
+        <RadioButton android:id="@+id/radio_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Time"
+            android:checked="true"
+            android:onClick="onRadioButtonClicked"/>
+        <RadioButton android:id="@+id/radio_place"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Place"
+            android:onClick="onRadioButtonClicked"/>
+    </RadioGroup>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/timeDetailsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/titleTV"
+        app:layout_constraintStart_toStartOf="@id/titleTV">
+
+        <LinearLayout
+            android:id="@+id/selectDateLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/selectTimeLayout"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:background="@drawable/background_button">
+
+            <ImageView
+                android:layout_width="@dimen/_22sdp"
+                android:layout_height="@dimen/_22sdp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_date"
+                android:tint="@color/colorIcons" />
+
+            <TextView
+                android:id="@+id/dateTV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:fontFamily="@font/nunito_semibold"
+                android:includeFontPadding="false"
+                android:text="Select a date"
+                android:textColor="@color/colorIcons"
+                android:textSize="@dimen/_12ssp"
+                android:layout_gravity="center_vertical"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/selectTimeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/selectDateLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:background="@drawable/background_button">
+
+            <ImageView
+                android:layout_width="@dimen/_22sdp"
+                android:layout_height="@dimen/_22sdp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_time"
+                android:tint="@color/colorIcons" />
+
+            <TextView
+                android:id="@+id/timeTV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:fontFamily="@font/nunito_semibold"
+                android:includeFontPadding="false"
+                android:text="Select a time"
+                android:textColor="@color/colorIcons"
+                android:textSize="@dimen/_12ssp"
+                android:layout_gravity="center_vertical"/>
+
+        </LinearLayout>
+
+        <Spinner
+            android:id="@+id/repetition_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:textSize="@dimen/_13ssp"
+            app:layout_constraintTop_toBottomOf="@id/selectDateLayout"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/placeDetailsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/dateTimeRadioGroup"
+        app:layout_constraintStart_toStartOf="@id/dateTimeRadioGroup"
+        app:layout_constraintBottom_toTopOf="@id/saveReminderTV"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/reminder_place_edittext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textPrimary"
+            android:hint="Enter Location"
+            android:textColorHint="@color/colorTextHint"
+            android:textSize="@dimen/_13ssp"
+            android:paddingStart="@dimen/_8sdp"
+            android:paddingEnd="@dimen/_8sdp"
+            android:maxLines="2"
+            android:inputType="none"
+            android:focusable="false"
+            android:fontFamily="@font/nunito_regular"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+<!--    <TextView-->
+<!--        android:id="@+id/reminderHintTV"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="@dimen/_8sdp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/timeDetailsLayout"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/removeReminderTV"-->
+<!--        app:layout_constraintEnd_toEndOf="@id/saveReminderTV"-->
+<!--        android:ellipsize="none"-->
+<!--        android:textSize="@dimen/_10sdp"-->
+<!--        android:padding="@dimen/_5sdp"-->
+<!--        android:text="Reminders may not work as expected in some devices due to battery optimisations by the OS. Please check this website and follow the instructions provided if your device is listed to avoid misbehaviour. We are constantly trying to fix this issue. We regret the inconvenience caused."-->
+<!--        android:textColor="@color/color_red"-->
+<!--        android:layout_marginLeft="@dimen/_8sdp" />-->
+
+    <TextView
+        android:id="@+id/removeReminderTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_8sdp"
+        android:layout_marginBottom="@dimen/_8sdp"
+        android:layout_marginLeft="@dimen/_8sdp"
+        android:text="REMOVE"
+        android:textColor="@color/colorModalButtons"
+        android:fontFamily="@font/nunito_semibold"
+        android:textSize="@dimen/_13ssp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:padding="@dimen/_8sdp"
+        android:includeFontPadding="false"
+        android:background="@drawable/background_button"/>
+
+
+    <TextView
+        android:id="@+id/saveReminderTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:layout_marginBottom="@dimen/_8sdp"
+        android:layout_marginRight="@dimen/_8sdp"
+        android:text="SAVE"
+        android:textColor="@color/colorModalButtons"
+        android:fontFamily="@font/nunito_semibold"
+        android:textSize="@dimen/_13ssp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/timeDetailsLayout"
+        android:padding="@dimen/_8sdp"
+        android:includeFontPadding="false"
+        android:background="@drawable/background_button"/>
+
+    <TextView
+        android:id="@+id/cancelGoBackTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:layout_marginBottom="@dimen/_8sdp"
+        android:layout_marginRight="@dimen/_8sdp"
+        android:text="CANCEL"
+        android:textColor="@color/colorModalButtons"
+        android:fontFamily="@font/nunito_semibold"
+        android:textSize="@dimen/_13ssp"
+        app:layout_constraintEnd_toStartOf="@id/saveReminderTV"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="@dimen/_8sdp"
+        android:includeFontPadding="false"
+        android:background="@drawable/background_button"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
